@@ -6,7 +6,7 @@ import { forwardRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ORDENES, resorte, resorteRapido, t } from '../lib/index.js';
 import {
-  IconoAuto, IconoAyuda, IconoBarraLateral, IconoBuscar, IconoCompartir, IconoDuplicados, IconoEngranaje, IconoKindle, IconoMas, IconoCerrar, IconoGrilla, IconoLista, IconoLuna, IconoRecargar, IconoSol, LogoBroots,
+  IconoAuto, IconoAyuda, IconoBarraLateral, IconoBuscar, IconoCompartir, IconoDuplicados, IconoEngranaje, IconoKindle, IconoMas, IconoCerrar, IconoGrilla, IconoLista, IconoLuna, IconoRacha, IconoRecargar, IconoSol, LogoBroots,
 } from './Iconos.jsx';
 import { ControlSegmentado } from './Piezas.jsx';
 
@@ -28,7 +28,7 @@ function BotonBarra({ children, ...props }) {
 export const BarraHerramientas = forwardRef(function BarraHerramientas(
   {
     titulo, cantidad, busqueda, onBusqueda, errorBusqueda, vista, onVista, orden, onOrden,
-    tema, onTema, barraVisible, onAlternarBarra, onRecargar, onConfiguracion, onAyuda, onKindle, onAgregarLibros, onDuplicados, onCompartir, soloLectura, cargando,
+    tema, onTema, barraVisible, onAlternarBarra, onRecargar, onConfiguracion, onAyuda, onKindle, onAgregarLibros, onDuplicados, onCompartir, onMiLectura, soloLectura, cargando,
   },
   refBusqueda,
 ) {
@@ -61,7 +61,7 @@ export const BarraHerramientas = forwardRef(function BarraHerramientas(
       </AnimatePresence>
 
       <div className="ml-auto flex min-w-0 items-center gap-2">
-        <div className="relative w-72 min-w-28 shrink-[2]">
+        <div className="relative w-72 min-w-24 shrink-[2]">
           <IconoBuscar className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-tinta-tenue" />
           <input
             ref={refBusqueda}
@@ -97,7 +97,7 @@ export const BarraHerramientas = forwardRef(function BarraHerramientas(
           value={orden}
           onChange={(e) => onOrden(e.target.value)}
           title={t('barra.ordenar')}
-          className="h-8 w-44 min-w-24 shrink rounded-lg bg-superficie-2 px-2 text-[0.8rem] text-tinta shadow-[inset_0_0_0_1px_var(--borde)] outline-none"
+          className="h-8 w-44 min-w-20 shrink rounded-lg bg-superficie-2 px-2 text-[0.8rem] text-tinta shadow-[inset_0_0_0_1px_var(--borde)] outline-none"
         >
           {ORDENES.map((o) => (
             <option key={o.id} value={o.id}>
@@ -148,6 +148,9 @@ export const BarraHerramientas = forwardRef(function BarraHerramientas(
             </BotonBarra>
           </>
         )}
+        <BotonBarra onClick={onMiLectura} title={t('barra.miLectura')} data-boton-mi-lectura>
+          <IconoRacha />
+        </BotonBarra>
         <BotonBarra onClick={onRecargar} title={t('barra.recargar')}>
           <IconoRecargar className={`size-4 ${cargando ? 'animate-spin' : ''}`} />
         </BotonBarra>

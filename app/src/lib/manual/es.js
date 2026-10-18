@@ -114,6 +114,41 @@ export const MANUAL = [
     ],
   },
   {
+    id: 'habito',
+    titulo: 'Hábito de lectura',
+    bloques: [
+      { texto: 'Cada vez que leés en el lector, Broots anota la sesión solo: cuánto tiempo leíste de verdad y cuántas páginas. El reloj se frena si pasan 5 minutos sin pasar de página o si minimizás la ventana, así que ir a cebar un mate no cuenta como lectura.' },
+      { subtitulo: 'Sesión de lectura' },
+      {
+        lista: [
+          'El botón del reloj de arena, arriba en el lector, tiene tres modos: Libre (sin reloj a la vista), Minutos (una meta de 15 a 60) y Hasta el fin del capítulo.',
+          'Los avisos nunca cortan a mitad de un párrafo: aparecen recién cuando pasás de página.',
+          'Descanso para la vista (regla 20-20-20): cada 20 minutos, un cartelito suave te invita a mirar algo lejos unos 20 segundos. Se va solo y se puede apagar en el mismo botón o en Configuración → Lectura y traducción.',
+          'Abajo, al lado del porcentaje, Broots te dice cuánto te queda para terminar el capítulo y el libro, según tu ritmo real.',
+        ],
+      },
+      { subtitulo: 'Modo enfoque' },
+      { texto: 'Apretá F (o el botón de las cuatro esquinas) y queda solo el texto, en pantalla completa. Llevá el mouse al borde de arriba o de abajo para que se asomen las barras. F o Esc vuelven a la normalidad.' },
+      { subtitulo: 'Mi lectura' },
+      {
+        lista: [
+          'El botón de la llama, en la barra de arriba, abre tus estadísticas: racha de días, horas del mes, ritmo, libros terminados, el mapa de calor del año y a qué hora leés.',
+          '«Leyendo ahora» lista tus libros en curso con cuánto les falta. Si uno lleva más de 30 días sin abrirse, Broots te sugiere pasarlo a En pausa (nunca lo cambia solo).',
+        ],
+      },
+      { subtitulo: 'Estados y relecturas' },
+      {
+        lista: [
+          'Los estados son Por leer, Leyendo, En pausa, Leído y Abandonado, y se guardan en Calibre. Si tu biblioteca no tiene esa columna, «Mi lectura» ofrece crearla: lo hace con la herramienta oficial de Calibre, te pide permiso antes y guarda un respaldo de la base.',
+          'Si tu columna ya existe pero no tiene «En pausa», Broots te explica cómo agregarlo en Calibre (las herramientas de Calibre no permiten hacerlo desde afuera).',
+          'Cuando leés 5 minutos un libro «Por leer», pasa solo a «Leyendo» y te avisa. Al llegar a la última página, Broots te ofrece marcarlo como leído.',
+          'En el panel de un libro leído aparece «Releer»: arranca una vuelta nueva desde el principio y lo que leíste antes queda guardado aparte.',
+          'Las sesiones viven en la carpeta .broots/habito de tu biblioteca. En Configuración → Lectura y traducción podés dejar de anotarlas o borrar las estadísticas (Broots guarda una copia, por las dudas).',
+        ],
+      },
+    ],
+  },
+  {
     id: 'club',
     titulo: 'Club de lectura',
     bloques: [
@@ -183,6 +218,7 @@ export const MANUAL = [
           [['Esc'], 'Cerrar el panel, la portada en grande o la hoja abierta'],
           [['F1'], 'Abrir esta ayuda (sí, esta misma)'],
           [['←', '→'], 'En el lector: página anterior y siguiente'],
+          [['F'], 'En el lector: modo enfoque (solo el texto, en pantalla completa)'],
         ],
       },
     ],

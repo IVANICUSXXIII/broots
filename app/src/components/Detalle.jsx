@@ -11,8 +11,9 @@ import { AnimatePresence, motion, useMotionValue, useTransform, animate } from '
 import {
   año, fechaCorta, nombreIdioma, numero, tamaño, valoraciones, etiquetasValidas,
   resorte, resorteRapido, resortePresion, resorteVuelo, t,
+  duracion, estimacion, lecturaDelLibro, region, ritmoTexto, tipoEstado,
 } from '../lib/index.js';
-import { IconoAbrir, IconoCarpeta, IconoCerrar, IconoCheck, IconoCita, IconoEditar, IconoEnviar, IconoLeer } from './Iconos.jsx';
+import { IconoAbrir, IconoCarpeta, IconoCerrar, IconoCheck, IconoCita, IconoEditar, IconoEnviar, IconoLeer, IconoReleer } from './Iconos.jsx';
 import { ElegirEstrellas } from './Editar.jsx';
 import { etiquetaDe } from './Compartir.jsx';
 import { Estrellas, EtiquetaEstado, Portada } from './Piezas.jsx';
@@ -304,19 +305,75 @@ function ListaSubrayados({ subrayados }) {
   );
 }
 
+/**
+ * 1.7: «Tu lectura»: cuánto leíste este libro con Broots, separado por vuelta (las relecturas no pisan las
+ * anteriores), cuánto te falta según tu ritmo y el botón «Releer» cuando ya lo terminaste.
+ */
+function TuLectura({ libro, habito, colEstado, onReleer }) {
+  if (!habito) return null;
+  const vueltas = lecturaDelLibro(libro.uuid, habito.sesiones, habito.lecturas);
+  const leidoEnCalibre = colEstado && tipoEstado(libro.custom[colEstado.label]) === 'leido';
+  const actual = vueltas.at(-1);
+  const terminada = actual?.resultado === 'leido' || (leidoEnCalibre && !actual?.sesiones);
+  if (!vueltas.length && !leidoEnCalibre) return null;
+
+  const leidas = vueltas.filter((v) => v.resultado === 'leido');
+  const veces = Math.max(leidas.length, leidoEnCalibre ? 1 : 0);
+  const mes = (iso) => (iso ? new Date(iso).toLocaleDateString(region(), { month: 'short', year: 'numeric' }) : t('habito.libro.antes'));
+  const progreso = habito.posiciones?.[libro.uuid]?.progreso ?? null;
+  const conSesiones = vueltas.filter((v) => v.sesiones > 0);
+  // Ritmo de esta vuelta en fracción del libro por minuto, para «te quedan».
+  const propias = habito.sesiones.filter((s) => s.uuid === libro.uuid && s.lectura === actual?.n && s.paginasLibro > 0);
+  const minutos = propias.reduce((a, s) => a + s.minutos, 0);
+  const fraccion = propias.reduce((a, s) => a + s.paginas / s.paginasLibro, 0);
+  const queda = !terminada && progreso != null && progreso < 0.99 && minutos >= 10 && fraccion > 0 ? estimacion((1 - progreso) / (fraccion / minutos)) : null;
+
+  return (
+    <motion.div variants={item} data-tu-lectura className="squircle mt-5 rounded-[18px] bg-superficie-2/60 p-4 text-[0.78rem]">
+      <p className="text-[0.68rem] font-semibold tracking-wide text-tinta-tenue">{t('habito.libro.titulo')}</p>
+      {veces > 0 && (
+        <p className="mt-1.5 font-medium" data-veces={veces}>
+          {t('habito.libro.leido', { n: veces })}
+          {leidas.length > 0 && <span className="font-normal text-tinta-tenue"> · {leidas.map((v) => mes(v.fin)).join(', ')}</span>}
+        </p>
+      )}
+      {conSesiones.map((v) => (
+        <p key={v.n} className="mt-1 text-tinta-suave">
+          {conSesiones.length > 1 || v.n > 1 ? t(v === actual && !v.resultado ? 'habito.libro.estaVez' : 'habito.libro.vuelta', { n: v.n }) : ''}
+          {t('habito.libro.resumen', { tiempo: duracion(v.minutos), n: v.sesiones })}
+          {v.ritmo ? ` · ${ritmoTexto(v.ritmo)}` : ''}
+          {v.resultado === 'abandonado' ? ` · ${t('habito.libro.abandonado')}` : ''}
+        </p>
+      ))}
+      {queda && <p className="mt-1 text-verde">{t('habito.libro.queda', { porcentaje: Math.round(progreso * 100), tiempo: queda })}</p>}
+      {terminada && libro.formats.some((f) => f.format === 'EPUB') && (
+        <motion.button
+          type="button"
+          onClick={onReleer}
+          whileTap={{ scale: 0.95, transition: resortePresion }}
+          title={t('habito.libro.releerExplica')}
+          className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-superficie px-3 py-1 text-[0.74rem] font-medium text-verde shadow-[inset_0_0_0_1px_var(--borde)] hover:bg-seleccion"
+        >
+          <IconoReleer className="size-3.5" /> {t('habito.libro.releer')}
+        </motion.button>
+      )}
+    </motion.div>
+  );
+}
+
 export function PanelDetalle({
   libro, columnas, colEstado, colValoracion, subrayados = [], envio, onEnviar, onConfigurarKindle, onConfigurarClub,
-  onCerrar, onEtiqueta, onAmpliar, onEditar, onEditarRapido, onConvertir, onLeer,
-  soloLectura = false, familia = [], onMarcarPara,
+  onCerrar, onEtiqueta, onAmpliar, onEditar, onEditarRapido, onEditarEstado, onConvertir, onLeer,
+  habito, onReleer, soloLectura = false, familia = [], onMarcarPara,
 }) {
   const { propia, importada } = valoraciones(libro, colValoracion);
   // Cambios rápidos (estado, estrellas): se guardan al instante en Calibre.
   const [estadoRapido, setEstadoRapido] = useState(null);
   const guardando = estadoRapido?.guardando;
   useEffect(() => setEstadoRapido(null), [libro.id]);
-  const guardarRapido = async (cambios) => {
+  const guardarRapido = async (cambios, estado = false) => {
     setEstadoRapido({ guardando: true, texto: t('detalle.guardando') });
-    const r = await onEditarRapido(libro.id, cambios);
+    const r = estado && onEditarEstado ? await onEditarEstado(cambios) : await onEditarRapido(libro.id, cambios);
     setEstadoRapido(r.ok ? null : { error: true, texto: r.mensaje });
   };
   const otrasColumnas = columnas.filter(
@@ -429,7 +486,7 @@ export function PanelDetalle({
                         key={v}
                         disabled={guardando}
                         whileTap={{ scale: 0.94, transition: resortePresion }}
-                        onClick={() => guardarRapido({ custom: { [colEstado.label]: elegido ? null : v } })}
+                        onClick={() => guardarRapido({ custom: { [colEstado.label]: elegido ? null : v } }, true)}
                         title={elegido ? t('detalle.quitarEstado') : t('detalle.marcarComo', { estado: v })}
                         className={`rounded-full px-2.5 py-1 text-[0.7rem] font-medium transition-colors ${
                           elegido ? 'bg-verde text-superficie' : 'bg-superficie-2 text-tinta-suave hover:text-tinta'
@@ -472,6 +529,7 @@ export function PanelDetalle({
                 </motion.button>
               </motion.div>
             )}
+            <TuLectura libro={libro} habito={habito} colEstado={colEstado} onReleer={onReleer} />
             {!soloLectura && (
               <>
                 <BotonEnviar libro={libro} envio={envio} onEnviar={onEnviar} onConfigurar={onConfigurarKindle} />

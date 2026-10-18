@@ -110,6 +110,41 @@ export const MANUAL = [
     ],
   },
   {
+    id: 'habito',
+    titulo: 'Reading habit',
+    bloques: [
+      { texto: 'Every time you read in the reader, Broots logs the session on its own: how long you actually read and how many pages. The clock pauses after 5 minutes without turning a page or if you minimize the window, so a coffee break doesn’t count as reading.' },
+      { subtitulo: 'Reading session' },
+      {
+        lista: [
+          'The hourglass button at the top of the reader has three modes: Free (no clock in sight), Minutes (a goal from 15 to 60) and Until the chapter ends.',
+          'Reminders never interrupt mid-paragraph: they only show up when you turn the page.',
+          'Eye break (20-20-20 rule): every 20 minutes, a gentle note invites you to look at something far away for about 20 seconds. It goes away on its own and you can turn it off in the same button or in Settings → Reading & translation.',
+          'At the bottom, next to the percentage, Broots tells you how much is left in the chapter and the book, based on your actual pace.',
+        ],
+      },
+      { subtitulo: 'Focus mode' },
+      { texto: 'Press F (or the four-corners button) and you get just the text, full screen. Move the mouse to the top or bottom edge to peek at the bars. F or Esc take you back.' },
+      { subtitulo: 'My reading' },
+      {
+        lista: [
+          'The flame button in the top bar opens your stats: daily streak, hours this month, pace, books finished, the yearly heat map and the time of day you read.',
+          '"Reading now" lists the books you’re in the middle of and how much is left. If one hasn’t been opened in over 30 days, Broots suggests moving it to Paused (it never changes it on its own).',
+        ],
+      },
+      { subtitulo: 'Status and rereads' },
+      {
+        lista: [
+          'Statuses are To read, Reading, Paused, Read and Abandoned, and they’re saved in Calibre. If your library has no such column, "My reading" offers to create it: it uses Calibre’s official tool, asks for your OK first and backs up the database.',
+          'If your column already exists but has no "Paused" option, Broots explains how to add it in Calibre (Calibre’s tools don’t allow doing it from outside).',
+          'After 5 minutes reading a "To read" book, it moves to "Reading" on its own and lets you know. When you reach the last page, Broots offers to mark it as read.',
+          'A finished book’s panel shows "Reread": it starts a new read from the beginning and your previous reading stays saved separately.',
+          'Sessions live in your library’s .broots/habito folder. In Settings → Reading & translation you can stop tracking them or delete your stats (Broots keeps a copy, just in case).',
+        ],
+      },
+    ],
+  },
+  {
     id: 'club',
     titulo: 'Book club',
     bloques: [
@@ -179,6 +214,7 @@ export const MANUAL = [
           [['Esc'], 'Close the panel, the large cover or the open sheet'],
           [['F1'], 'Open this help (yes, this one)'],
           [['←', '→'], 'In the reader: previous and next page'],
+          [['F'], 'In the reader: focus mode (just the text, full screen)'],
         ],
       },
     ],

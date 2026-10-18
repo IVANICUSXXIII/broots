@@ -9,12 +9,17 @@
 // (pasa adelante en la cola) y en paralelo se adelantan ~5 páginas más y la anterior. Lo traducido se
 // guarda en la biblioteca (.broots/traducciones), así releer no gasta cupo. Tocar un párrafo
 // traducido muestra el original (y otro toque vuelve a la traducción).
+//
+// 1.7: la sesión de lectura (reloj opcional, descanso para la vista, «te quedan») vive en SesionLectura.jsx;
+// acá se le avisa cada vez que pasás de página. El modo enfoque (F) esconde las barras y pone la ventana
+// en pantalla completa; llevando el mouse al borde de arriba o de abajo, la barra se asoma.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { limpiarCapitulo, limpiarFragmento, parrafosDe } from '../lib/epub.js';
-import { idiomaActual, resorte, resortePresion, resorteRapido, t } from '../lib/index.js';
+import { estimacion, idiomaActual, resorte, resortePresion, resorteRapido, ritmoParaEstimar, t } from '../lib/index.js';
 import { FormularioGemini } from './Gemini.jsx';
-import { IconoAnterior, IconoCerrar, IconoIndice, IconoLlave, IconoSiguiente, IconoTraducir } from './Iconos.jsx';
+import { IconoAnterior, IconoCerrar, IconoEnfoque, IconoIndice, IconoLlave, IconoSiguiente, IconoTraducir } from './Iconos.jsx';
+import { AvisoSesion, BotonSesion, useSesionLectura } from './SesionLectura.jsx';
 
 const ESPACIO = 64; // separación entre columnas (y entre páginas), en px
 const MARGEN_LATERAL = 72;
@@ -122,7 +127,7 @@ function IrAPagina({ actual, ultimaVisible, total, aproximado, sinEstimar, onIr 
   );
 }
 
-export function Lector({ libro, onCerrar }) {
+export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido }) {
   const [datos, setDatos] = useState(null); // { capitulos, indice, idioma, posicion }
   const [error, setError] = useState(null);
   const [info, setInfo] = useState({ cap: 0, vista: 0, total: 1, columnas: 1, cols: 1 });
@@ -134,6 +139,11 @@ export function Lector({ libro, onCerrar }) {
   const [indiceAbierto, setIndiceAbierto] = useState(false);
   const [claveAbierta, setClaveAbierta] = useState(false);
   const [tieneClave, setTieneClave] = useState(false);
+  const [enfoque, setEnfoque] = useState(false);
+  const [asomar, setAsomar] = useState(null); // en modo enfoque: 'arriba' | 'abajo' | null (qué barra se asoma)
+  const [sobreBarra, setSobreBarra] = useState(false);
+  const sesion = useSesionLectura({ libro, abierto: Boolean(datos), colEstado, soloLectura, onEditarRapido });
+  const { alPasarPagina, actividad } = sesion;
 
   const marco = useRef(null);
   const recorte = useRef(null);
@@ -394,14 +404,21 @@ export function Lector({ libro, onCerrar }) {
   );
 
   const siguiente = useCallback(() => {
-    if (r.vista < r.total - 1) irVista(r.vista + 1);
-    else if (datos && r.cap < datos.capitulos.length - 1) abrirCapitulo(r.cap + 1);
-  }, [r, datos, irVista, abrirCapitulo]);
+    if (r.vista < r.total - 1) {
+      irVista(r.vista + 1);
+      alPasarPagina({ adelante: true, paginas: r.geo?.cols ?? 1 });
+    } else if (datos && r.cap < datos.capitulos.length - 1) {
+      abrirCapitulo(r.cap + 1);
+      alPasarPagina({ adelante: true, paginas: r.geo?.cols ?? 1, capitulo: true });
+    }
+  }, [r, datos, irVista, abrirCapitulo, alPasarPagina]);
 
   const anterior = useCallback(() => {
     if (r.vista > 0) irVista(r.vista - 1);
     else if (r.cap > 0) abrirCapitulo(r.cap - 1, { fin: true });
-  }, [r, irVista, abrirCapitulo]);
+    else return;
+    alPasarPagina({ adelante: false });
+  }, [r, irVista, abrirCapitulo, alPasarPagina]);
 
   const irA = useCallback(
     (destino) => {
@@ -437,6 +454,14 @@ export function Lector({ libro, onCerrar }) {
   // Con muy pocos capítulos contados la estimación puede errar mucho (p. ej. si el primero es la portada).
   const sinEstimar = aproximado && contados.length < Math.min(4, capitulos.length);
   const progreso = capitulos.length ? Math.min(1, ultimaVisible / totalPaginas) : 0;
+  sesion.datos.current = { progreso, totalPaginas, estimado: aproximado };
+
+  // «Te quedan ~X»: páginas que faltan divididas por tu ritmo (el de este libro o, mientras es nuevo, el general).
+  const porMinuto = sesion.ritmos && capitulos.length && !sinEstimar ? ritmoParaEstimar(sesion.ritmos, totalPaginas) : null;
+  const faltanCapitulo = antes + info.columnas - ultimaVisible;
+  const faltanLibro = totalPaginas - ultimaVisible;
+  const quedaCapitulo = porMinuto && faltanCapitulo > 0 ? estimacion(faltanCapitulo / porMinuto) : null;
+  const quedaLibro = porMinuto && faltanLibro > 0 ? estimacion(faltanLibro / porMinuto) : null;
 
   // Mientras se cuentan las páginas, los números son estimados: un "Ir a" espera a que termine el conteo.
   const paginaPendiente = useRef(null);
@@ -474,6 +499,30 @@ export function Lector({ libro, onCerrar }) {
     if (capitulos.length) guardarPosicion(Math.round(progreso * 1000) / 1000);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [info.cap, info.vista]);
+
+  // Última página del libro: la sesión ofrece marcarlo como Leído.
+  useEffect(() => {
+    if (capitulos.length && info.cap === capitulos.length - 1 && info.vista >= info.total - 1) sesion.alLlegarAlFinal();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [info.cap, info.vista, info.total, capitulos.length]);
+
+  // Modo enfoque: pantalla completa mientras dura (y siempre se sale al cerrar el libro).
+  const primeraVez = useRef(true);
+  useEffect(() => {
+    if (primeraVez.current) {
+      primeraVez.current = false;
+      return;
+    }
+    window.habito.pantallaCompleta(enfoque);
+    setAsomar(null);
+  }, [enfoque]);
+  useEffect(() => () => window.habito.pantallaCompleta(false), []);
+  const alMoverMouse = (e) => {
+    actividad();
+    if (!enfoque) return;
+    const lado = e.clientY < 56 ? 'arriba' : e.clientY > window.innerHeight - 48 ? 'abajo' : null;
+    if (lado !== asomar) setAsomar(lado);
+  };
 
   // Cuenta en segundo plano las páginas de cada capítulo (con la letra y el tamaño actuales).
   useEffect(() => {
@@ -568,14 +617,21 @@ export function Lector({ libro, onCerrar }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reacomodar]);
 
-  // Teclado: flechas, Av Pág/Re Pág, espacio; Esc cierra paneles o el lector.
+  // Teclado: flechas, Av Pág/Re Pág, espacio; F, modo enfoque; Esc cierra paneles (clave, índice, sesión), sale del
+  // enfoque o, si no queda nada abierto, cierra el lector.
   useEffect(() => {
     const alPresionar = (e) => {
       if (e.target.closest?.('input, textarea')) return;
+      actividad();
       if (e.key === 'Escape') {
         if (claveAbierta) setClaveAbierta(false);
         else if (indiceAbierto) setIndiceAbierto(false);
+        else if (sesion.panelAbierto) sesion.setPanelAbierto(false);
+        else if (enfoque) setEnfoque(false);
         else onCerrar();
+      } else if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        e.preventDefault();
+        setEnfoque((v) => !v);
       } else if (['ArrowRight', 'PageDown', ' '].includes(e.key)) {
         e.preventDefault();
         siguiente();
@@ -586,7 +642,7 @@ export function Lector({ libro, onCerrar }) {
     };
     window.addEventListener('keydown', alPresionar);
     return () => window.removeEventListener('keydown', alPresionar);
-  }, [siguiente, anterior, onCerrar, claveAbierta, indiceAbierto]);
+  }, [siguiente, anterior, onCerrar, claveAbierta, indiceAbierto, enfoque, actividad, sesion.panelAbierto, sesion.setPanelAbierto]);
 
   // Rueda del mouse o del touchpad: una página por gesto.
   const ultimaRueda = useRef(0);
@@ -665,7 +721,15 @@ export function Lector({ libro, onCerrar }) {
     }
     return actual;
   })();
-  const flecha = 'grid size-10 place-items-center rounded-full text-tinta-tenue opacity-50 transition-[opacity,background-color,color] group-hover:bg-superficie-2 group-hover:text-tinta group-hover:opacity-100';
+  // En modo enfoque las barras flotan escondidas y se asoman al acercar el mouse al borde (o mientras lo tenés encima).
+  const barraEscondida = (lado) => enfoque && asomar !== lado && !(lado === 'arriba' && sobreBarra);
+  const flotante = (lado) => {
+    if (!enfoque) return '';
+    const borde = lado === 'arriba' ? 'top-0 shadow-[0_6px_18px_-12px_rgb(var(--sombra)/0.5)]' : 'bottom-0 shadow-[0_-6px_18px_-12px_rgb(var(--sombra)/0.5)]';
+    const escondida = barraEscondida(lado) ? `pointer-events-none opacity-0 ${lado === 'arriba' ? '-translate-y-2' : 'translate-y-2'}` : '';
+    return `absolute inset-x-0 z-30 bg-superficie transition-[opacity,translate] duration-200 ${borde} ${escondida}`;
+  };
+  const flecha = 'grid size-10place-items-center rounded-full text-tinta-tenue opacity-50 transition-[opacity,background-color,color] group-hover:bg-superficie-2 group-hover:text-tinta group-hover:opacity-100';
 
   return (
     <motion.div
@@ -674,8 +738,14 @@ export function Lector({ libro, onCerrar }) {
       animate={{ opacity: 1, transform: 'scale(1)' }}
       exit={{ opacity: 0, transform: 'scale(0.985)', transition: { duration: 0.16 } }}
       transition={resorte}
+      onMouseMove={alMoverMouse}
+      data-enfoque={enfoque ? 'si' : 'no'}
     >
-      <header className="arrastrable flex h-11 shrink-0 items-center gap-1.5 pr-[150px] pl-3">
+      <header
+        onMouseEnter={() => setSobreBarra(true)}
+        onMouseLeave={() => setSobreBarra(false)}
+        className={`flex h-11 shrink-0 items-center gap-1.5 pr-[150px] pl-3 ${enfoque ? flotante('arriba') : 'arrastrable'}`}
+      >
         <BotonBarra onClick={onCerrar} title={t('lector.volverEsc')}>
           <IconoAnterior className="size-4" /> {t('lector.biblioteca')}
         </BotonBarra>
@@ -697,6 +767,10 @@ export function Lector({ libro, onCerrar }) {
         </BotonBarra>
         <BotonBarra onClick={() => setClaveAbierta(true)} title={t('configuracion.claveGemini')}>
           <IconoLlave className="size-4" />
+        </BotonBarra>
+        <BotonSesion sesion={sesion} restanteCapitulo={quedaCapitulo} />
+        <BotonBarra activo={enfoque} onClick={() => setEnfoque((v) => !v)} title={enfoque ? t('habito.lector.salirEnfoque') : t('habito.lector.enfoque')} data-boton-enfoque>
+          <IconoEnfoque className="size-4" />
         </BotonBarra>
       </header>
 
@@ -802,10 +876,12 @@ export function Lector({ libro, onCerrar }) {
           )}
         </AnimatePresence>
 
+        <AvisoSesion sesion={sesion} onCerrarLibro={onCerrar} enfoque={enfoque} />
+
         <AnimatePresence>{claveAbierta && <ClaveGemini key="clave" tieneClave={tieneClave} onListo={claveLista} onCerrar={() => setClaveAbierta(false)} />}</AnimatePresence>
       </div>
 
-      <footer className="flex h-10 shrink-0 items-center gap-4 px-6 text-[0.7rem] text-tinta-tenue">
+      <footer className={`flex h-10 shrink-0 items-center gap-4 px-6 text-[0.7rem] text-tinta-tenue ${flotante('abajo')}`}>
         {capitulos.length > 0 && (
           <IrAPagina actual={paginaActual} ultimaVisible={ultimaVisible} total={totalPaginas} aproximado={aproximado} sinEstimar={sinEstimar} onIr={irAPagina} />
         )}
@@ -823,6 +899,12 @@ export function Lector({ libro, onCerrar }) {
           </span>
         </button>
         <span className="w-10 text-right">{Math.round(progreso * 100)}%</span>
+        {quedaLibro && (
+          <span data-quedan className="max-w-[45%] shrink-0 truncate text-tinta-suave" title={t('habito.lector.quedanExplica')}>
+            {quedaCapitulo ? `${t('habito.lector.quedanCapitulo', { tiempo: quedaCapitulo })} · ` : ''}
+            {t('habito.lector.quedanLibro', { tiempo: quedaLibro })}
+          </span>
+        )}
       </footer>
     </motion.div>
   );

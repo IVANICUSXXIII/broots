@@ -53,6 +53,9 @@ la biblioteca (`metadata.db`).
   sobre él con una inteligencia artificial.
 - **Lector:** leé tus EPUB dentro de Broots, con el tamaño de letra que quieras. Con una clave gratuita de Gemini,
   puede traducir el libro mientras leés.
+- **Hábito de lectura:** Broots anota tus sesiones de lectura (con meta opcional y descanso para la vista) y
+  te muestra tu racha, tu ritmo, el mapa de calor del año y cuánto te falta para terminar cada libro. Estados
+  En pausa y Abandonado, relecturas y un modo enfoque que deja solo el texto.
 - **Familia:** compartí libros con la gente de tu casa. Broots arma en tu Google Drive una copia solo con
   los libros de cada uno, que ellos abren en modo solo lectura.
 - **Ayuda:** un manual completo dentro de la app (tecla F1), con buscador.

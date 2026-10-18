@@ -121,7 +121,8 @@
       "familia": "Family: share books",
       "kindle": "Kindle: send books and import highlights",
       "recargar": "Reload the library",
-      "ayuda": "Help (F1)"
+      "ayuda": "Help (F1)",
+      "miLectura": "My reading: streak, pace and your year in books"
     },
     "lateral": {
       "virtual": "Calibre virtual library: {expresion}",
@@ -312,7 +313,7 @@
         },
         "lectura": {
           "nombre": "Reading & translation",
-          "descripcion": "The EPUB reader, plus Gemini as your go-to translator."
+          "descripcion": "The EPUB reader, your reading habit, and Gemini as your go-to translator."
         },
         "kindle": {
           "nombre": "Kindle & email",
@@ -478,6 +479,20 @@
         "novedadesFila": "What changed in each version",
         "novedadesDetalle": "On the Broots page on GitHub.",
         "verNovedades": "See what’s new"
+      },
+      "habito": {
+        "titulo": "Reading habit",
+        "nota": "Your stats live in \"My reading\" (the flame button at the top).",
+        "anotar": "Track my reading sessions",
+        "anotarDetalle": "How long you read and how many pages, for your streak, pace and \"time left.\" Saved in your library, never leaves your PC.",
+        "descanso": "Eye break (20-20-20)",
+        "descansoDetalle": "Every 20 minutes, a gentle reminder as you turn the page to look at something far away.",
+        "borrar": "Delete stats",
+        "borrarDetalle": "Start from scratch. The old folder isn’t deleted: it’s kept in .broots with today’s date in its name (habito-borrado-…).",
+        "borrarBoton": "Delete…",
+        "borrarConfirmar": "This removes the sessions and rereads tracked in this library (from every PC). Your streak and heat map go back to zero.\n\nJust in case, Broots doesn’t erase them: it renames the .broots/habito folder to habito-borrado-… (with today’s date), where they can be recovered.\n\nGo ahead?",
+        "borrado": "Done: stats reset. The copy is in .broots, in today’s habito-borrado-… folder.",
+        "noPudeBorrar": "Couldn’t delete the stats."
       }
     },
     "editar": {
@@ -709,6 +724,148 @@
       "leida": "Read at {hora}",
       "soltar": "Go ahead, drop them — I’ll make room on the shelf",
       "soltarClippings": "or drop the Kindle’s <b>My Clippings.txt</b> to import your highlights"
+    },
+    "habito": {
+      "titulo": "My reading",
+      "subtitulo": "Your reader stats. No judgment here: not for 3 a.m. sessions, not for the book you gave up on.",
+      "menosDeUnMinuto": "under 1 min",
+      "minutos": {
+        "one": "{n} min",
+        "other": "{n} min"
+      },
+      "horas": {
+        "one": "{n} h",
+        "other": "{n} h"
+      },
+      "horasMinutos": "{h} h {m} min",
+      "ritmo": "{n} pages/min",
+      "sinLectura": "no reading",
+      "menos": "Less",
+      "mas": "More",
+      "hora": "{n}:00",
+      "vacioTitulo": "No sessions yet",
+      "vacioTexto": "Open a book in the reader and read for a bit: Broots keeps track on its own. By tomorrow this page starts getting some color.",
+      "racha": "Streak",
+      "dias": {
+        "0": "0 days",
+        "one": "{n} day",
+        "other": "{n} days"
+      },
+      "rachaHoy": "Read something today to keep it alive!",
+      "record": "Best: {n}",
+      "esteMes": "This month",
+      "sesiones": {
+        "0": "No sessions",
+        "one": "In {n} session",
+        "other": "In {n} sessions"
+      },
+      "ritmoTitulo": "Pace",
+      "porHora": "~{n} pages an hour",
+      "ritmoFalta": "Needs 10 minutes of reading",
+      "terminados": "Finished in {periodo}",
+      "relecturas": {
+        "one": "{n} reread",
+        "other": "{n} rereads"
+      },
+      "total": "{tiempo} read in total",
+      "tuAño": "Your year in reading",
+      "aQueHora": "When do you read?",
+      "queDias": "Which days?",
+      "momento": {
+        "madrugada": "Small-hours reader: the best time, nobody bothers you. 🦉",
+        "manana": "Morning reader: a chapter goes great with coffee. ☕",
+        "tarde": "Afternoon reader: skip the nap, keep the pages.",
+        "noche": "Night owl: \"one more chapter and lights out.\" Sure. 🌙"
+      },
+      "leyendoAhora": "Reading now",
+      "quedaParaTerminar": "~{tiempo} to finish",
+      "olvidado": {
+        "one": "Not opened in {n} day.",
+        "other": "Not opened in {n} days."
+      },
+      "pasarAPausa": "Move it to \"{estado}\"?",
+      "seguir": "Continue",
+      "ultimas": "Latest sessions",
+      "paginas": {
+        "one": "{n} page",
+        "other": "{n} pages"
+      },
+      "donde": "Sessions are saved in your library’s .broots/habito folder, so they travel with it. Nothing leaves your PC. Each book’s status (Reading, Read…) lives in Calibre.",
+      "dondeCompartida": "This is a shared library (read-only): your sessions are saved separately on this PC.",
+      "estados": {
+        "titulo": "Book status",
+        "crearTitulo": "Keep track of where each book stands",
+        "crearTexto": "Your library has no status column. Broots can create one in Calibre, using Calibre’s official tool, with these options: To read, Reading, Paused, Read and Abandoned. It backs up the database first. Calibre will see the column too.",
+        "crear": "Create the \"Status\" column",
+        "creando": "Creating the column…",
+        "confirmar": "Broots will add a \"Status\" column to your Calibre library, using Calibre’s official tool, after backing up the database (in .broots/respaldos).\n\nIf Calibre is open, close it first.\n\nCreate it?",
+        "noPude": "Couldn’t create the column.",
+        "pausaTitulo": "Your \"{columna}\" column has no \"Paused\" option",
+        "pausaPorQue": "The Calibre tools Broots uses can create columns, but can’t add options to an existing one. You can do it in Calibre in thirty seconds, just once:",
+        "paso1": "In Calibre, open Preferences → Add your own columns.",
+        "paso2": "Pick \"{columna}\" and click the pencil (Edit column).",
+        "paso3": "Under \"Values\", add \", {valor}\" at the end, then click OK and Apply.",
+        "paso4": "Calibre asks to restart: let it, then come back here.",
+        "enPausa": "Paused",
+        "yaEsta": "Done, I added it",
+        "noGracias": "No, thanks"
+      },
+      "lector": {
+        "sesion": "Reading session",
+        "estaSesion": {
+          "0": "This session: {tiempo}",
+          "one": "This session: {tiempo} · {n} page",
+          "other": "This session: {tiempo} · {n} pages"
+        },
+        "libre": "Free",
+        "porMinutos": "Minutes",
+        "hastaCapitulo": "Until the chapter ends",
+        "explica": {
+          "libre": "No clock in sight. Broots still notes how much you read, but never rushes you.",
+          "minutos": "When you hit your goal, I’ll let you know as you turn the page. Never mid-paragraph.",
+          "capitulo": "When the chapter ends, I’ll ask if you want to stop there (or squeeze in one more, obviously)."
+        },
+        "deMeta": "{n} / {meta} min",
+        "capituloQueda": "Ch.: ~{tiempo}",
+        "capituloCorto": "End of ch.",
+        "descansoVista": "Eye break",
+        "descansoExplica": "20-20-20 rule: every 20 minutes, look at something about 20 feet away for 20 seconds. The reminder shows up as you turn the page and goes away on its own.",
+        "metaCumplida": "{n} minutes! A good place to stop… or for one more page. 😏",
+        "finCapitulo": "End of chapter. Stop here?",
+        "descanso": "👀 Look at something far away for about 20 seconds. Your eyes will thank you.",
+        "pasoALeyendo": "Moved it to \"{estado}\". Enjoy!",
+        "terminaste": "You made it to the end! 🎉 Mark it as read?",
+        "marcado": "Done, marked as read. What’s next?",
+        "sigo": "Keep going",
+        "unoMas": "One more",
+        "cerrarLibro": "Close the book",
+        "listo": "Done",
+        "todaviaNo": "Not yet",
+        "marcarLeido": "Mark as read",
+        "enfoque": "Focus mode (F): just the text",
+        "salirEnfoque": "Leave focus mode (F or Esc)",
+        "quedanCapitulo": "~{tiempo} left in the chapter",
+        "quedanLibro": "~{tiempo} left in the book",
+        "quedanExplica": "Based on your actual pace with this book (or your overall pace while the book is new)."
+      },
+      "libro": {
+        "titulo": "Your reading",
+        "leido": {
+          "one": "Read",
+          "other": "Read {n} times"
+        },
+        "antes": "before Broots",
+        "estaVez": "This time: ",
+        "vuelta": "Read #{n}: ",
+        "resumen": {
+          "one": "{tiempo} in {n} session",
+          "other": "{tiempo} in {n} sessions"
+        },
+        "abandonado": "abandoned",
+        "queda": "You’re at {porcentaje}%: ~{tiempo} to go",
+        "releer": "Reread",
+        "releerExplica": "Starts a new read from the beginning. Your previous reading stays saved separately."
+      }
     }
   },
   "electron": {
@@ -893,6 +1050,16 @@
       "aclaracionNotas": "The notes (✎) are my own thoughts while reading.",
       "misSubrayados": "My highlights and notes",
       "exportado": "Exported from Broots on {fecha}."
+    },
+    "habito": {
+      "columna": "Status",
+      "estados": {
+        "porLeer": "To read",
+        "leyendo": "Reading",
+        "pausa": "Paused",
+        "leido": "Read",
+        "abandonado": "Abandoned"
+      }
     }
   }
 }

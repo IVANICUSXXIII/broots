@@ -121,7 +121,8 @@
       "familia": "Família: compartilhar livros",
       "kindle": "Kindle: enviar livros e importar destaques",
       "recargar": "Recarregar a biblioteca",
-      "ayuda": "Ajuda (F1)"
+      "ayuda": "Ajuda (F1)",
+      "miLectura": "Minha leitura: sequência, ritmo e seu ano lendo"
     },
     "lateral": {
       "virtual": "Biblioteca virtual do Calibre: {expresion}",
@@ -312,7 +313,7 @@
         },
         "lectura": {
           "nombre": "Leitura e tradução",
-          "descripcion": "O leitor de EPUB e o Gemini, seu tradutor de cabeceira."
+          "descripcion": "O leitor de EPUB, seu hábito de leitura e o Gemini, seu tradutor de cabeceira."
         },
         "kindle": {
           "nombre": "Kindle e e-mail",
@@ -478,6 +479,20 @@
         "novedadesFila": "O que mudou em cada versão",
         "novedadesDetalle": "Na página do Broots no GitHub.",
         "verNovedades": "Ver novidades"
+      },
+      "habito": {
+        "titulo": "Hábito de leitura",
+        "nota": "As estatísticas ficam em \"Minha leitura\" (o botão da chama, lá em cima).",
+        "anotar": "Anotar minhas sessões de leitura",
+        "anotarDetalle": "Quanto você lê e quantas páginas, para a sequência, o ritmo e o \"faltam\". Fica salvo na sua biblioteca, nunca sai do seu PC.",
+        "descanso": "Descanso para os olhos (20-20-20)",
+        "descansoDetalle": "A cada 20 minutos, um aviso suave ao passar a página para olhar algo longe.",
+        "borrar": "Apagar as estatísticas",
+        "borrarDetalle": "Começa do zero. A pasta antiga não é apagada: fica guardada em .broots, com a data de hoje no nome (habito-borrado-…).",
+        "borrarBoton": "Apagar…",
+        "borrarConfirmar": "Vão ser apagadas as sessões e as releituras anotadas nesta biblioteca (de todos os PCs). A sequência e o mapa voltam a zero.\n\nPor via das dúvidas, o Broots não as elimina: renomeia a pasta .broots/habito para habito-borrado-… (com a data de hoje), de onde dá para recuperá-las.\n\nContinuamos?",
+        "borrado": "Pronto: estatísticas zeradas. A cópia ficou em .broots, na pasta habito-borrado-… de hoje.",
+        "noPudeBorrar": "Não consegui apagar as estatísticas."
       }
     },
     "editar": {
@@ -709,6 +724,148 @@
       "leida": "Lida às {hora}",
       "soltar": "Pode soltar que eu abro espaço na estante",
       "soltarClippings": "ou solte o <b>My Clippings.txt</b> do Kindle para importar seus destaques"
+    },
+    "habito": {
+      "titulo": "Minha leitura",
+      "subtitulo": "Seus números de leitor. Aqui ninguém julga: nem as 3 da manhã, nem o livro abandonado.",
+      "menosDeUnMinuto": "menos de 1 min",
+      "minutos": {
+        "one": "{n} min",
+        "other": "{n} min"
+      },
+      "horas": {
+        "one": "{n} h",
+        "other": "{n} h"
+      },
+      "horasMinutos": "{h} h {m} min",
+      "ritmo": "{n} pág/min",
+      "sinLectura": "sem leitura",
+      "menos": "Menos",
+      "mas": "Mais",
+      "hora": "{n} h",
+      "vacioTitulo": "Ainda não há sessões",
+      "vacioTexto": "Abra um livro no leitor e leia um pouquinho: o Broots anota sozinho quanto você leu. Amanhã isto aqui já começa a ganhar cor.",
+      "racha": "Sequência",
+      "dias": {
+        "0": "0 dias",
+        "one": "{n} dia",
+        "other": "{n} dias"
+      },
+      "rachaHoy": "Leia algo hoje para não quebrar!",
+      "record": "Recorde: {n}",
+      "esteMes": "Este mês",
+      "sesiones": {
+        "0": "Sem sessões",
+        "one": "Em {n} sessão",
+        "other": "Em {n} sessões"
+      },
+      "ritmoTitulo": "Ritmo",
+      "porHora": "~{n} páginas por hora",
+      "ritmoFalta": "Faltam 10 minutos de leitura",
+      "terminados": "Terminados em {periodo}",
+      "relecturas": {
+        "one": "{n} releitura",
+        "other": "{n} releituras"
+      },
+      "total": "{tiempo} lidos no total",
+      "tuAño": "Seu ano lendo",
+      "aQueHora": "A que horas você lê?",
+      "queDias": "Em que dias?",
+      "momento": {
+        "madrugada": "Leitor da madrugada: a melhor hora, ninguém incomoda. 🦉",
+        "manana": "Leitor matinal: um capítulo com o cafezinho cai bem. ☕",
+        "tarde": "Leitor da tarde: sesta não, páginas sim.",
+        "noche": "Leitor noturno: \"só mais um capítulo e apago\". Sei. 🌙"
+      },
+      "leyendoAhora": "Lendo agora",
+      "quedaParaTerminar": "~{tiempo} para terminar",
+      "olvidado": {
+        "one": "Sem abrir há {n} dia.",
+        "other": "Sem abrir há {n} dias."
+      },
+      "pasarAPausa": "Passar para \"{estado}\"?",
+      "seguir": "Continuar",
+      "ultimas": "Últimas sessões",
+      "paginas": {
+        "one": "{n} pág.",
+        "other": "{n} págs."
+      },
+      "donde": "As sessões ficam na pasta .broots/habito da sua biblioteca, então viajam com ela. Nada sai do seu PC. O status de cada livro (Lendo, Lido…) fica no Calibre.",
+      "dondeCompartida": "Esta biblioteca é compartilhada (só leitura): suas sessões ficam salvas neste PC, à parte.",
+      "estados": {
+        "titulo": "Status de cada livro",
+        "crearTitulo": "Anote em que pé está cada livro",
+        "crearTexto": "Sua biblioteca não tem uma coluna de status. O Broots pode criá-la no Calibre, com a ferramenta oficial, com estas opções: Para ler, Lendo, Em pausa, Lido e Abandonado. Antes, faz um backup do banco de dados. O Calibre também vai ver a coluna.",
+        "crear": "Criar a coluna \"Status\"",
+        "creando": "Criando a coluna…",
+        "confirmar": "O Broots vai adicionar a coluna \"Status\" à sua biblioteca do Calibre, com a ferramenta oficial do Calibre e depois de fazer um backup do banco de dados (em .broots/respaldos).\n\nSe o Calibre estiver aberto, feche-o antes.\n\nPosso criar?",
+        "noPude": "Não consegui criar a coluna.",
+        "pausaTitulo": "Sua coluna \"{columna}\" não tem \"Em pausa\"",
+        "pausaPorQue": "As ferramentas do Calibre que o Broots usa conseguem criar colunas, mas não adicionar opções a uma que já existe. Você faz isso no Calibre em meio minuto, uma vez só:",
+        "paso1": "No Calibre, abra Preferências → Adicionar suas próprias colunas.",
+        "paso2": "Escolha \"{columna}\" e clique no lápis (Editar coluna).",
+        "paso3": "Em \"Valores\", adicione \", {valor}\" no final e clique em OK e depois em Aplicar.",
+        "paso4": "O Calibre pede para reiniciar: deixe e volte aqui.",
+        "enPausa": "Em pausa",
+        "yaEsta": "Pronto, já adicionei",
+        "noGracias": "Não, obrigado"
+      },
+      "lector": {
+        "sesion": "Sessão de leitura",
+        "estaSesion": {
+          "0": "Esta sessão: {tiempo}",
+          "one": "Esta sessão: {tiempo} · {n} página",
+          "other": "Esta sessão: {tiempo} · {n} páginas"
+        },
+        "libre": "Livre",
+        "porMinutos": "Minutos",
+        "hastaCapitulo": "Até o fim do capítulo",
+        "explica": {
+          "libre": "Sem relógio à vista. O Broots anota quanto você leu, mas sem pressa.",
+          "minutos": "Quando você bater a meta, eu aviso ao passar a página. Nunca no meio de um parágrafo.",
+          "capitulo": "No fim do capítulo, pergunto se paramos ali (ou se vai mais um, claro)."
+        },
+        "deMeta": "{n} / {meta} min",
+        "capituloQueda": "Cap.: ~{tiempo}",
+        "capituloCorto": "Fim do cap.",
+        "descansoVista": "Descanso para os olhos",
+        "descansoExplica": "Regra 20-20-20: a cada 20 minutos, 20 segundos olhando algo a uns 6 metros. O aviso aparece ao passar a página e some sozinho.",
+        "metaCumplida": "{n} minutos! Boa hora para parar… ou para mais uma página. 😏",
+        "finCapitulo": "Fim do capítulo. Paramos aqui?",
+        "descanso": "👀 Olhe para algo longe por uns 20 segundos. Seus olhos agradecem.",
+        "pasoALeyendo": "Passei para \"{estado}\". Boa leitura!",
+        "terminaste": "Você chegou ao fim! 🎉 Marco como lido?",
+        "marcado": "Pronto, marcado como lido. Qual é o próximo?",
+        "sigo": "Continuo mais um pouco",
+        "unoMas": "Mais um",
+        "cerrarLibro": "Fechar o livro",
+        "listo": "Pronto",
+        "todaviaNo": "Ainda não",
+        "marcarLeido": "Marcar como lido",
+        "enfoque": "Modo foco (F): só o texto",
+        "salirEnfoque": "Sair do modo foco (F ou Esc)",
+        "quedanCapitulo": "~{tiempo} para o fim do capítulo",
+        "quedanLibro": "~{tiempo} para o livro",
+        "quedanExplica": "Calculado com o seu ritmo real neste livro (ou o seu ritmo geral, enquanto o livro é novo)."
+      },
+      "libro": {
+        "titulo": "Sua leitura",
+        "leido": {
+          "one": "Lido",
+          "other": "Lido {n} vezes"
+        },
+        "antes": "antes do Broots",
+        "estaVez": "Desta vez: ",
+        "vuelta": "Leitura {n}: ",
+        "resumen": {
+          "one": "{tiempo} em {n} sessão",
+          "other": "{tiempo} em {n} sessões"
+        },
+        "abandonado": "abandonado",
+        "queda": "Você está em {porcentaje}%: faltam ~{tiempo}",
+        "releer": "Reler",
+        "releerExplica": "Começa uma leitura nova do início. O que você leu antes fica guardado à parte."
+      }
     }
   },
   "electron": {
@@ -893,6 +1050,16 @@
       "aclaracionNotas": "As notas (✎) são meus próprios pensamentos durante a leitura.",
       "misSubrayados": "Meus destaques e notas",
       "exportado": "Exportado do Broots em {fecha}."
+    },
+    "habito": {
+      "columna": "Status",
+      "estados": {
+        "porLeer": "Para ler",
+        "leyendo": "Lendo",
+        "pausa": "Em pausa",
+        "leido": "Lido",
+        "abandonado": "Abandonado"
+      }
     }
   }
 }

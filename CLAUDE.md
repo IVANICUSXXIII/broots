@@ -11,7 +11,7 @@ Gestor de e-books de escritorio (Windows) compatible con Calibre: misma carpeta 
   - `calibre.cjs` y `calibrePropio.cjs` manejan las herramientas de Calibre.
   - `idioma.cjs`: el idioma de Broots y la función `t()` para los mensajes de Electron.
   - `actualizaciones.cjs`: busca versiones nuevas de Broots en GitHub (`IVANICUSXXIII/broots`), las baja, verifica su huella y las instala al cerrar.
-  - El resto, una función cada uno: `edicion`, `agregar`, `duplicados`, `metadatos`, `web` (Amazon), `envio` (Kindle por Gmail), `subrayados`, `club`, `lector`, `traduccion` (Gemini) y `compartir`.
+  - El resto, una función cada uno: `edicion`, `agregar`, `duplicados`, `metadatos`, `web` (Amazon), `envio` (Kindle por Gmail), `subrayados`, `club`, `lector`, `traduccion` (Gemini), `compartir` y `habito` (sesiones de lectura y relecturas en `.broots/habito`, un archivo por mes y por PC; crea la columna «Estado» con `calibredb add_custom_column`).
 - `app/src/`: interfaz React. `components/` con una pantalla u hoja por archivo; `lib/` con búsqueda tipo Calibre, formato, movimiento (resortes), epub, `idioma.js` (`t()` de la interfaz), el manual de la Ayuda (`manual/<idioma>.js`: si cambia una función, actualizar los tres) y las instrucciones del club (`club/<idioma>.js`).
 - `app/idiomas/`: los textos de Broots, un archivo por idioma (`es.json`, `en.json`, `pt.json`), con una sección `interfaz` y otra `electron`.
 - `app/pruebas/`: pruebas automáticas (ver abajo).
@@ -60,6 +60,7 @@ El corredor arma la biblioteca de prueba copiando la base real (solo lectura) y 
 - `BROOTS_SIN_CALIBRE=1`: simula una PC sin Calibre.
 - `BROOTS_CALIBRE_PROPIO=carpeta`: lugar de la copia propia de Calibre.
 - `BROOTS_ACTUALIZACIONES=http://127.0.0.1:puerto`: un servidor local hace de GitHub para las actualizaciones. Sin esta variable, las pruebas no buscan versiones nuevas ni muestran el festejo. Sin empaquetar, el instalador bajado no se ejecuta: se anota en `actualizaciones/simulado.json`.
+- `BROOTS_MINUTO_PRUEBA=2000`: un «minuto» del reloj de la sesión de lectura dura esos milisegundos (solo con `BROOTS_DATOS`), para probar la meta, el descanso y el paso a «Leyendo» sin esperar.
 - `BROOTS_VENTANA=960x600`: abre la ventana con ese tamaño (solo con `BROOTS_DATOS`). Fuera de las pruebas, Broots recuerda el tamaño en `ventana.json` y la primera vez abre maximizada.
 
 Un escenario puede sumar claves al `config.json` de prueba con `config: () => ({ … })` (el corredor lo escribe con `JSON.stringify` y siempre fija `libraryPath` a la biblioteca de prueba).

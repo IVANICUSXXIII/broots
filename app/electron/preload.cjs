@@ -64,6 +64,20 @@ contextBridge.exposeInMainWorld('lector', {
   traducir: (id, textos, urgente) => ipcRenderer.invoke('traduccion:traducir', id, textos, urgente),
 });
 
+// 1.7: hábito de lectura (sesiones, estadísticas, relecturas y la columna «Estado»).
+contextBridge.exposeInMainWorld('habito', {
+  minuto: ipcRenderer.sendSync('habito:minuto'), // ms de un minuto del reloj (más corto solo en pruebas)
+  abrir: (uuid) => ipcRenderer.invoke('habito:abrir', uuid),
+  guardarSesion: (sesion) => ipcRenderer.invoke('habito:sesion', sesion),
+  todo: () => ipcRenderer.invoke('habito:todo'),
+  terminar: (uuid, resultado) => ipcRenderer.invoke('habito:terminar', uuid, resultado),
+  retomar: (uuid) => ipcRenderer.invoke('habito:retomar', uuid),
+  releer: (uuid, leidoAntes) => ipcRenderer.invoke('habito:releer', uuid, leidoAntes),
+  archivar: () => ipcRenderer.invoke('habito:archivar'),
+  crearColumna: () => ipcRenderer.invoke('habito:crearColumna'),
+  pantallaCompleta: (activa) => ipcRenderer.invoke('ventana:pantallaCompleta', activa),
+});
+
 // Familia: compartir libros con cada integrante (copia en Drive, solo lectura).
 contextBridge.exposeInMainWorld('familia', {
   estado: () => ipcRenderer.invoke('familia:estado'),

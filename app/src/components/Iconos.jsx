@@ -133,3 +133,20 @@ export const IconoCorazon = (p) => (
 export const IconoCafe = (p) => (
   <Icono {...p}><path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z" /><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16M8 3.5c-.6.8-.6 1.7 0 2.5M12 3.5c-.6.8-.6 1.7 0 2.5" /></Icono>
 );
+
+// 1.7: hábito de lectura
+export const IconoReloj = (p) => (
+  <Icono {...p}><path d="M7 3h10M7 21h10" /><path d="M8 3c0 4 8 5 8 9s-8 5-8 9M16 3c0 4-8 5-8 9s8 5 8 9" /></Icono>
+);
+export const IconoEnfoque = (p) => (
+  <Icono {...p}><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4" /></Icono>
+);
+export const IconoOjo = (p) => (
+  <Icono {...p}><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" /><circle cx="12" cy="12" r="2.8" /></Icono>
+);
+export const IconoRacha = (p) => (
+  <Icono {...p}><path d="M12 21a6 6 0 0 0 6-6c0-3.5-2.5-5.5-3.5-8.5-1.5 1.5-2 3-2 4.5-1-1-1.5-2.5-1.5-4C8.5 8.5 6 11.5 6 15a6 6 0 0 0 6 6z" /></Icono>
+);
+export const IconoReleer = (p) => (
+  <Icono {...p}><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5M20 4v4.5h-4.5" /><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.5M4 20v-4.5h4.5" /></Icono>
+);

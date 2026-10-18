@@ -1,6 +1,6 @@
 {
   "name": "broots",
-  "version": "1.6.3",
+  "version": "1.7.0",
   "description": "Broots: gestor moderno de e-books compatible con Calibre",
   "main": "electron/main.cjs",
   "scripts": {

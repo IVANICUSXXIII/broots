@@ -167,7 +167,34 @@ function General({ tema, onTema, libraryPath, soloLectura, compartidaPara, onCam
   );
 }
 
-function Lectura() {
+/** 1.7: sesiones de lectura y descanso para la vista (las estadísticas se ven en «Mi lectura»). */
+function HabitoDeLectura({ preferencias, onPreferencias }) {
+  const [borrado, setBorrado] = useState(null); // null | 'ok' | mensaje de error
+  const anotar = preferencias?.anotarSesiones ?? true;
+  const descanso = preferencias?.descansoVista ?? true;
+  const borrar = async () => {
+    if (!window.confirm(t('configuracion.habito.borrarConfirmar'))) return;
+    const r = await window.habito.archivar().catch((e) => ({ ok: false, mensaje: e.message }));
+    setBorrado(r?.ok ? 'ok' : r?.mensaje ?? t('configuracion.habito.noPudeBorrar'));
+  };
+  return (
+    <Grupo titulo={t('configuracion.habito.titulo')} nota={t('configuracion.habito.nota')}>
+      <div className="-mx-2 py-1.5" data-anotar={anotar ? 'si' : 'no'}>
+        <Interruptor activo={anotar} onCambiar={(v) => onPreferencias({ anotarSesiones: v })} etiqueta={t('configuracion.habito.anotar')} />
+        <p className="px-2 pb-1 text-[0.74rem] text-tinta-tenue">{t('configuracion.habito.anotarDetalle')}</p>
+      </div>
+      <div className="-mx-2 py-1.5" data-descanso={descanso ? 'si' : 'no'}>
+        <Interruptor activo={descanso} onCambiar={(v) => onPreferencias({ descansoVista: v })} etiqueta={t('configuracion.habito.descanso')} />
+        <p className="px-2 pb-1 text-[0.74rem] text-tinta-tenue">{t('configuracion.habito.descansoDetalle')}</p>
+      </div>
+      <Fila etiqueta={t('configuracion.habito.borrar')} detalle={borrado === 'ok' ? t('configuracion.habito.borrado') : borrado ?? t('configuracion.habito.borrarDetalle')}>
+        <Boton onClick={borrar} disabled={borrado === 'ok'}>{t('configuracion.habito.borrarBoton')}</Boton>
+      </Fila>
+    </Grupo>
+  );
+}
+
+function Lectura({ preferencias, onPreferencias }) {
   const [letra, setLetra] = useState(leerLetra);
   const [tieneClave, setTieneClave] = useState(null);
   const leerEstado = () => window.lector.estadoTraduccion().then((e) => setTieneClave(e.tieneClave)).catch(() => {});
@@ -196,6 +223,8 @@ function Lectura() {
           {t('configuracion.muestra')}
         </p>
       </Grupo>
+
+      <HabitoDeLectura preferencias={preferencias} onPreferencias={onPreferencias} />
 
       <Grupo titulo={t('configuracion.traduccion')}>
         <Fila etiqueta={t('configuracion.claveGemini')}>
@@ -511,7 +540,7 @@ export function Configuracion({ seccionInicial = 'general', onCerrar, ...props }
 
   const vistas = {
     general: () => <General {...props} />,
-    lectura: () => <Lectura />,
+    lectura: () => <Lectura preferencias={preferencias} onPreferencias={guardarPreferencias} />,
     kindle: () => <Kindle {...props} />,
     familia: () => <Familia {...props} />,
     calibre: () => <Calibre />,

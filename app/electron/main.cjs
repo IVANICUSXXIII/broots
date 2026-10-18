@@ -14,6 +14,7 @@ const calibre = require('./calibre.cjs');
 const metadatos = require('./metadatos.cjs');
 const duplicados = require('./duplicados.cjs');
 const lector = require('./lector.cjs');
+const habito = require('./habito.cjs');
 const traduccion = require('./traduccion.cjs');
 const compartir = require('./compartir.cjs');
 const calibrePropio = require('./calibrePropio.cjs');
@@ -624,7 +625,48 @@ ipcMain.handle('lector:posicion', (_e, id, posicion) => {
   }, 1500);
 });
 
-ipcMain.handle('traduccion:estado', () => traduccion.estado(leerConfig()));
+// ---------- 1.7: hábito de lectura ----------
+// Sesiones y relecturas en <datos>/habito (ver habito.cjs); el estado del libro, en Calibre (calibredb).
+
+// Cuánto dura un «minuto» del reloj de la sesión. Solo en pruebas (BROOTS_DATOS) se puede acortar con
+// BROOTS_MINUTO_PRUEBA=<ms>, para probar la meta y el descanso sin esperar media hora.
+ipcMain.on('habito:minuto', (evento) => {
+  const prueba = process.env.BROOTS_DATOS && Number(process.env.BROOTS_MINUTO_PRUEBA);
+  evento.returnValue = prueba > 0 ? prueba : 60000;
+});
+ipcMain.handle('habito:abrir',(_e, uuid) => habito.alAbrir(carpetaDatos(), String(uuid)));
+ipcMain.handle('habito:sesion', (_e, sesion) => {
+  if (!preferencias().anotarSesiones) return { ok: false, apagado: true };
+  try {
+    return habito.guardarSesion(carpetaDatos(), sesion);
+  } catch (error) {
+    console.error('[habito] no pude guardar la sesión:', error.message);
+    return { ok: false };
+  }
+});
+// Para «Mi lectura» y el panel del libro: sesiones, vueltas y por dónde va cada libro.
+ipcMain.handle('habito:todo', () => ({ ...habito.todo(carpetaDatos()), posiciones: leerLectura() }));
+ipcMain.handle('habito:terminar', (_e, uuid, resultado) => habito.terminar(carpetaDatos(), String(uuid), resultado));
+ipcMain.handle('habito:retomar', (_e, uuid) => habito.retomar(carpetaDatos(), String(uuid)));
+ipcMain.handle('habito:releer', (_e, uuid, leidoAntes) => {
+  const lecturas = habito.releer(carpetaDatos(), String(uuid), Boolean(leidoAntes));
+  // La vuelta nueva arranca desde el principio del libro.
+  clearTimeout(guardadoLectura);
+  const posiciones = leerLectura();
+  delete posiciones[uuid];
+  fs.mkdirSync(path.dirname(rutaLectura()), { recursive: true });
+  fs.writeFileSync(rutaLectura(), JSON.stringify(posiciones, null, 1));
+  return lecturas;
+});
+ipcMain.handle('habito:archivar', () => habito.archivar(carpetaDatos()));
+// Crea la columna «Estado» en Calibre: solo con el botón (y la confirmación) del usuario.
+ipcMain.handle('habito:crearColumna', () => conRecarga(() => habito.crearColumna(bibliotecaCargada().libraryPath)));
+// Modo enfoque del lector: pantalla completa mientras dura.
+ipcMain.handle('ventana:pantallaCompleta', (_e, activa) => {
+  if (ventana && !ventana.isDestroyed()) ventana.setFullScreen(Boolean(activa));
+});
+
+ipcMain.handle('traduccion:estado',() => traduccion.estado(leerConfig()));
 ipcMain.handle('traduccion:guardarClave', (_e, clave) => {
   try {
     if (!String(clave ?? '').trim()) return { ok: false, mensaje: t('main.pegaClave') };
@@ -760,6 +802,9 @@ const PREFERENCIAS = {
   actualizarSola: { defecto: true, valida: (v) => typeof v === 'boolean' },
   // El festejo de una versión nueva, con sonido de matasuegras (el confeti va siempre).
   festejarConSonido: { defecto: true, valida: (v) => typeof v === 'boolean' },
+  // 1.7: anotar las sesiones de lectura (en .broots/habito) y el aviso de descanso para la vista (regla 20-20-20).
+  anotarSesiones: { defecto: true, valida: (v) => typeof v === 'boolean' },
+  descansoVista: { defecto: true, valida: (v) => typeof v === 'boolean' },
 };
 function preferencias() {
   const config = leerConfig();

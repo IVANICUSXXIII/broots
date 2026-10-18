@@ -15,8 +15,10 @@ import {
   resorteRegreso,
   resorteVuelo,
   t,
+  tipoEstado,
   tx,
   useIdioma,
+  valorDeEstado,
 } from './lib/index.js';
 import { BarraHerramientas } from './components/BarraHerramientas.jsx';
 import { BarraLateral } from './components/BarraLateral.jsx';
@@ -30,6 +32,7 @@ import { Lector } from './components/Lector.jsx';
 import { HojaCompartir, etiquetaDe, idBibliotecaFamilia } from './components/Compartir.jsx';
 import { HojaDuplicados } from './components/Duplicados.jsx';
 import { Configuracion } from './components/Configuracion.jsx';
+import { MiLectura } from './components/MiLectura.jsx';
 import { useFondoDesenfocado } from './lib/fondoDesenfocado.js';
 import { Bienvenida, Cargando } from './components/Bienvenida.jsx';
 import { AvisoLista, Festejo } from './components/Actualizacion.jsx';
@@ -325,6 +328,36 @@ function Aplicacion() {
     if (r.ok) actualizarBiblioteca(r.biblioteca);
     return r;
   };
+  // 1.7: hábito de lectura. Sesiones, vueltas y posiciones (de .broots/habito); se releen al cerrar el lector.
+  const [datosHabito, setDatosHabito] = useState(null);
+  const [miLectura, setMiLectura] = useState(false);
+  const recargarHabito = useCallback(() => window.habito.todo().then(setDatosHabito).catch(() => {}), []);
+  useEffect(() => {
+    if (datos && !leyendo) recargarHabito();
+  }, [datos?.loadedAt, leyendo, recargarHabito]);
+  /** Al cambiar el estado desde el panel, la vuelta del libro acompaña: Leído o Abandonado la cierran, Leyendo la retoma. */
+  const editarEstado = async (libro, cambios) => {
+    const r = await editarRapido(libro.id, cambios);
+    const tipo = colEstado ? tipoEstado(cambios.custom?.[colEstado.label]) : null;
+    if (r.ok && (tipo === 'leido' || tipo === 'abandonado')) await window.habito.terminar(libro.uuid, tipo).catch(() => {});
+    else if (r.ok && (tipo === 'leyendo' || tipo === 'pausa')) await window.habito.retomar(libro.uuid).catch(() => {});
+    recargarHabito();
+    return r;
+  };
+  /** Releer: vuelta nueva desde el principio (las estadísticas de las anteriores quedan) y el libro pasa a Leyendo. */
+  const releer = async (libro) => {
+    const tipo = colEstado ? tipoEstado(libro.custom[colEstado.label]) : null;
+    await window.habito.releer(libro.uuid, tipo === 'leido' && !datosHabito?.lecturas?.[libro.uuid]?.length);
+    const valor = valorDeEstado(colEstado, 'leyendo');
+    if (valor && !soloLectura) await editarRapido(libro.id, { custom: { [colEstado.label]: valor } });
+    await recargarHabito();
+    setLeyendo(libro.id);
+  };
+  const crearColumnaEstado = async () => {
+    const r = await window.habito.crearColumna();
+    if (r.ok) actualizarBiblioteca(r.biblioteca);
+    return r;
+  };
   const mostrarAviso = (texto, error = false) => {
     setAviso({ texto, error, clave: Date.now() });
     setTimeout(() => setAviso((a) => (a?.texto === texto ? null : a)), 7000);
@@ -500,7 +533,7 @@ function Aplicacion() {
   const refAmpliada = useUltimo(ampliada);
   // Con una hoja abierta (Kindle, club, Configuración…), Esc cierra solo la hoja y "/" o Ctrl+F no
   // saltan al buscador de la biblioteca, que queda detrás (la Ayuda tiene su propio buscador).
-  const refHojaAbierta = useUltimo(hojaKindle || hojaClub || hojaEditar || hojaDuplicados || hojaCompartir || configuracion);
+  const refHojaAbierta = useUltimo(hojaKindle || hojaClub || hojaEditar || hojaDuplicados || hojaCompartir || configuracion || miLectura);
   useEffect(() => {
     const alPresionar = (e) => {
       if (refLeyendo.current) return; // el lector maneja su propio teclado
@@ -577,6 +610,10 @@ function Aplicacion() {
           onAgregarLibros={() => agregarLibros()}
           onDuplicados={() => setHojaDuplicados(true)}
           onCompartir={() => setHojaCompartir(true)}
+          onMiLectura={() => {
+            recargarHabito();
+            setMiLectura(true);
+          }}
           soloLectura={soloLectura}
           cargando={recargando}
         />
@@ -728,6 +765,9 @@ function Aplicacion() {
             onConfigurarClub={() => setHojaClub(true)}
             onEditar={() => setHojaEditar(true)}
             onEditarRapido={editarRapido}
+            onEditarEstado={(cambios) => editarEstado(libroSeleccionado, cambios)}
+            habito={datosHabito}
+            onReleer={() => releer(libroSeleccionado)}
             onConvertir={convertirLibro}
             onLeer={setLeyendo}
             soloLectura={soloLectura}
@@ -783,7 +823,14 @@ function Aplicacion() {
           />
         )}
         {leyendo && libros.some((l) => l.id === leyendo) && (
-          <Lector key={`lector-${leyendo}`} libro={libros.find((l) => l.id === leyendo)} onCerrar={() => setLeyendo(null)} />
+          <Lector
+            key={`lector-${leyendo}`}
+            libro={libros.find((l) => l.id === leyendo)}
+            colEstado={colEstado}
+            soloLectura={soloLectura}
+            onEditarRapido={editarRapido}
+            onCerrar={() => setLeyendo(null)}
+          />
         )}
         {hojaEditar && libroSeleccionado && (
           <HojaEditar
@@ -824,6 +871,27 @@ function Aplicacion() {
             onRestaurar={restaurarSubrayados}
             onAgregar={agregarLibro}
             onCerrar={() => setHojaKindle(false)}
+          />
+        )}
+        {miLectura && (
+          <MiLectura
+            key="mi-lectura"
+            datos={datosHabito}
+            libros={libros}
+            colEstado={colEstado}
+            soloLectura={soloLectura}
+            onLeer={(id) => {
+              setMiLectura(false);
+              setLeyendo(id);
+            }}
+            onEditarRapido={async (id, cambios) => {
+              const r = await editarRapido(id, cambios);
+              recargarHabito();
+              return r;
+            }}
+            onCrearColumna={crearColumnaEstado}
+            onRecargar={() => cargar()}
+            onCerrar={() => setMiLectura(false)}
           />
         )}
         {configuracion && (
