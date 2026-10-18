@@ -1,0 +1,898 @@
+{
+  "interfaz": {
+    "filtros": {
+      "sinEstado": "Sem status",
+      "si": "Sim",
+      "no": "Não",
+      "subrayados": "Destaques do Kindle",
+      "conSubrayados": "Com destaques",
+      "sinSubrayados": "Sem destaques",
+      "idioma": "Idioma",
+      "sinIdioma": "Sem idioma",
+      "formato": "Formato",
+      "etiquetas": "Etiquetas",
+      "series": "Séries",
+      "autores": "Autores"
+    },
+    "orden": {
+      "titulo": "Título",
+      "autor": "Autor",
+      "agregado": "Adicionados recentemente",
+      "publicado": "Data de publicação",
+      "valoracion": "Avaliação",
+      "serie": "Série"
+    },
+    "busqueda": {
+      "incompleta": "A busca está incompleta",
+      "falta": "Falta fechar um parêntese",
+      "noEsperaba": "Não esperava “{pieza}”",
+      "sobra": "Sobrou algo no final da busca"
+    },
+    "comun": {
+      "cerrarEsc": "Fechar (Esc)",
+      "borrarBusqueda": "Limpar a busca",
+      "configuracion": "Configurações",
+      "guardar": "Salvar",
+      "cancelar": "Cancelar"
+    },
+    "bienvenida": {
+      "leyendo": "Tirando o pó da sua biblioteca…",
+      "explicacion": "Oi! Me mostra onde mora a sua biblioteca do Calibre: é a pasta que tem o arquivo <code>metadata.db</code>. Prometo olhar sem bagunçar nada: quando você mudar algo, eu uso as ferramentas oficiais do Calibre.",
+      "elegir": "Escolher pasta"
+    },
+    "gemini": {
+      "probando": "Apresentando a chave ao Gemini…",
+      "borrada": "Chave apagada.",
+      "intro": "Para traduzir, eu peço uma ajudinha ao Gemini, que é gratuito. Você só precisa de uma chave própria (não custa nada e sai no tempo de passar um café):",
+      "paso1": "Abra o <boton>Google AI Studio</boton> e entre com sua conta do Google.",
+      "paso2": "Clique em <b>Create API key</b> (Criar chave de API) e aceite os termos, se for pedido.",
+      "paso3": "Copie a chave e cole aqui embaixo.",
+      "yaTenes": "Você já tem uma chave salva (cole outra para trocá-la)",
+      "pega": "Cole sua chave do Gemini",
+      "guardar": "Salvar e testar",
+      "privacidad": "A chave fica criptografada neste PC e nunca mais é exibida. O texto que você traduz é enviado ao Google; no plano gratuito, o Google pode usá-lo para melhorar seus produtos. O que já foi traduzido fica salvo na sua biblioteca e não é pedido de novo.",
+      "borrar": "Apagar a chave salva"
+    },
+    "club": {
+      "copiadas": "Instruções copiadas",
+      "copiar": "Copiar instruções",
+      "abrir": "Abrir {sitio}",
+      "ocultar": "Ocultar texto",
+      "ver": "Ver o texto",
+      "titulo": "Clube de leitura",
+      "subtitulo": "Configure uma vez só; depois, cada livro chega ao clube como um arquivo .md",
+      "claude": "CLAUDE · PROJETO “CLUBE DE LEITURA”",
+      "gemini": "GEMINI · SKILL + NOTEBOOKLM",
+      "archivos": "O arquivo de cada livro é salvo na sua biblioteca do Drive, na pasta .broots/club-de-lectura. Se um livro voltar ao clube, o arquivo dele é atualizado com seus novos destaques."
+    },
+    "duplicados": {
+      "elegi": "ESCOLHA QUAL MANTER",
+      "sinArchivo": "sem arquivo",
+      "agregado": "Adicionado em {fecha}",
+      "subrayados": {
+        "one": "{n} destaque",
+        "other": "{n} destaques"
+      },
+      "seConserva": "✓ Fica",
+      "papelera": "Vai para a lixeira",
+      "sugerido": " · (era o sugerido)",
+      "resolviendo": "Arrumando…",
+      "conservar": "Manter o escolhido",
+      "noSon": "Não são duplicados",
+      "titulo": "Duplicados",
+      "explicacion": "O que só o descartado tem (formatos, destaques) passa para o que você mantém. O descartado vai para a lixeira do Calibre.",
+      "buscando": "Procurando gêmeos separados no nascimento…",
+      "ninguno": "✓ Nenhum repetido. Cada livro é único, como tem que ser.",
+      "resuelto": "✓ Resolvido. O outro ficou na lixeira do Calibre.",
+      "resueltoConFormatos": "✓ Resolvido. Passei para o livro mantido: {formatos}. O outro ficou na lixeira do Calibre.",
+      "ignorado": "✓ Anotado: não mostro mais esse."
+    },
+    "piezas": {
+      "portadaDe": "Capa de {titulo}",
+      "estrellas": "{n} de 5 estrelas · {origen}",
+      "tuValoracion": "sua avaliação",
+      "importada": "avaliação importada (não é sua)"
+    },
+    "ayuda": {
+      "o": "ou",
+      "buscar": "Em que posso ajudar? (por exemplo: Gmail, destaques, Drive)",
+      "buscarEtiqueta": "Buscar na ajuda",
+      "borrarBusqueda": "Limpar a busca",
+      "indice": "Índice da ajuda",
+      "sinResultados": "Procurei “{busqueda}” até debaixo do tapete e nada. Tente outra palavra ou limpe a busca para ver o índice."
+    },
+    "barra": {
+      "ocultarLateral": "Ocultar a barra lateral (Ctrl+B)",
+      "mostrarLateral": "Mostrar a barra lateral (Ctrl+B)",
+      "libros": {
+        "one": "{n} livro",
+        "other": "{n} livros"
+      },
+      "buscar": "Buscar título, autor, etiqueta…",
+      "incompleta": "Busca incompleta: {error}",
+      "ordenar": "Ordenar por",
+      "vistaPortadas": "Visualização de capas",
+      "vistaLista": "Visualização em lista",
+      "temaAuto": "Tema automático (igual ao Windows)",
+      "temaClaro": "Tema claro",
+      "temaOscuro": "Tema escuro",
+      "agregar": "Adicionar livros (ou arraste para cá, eu não mordo)",
+      "duplicados": "Caçar livros duplicados",
+      "familia": "Família: compartilhar livros",
+      "kindle": "Kindle: enviar livros e importar destaques",
+      "recargar": "Recarregar a biblioteca",
+      "ayuda": "Ajuda (F1)"
+    },
+    "lateral": {
+      "virtual": "Biblioteca virtual do Calibre: {expresion}",
+      "filtrar": "Filtrar {que}…",
+      "verMenos": "Ver menos",
+      "verTodos": "Ver todos ({n})",
+      "estrellasOMas": {
+        "one": "{n} estrela ou mais",
+        "other": "{n} estrelas ou mais"
+      },
+      "oMas": "ou mais",
+      "soloMias": "Só as minhas avaliações",
+      "bibliotecas": "Bibliotecas",
+      "filtros": "Filtros",
+      "limpiar": "Limpar tudo"
+    },
+    "vistas": {
+      "subrayados": {
+        "one": "{n} destaque do Kindle",
+        "other": "{n} destaques do Kindle"
+      },
+      "columnas": {
+        "titulo": "Título",
+        "autor": "Autor",
+        "serie": "Série",
+        "estado": "Status",
+        "valoracion": "Avaliação",
+        "idioma": "Idioma",
+        "formatos": "Formatos",
+        "publicado": "Ano",
+        "agregado": "Adicionado"
+      }
+    },
+    "familia": {
+      "titulo": "Família",
+      "descripcion": "Cada um com a sua estante. O Broots monta no Drive uma cópia só com os livros de cada um, e a sua biblioteca nem percebe.",
+      "librosDe": "Livros de {nombre}",
+      "armando": "Montando a cópia, livro por livro…",
+      "libros": {
+        "one": "{n} livro",
+        "other": "{n} livros"
+      },
+      "nuevos": {
+        "one": "{n} copiado ou atualizado",
+        "other": "{n} copiados ou atualizados"
+      },
+      "quitados": {
+        "one": "{n} removido",
+        "other": "{n} removidos"
+      },
+      "copiaAlDia": "✓ Cópia em dia: {detalle}. Agora é com o Drive, que faz o upload em alguns minutos.",
+      "kindleGuardado": "✓ Kindle salvo: agora você pode enviar livros pelo painel de cada livro.",
+      "kindleBorrado": "Kindle apagado.",
+      "marcando": {
+        "one": "Marcando {n} livro…",
+        "other": "Marcando {n} livros…"
+      },
+      "marcados": {
+        "one": "✓ Mais {n} livro para a estante de {nombre}. Clique em “Atualizar cópia” para levá-lo à pasta da pessoa.",
+        "other": "✓ Mais {n} livros para a estante de {nombre}. Clique em “Atualizar cópia” para levá-los à pasta da pessoa."
+      },
+      "confirmarQuitar": "Remover {nombre} do Broots? A pasta no Drive e as etiquetas dos livros continuam como estão.",
+      "verMarcados": {
+        "one": "{n} livro marcado · ver",
+        "other": "{n} livros marcados · ver"
+      },
+      "copiaActualizada": {
+        "one": "Cópia atualizada em {fecha} ({n} livro)",
+        "other": "Cópia atualizada em {fecha} ({n} livros)"
+      },
+      "sinCopia": "Ainda sem cópia",
+      "comoMarcar": "Para marcar um livro: no painel dele, clique em “{nombre}” em “Compartilhar com” (ele recebe a etiqueta “{etiqueta}”).",
+      "sumarDe": "Adicionar todos os livros de",
+      "elegiBiblioteca": "escolha uma biblioteca…",
+      "sumar": "Adicionar",
+      "cambiar": "Trocar…",
+      "abrir": "Abrir",
+      "actualizarExplicacion": "Copia o que é novo ou mudou e remove o que não está mais marcado",
+      "actualizar": "Atualizar cópia",
+      "copiando": "Copiando {hecho} de {total}: {titulo}",
+      "suKindle": "Kindle da pessoa",
+      "kindleOpcional": "nome@kindle.com (opcional)",
+      "quitar": "Remover {nombre}",
+      "pasos": {
+        "drive": {
+          "titulo": "Compartilhe a pasta (uma vez só)",
+          "texto": "Clique em “Abrir o Google Drive”, procure “Broots compartilhado”, clique com o botão direito em “Livros de…” → Compartilhar → digite o e-mail do Google dessa pessoa e deixe-a como “Leitor”."
+        },
+        "celular": {
+          "titulo": "No celular ou tablet",
+          "texto": "App Google Drive → “Compartilhados comigo” → “Livros de…” → pasta do autor → o arquivo .epub → abrir com o Google Play Livros (ou o Apple Livros no iPhone/iPad)."
+        },
+        "kindle": {
+          "titulo": "No Kindle",
+          "texto": "Na Amazon, na conta do Kindle da pessoa: Gerenciar seu conteúdo e dispositivos → Preferências → Configurações de documentos pessoais → adicione seu Gmail à lista de e-mails aprovados. Depois, digite acima o endereço @kindle.com dela."
+        },
+        "pc": {
+          "titulo": "Quando tiverem um PC",
+          "texto": "Instalam o Broots e escolhem a pasta: veem tudo no modo somente leitura (podem ler e traduzir, mas não bagunçar nada)."
+        }
+      },
+      "agregarOtro": "Adicionar mais alguém (nome)",
+      "agregarPrimero": "Com quem você vai compartilhar? Digite o nome",
+      "agregar": "Adicionar",
+      "comoLoVen": "COMO ELES VEEM",
+      "abrirDrive": "Abrir o Google Drive"
+    },
+    "kindle": {
+      "envioTitulo": "ENVIAR PARA O KINDLE POR E-MAIL",
+      "tuKindle": "Seu Kindle",
+      "placeholderKindle": "seu-nome@kindle.com",
+      "desde": "De",
+      "servidor": "Servidor",
+      "tomadoDeCalibre": "(vindo do Calibre)",
+      "claveExplicacion": "O Gmail pede uma <b>senha de app</b> para que o Broots possa enviar e-mails. Ela fica criptografada pelo Windows e não é mais exibida.",
+      "paso1": "Clique em <boton>criar senha de app</boton> (sua Conta do Google vai abrir; entre com <b>{usuario}</b>).",
+      "tuGmail": "seu Gmail",
+      "paso2": "Dê o nome “Broots” e clique em Criar.",
+      "paso3": "Copie as 16 letras que o Google mostrar e cole aqui embaixo.",
+      "guardando": "Salvando…",
+      "claveGuardada": "Senha salva (criptografada pelo Windows)",
+      "probando": "Testando…",
+      "probar": "Testar conexão",
+      "cambiar": "Trocar",
+      "conexionOk": "✓ Conexão com o Gmail funcionando: você já pode enviar livros.",
+      "agregarExplicacion": "Copia o livro do Kindle (do jeito que está, mesmo se estiver protegido) e o adiciona ao Calibre com a ferramenta oficial. Antes, salva um backup do banco de dados.",
+      "agregando": "Adicionando…",
+      "agregar": "Adicionar à minha biblioteca",
+      "noEnKindle": "não o encontrei no Kindle",
+      "sinKindle": "o Kindle não está conectado",
+      "agregadoFicha": "✓ “{titulo}” adicionado como registro sem arquivo ({motivo}), com seus destaques.",
+      "protegido": " (protegido: só abre no Kindle ou no app do Kindle)",
+      "agregadoArchivo": "✓ “{titulo}” adicionado com o arquivo {formato}{proteccion}, com seus destaques.",
+      "subrayadosTitulo": "DESTAQUES DO KINDLE",
+      "importarExplicacion": "Conecte o Kindle pelo cabo USB (desbloqueado) e clique em importar. O Broots lê o <code>My Clippings.txt</code>, entrega cada destaque ao livro certo como um carteiro caprichoso e não repete os que você já tinha. Você também pode arrastar esse arquivo para a janela.",
+      "buscandoKindle": "Batendo na porta do Kindle…",
+      "importar": "Importar do Kindle",
+      "elegirArchivo": "Escolher arquivo…",
+      "sinNuevos": "Nada de novo sob o sol",
+      "nuevos": {
+        "one": "{n} destaque novo",
+        "other": "{n} destaques novos"
+      },
+      "enArchivo": {
+        "one": "(o arquivo tem {n} livro)",
+        "other": "(o arquivo tem {n} livros)"
+      },
+      "reasignados": {
+        "one": "{n} livro que antes não era reconhecido agora foi reconhecido.",
+        "other": "{n} livros que antes não eram reconhecidos agora foram reconhecidos."
+      },
+      "totalGuardados": {
+        "one": "{n} destaque salvo",
+        "other": "{n} destaques salvos"
+      },
+      "ultimaImportacion": "última importação: {fecha}",
+      "dondeSeGuardan": "ficam salvos na sua biblioteca do Drive (pasta .broots)",
+      "noReconoci": {
+        "one": "Esse aqui eu não reconheci:",
+        "other": "Esses {n} livros eu não reconheci:"
+      },
+      "pendientesExplicacion": "Adicione à sua biblioteca (o Broots copia do Kindle) ou me diga a qual livro ele corresponde: nunca mais esqueço.",
+      "autorDesconocido": "Autor misterioso",
+      "subrayados": {
+        "one": "{n} destaque",
+        "other": "{n} destaques"
+      },
+      "asignarA": "Atribuir a…",
+      "noEsta": "✕ Não está na minha biblioteca",
+      "ignorados": {
+        "one": "{n} livro que não está na sua biblioteca",
+        "other": "{n} livros que não estão na sua biblioteca"
+      },
+      "ignoradosNota": " · os destaques continuam salvos e são atribuídos sozinhos se você adicionar o livro ao Calibre",
+      "reasignar": "Atribuir de novo",
+      "listoVanA": "Tudo pronto: os livros viajam para <b>{destino}</b>",
+      "sinConfigurar": "Ainda não está configurado.",
+      "cambiarPuntos": "Trocar…",
+      "configurar": "Configurar…",
+      "titulo": "Kindle",
+      "subtitulo": "Envie livros e importe seus destaques"
+    },
+    "configuracion": {
+      "secciones": {
+        "general": {
+          "nombre": "Geral",
+          "descripcion": "Sua biblioteca, o visual do Broots e a língua que ele fala."
+        },
+        "lectura": {
+          "nombre": "Leitura e tradução",
+          "descripcion": "O leitor de EPUB e o Gemini, seu tradutor de cabeceira."
+        },
+        "kindle": {
+          "nombre": "Kindle e e-mail",
+          "descripcion": "Envie livros para o seu Kindle por e-mail a partir da sua conta do Gmail."
+        },
+        "familia": {
+          "nombre": "Família",
+          "descripcion": "Cada um com a sua estante. O Broots monta no Drive uma cópia só com os livros de cada um, e a sua biblioteca nem percebe."
+        },
+        "calibre": {
+          "nombre": "Calibre",
+          "descripcion": "As ferramentas oficiais do Calibre, que o Broots usa para mudar sua biblioteca."
+        },
+        "actualizaciones": {
+          "nombre": "Atualizações",
+          "descripcion": "Sua versão do Broots e as que estão por vir."
+        },
+        "privacidad": {
+          "nombre": "Privacidade",
+          "descripcion": "O que sai do seu PC, para onde vai e quando. Spoiler: quase nada."
+        },
+        "ayuda": {
+          "nombre": "Ajuda",
+          "descripcion": "Tudo o que você queria saber sobre o Broots e não tinha coragem de perguntar. Busque ou escolha um tema."
+        },
+        "acerca": {
+          "nombre": "Sobre",
+          "descripcion": "De onde vem o Broots, a licença, o Calibre e como dar uma força a eles."
+        }
+      },
+      "biblioteca": "BIBLIOTECA",
+      "bibliotecaNota": "Precisa ser a pasta de uma biblioteca do Calibre (a que tem o arquivo metadata.db). Pode estar no Google Drive.",
+      "carpeta": "Pasta da biblioteca",
+      "compartida": "Biblioteca compartilhada · somente leitura",
+      "compartidaDe": "Biblioteca compartilhada de {nombre} · somente leitura",
+      "cambiar": "Trocar…",
+      "apariencia": "APARÊNCIA",
+      "aparienciaNota": "Você também pode mudar isso na barra de cima.",
+      "tema": "Tema",
+      "temaDetalle": "Automático segue o modo claro ou escuro do Windows.",
+      "automatico": "Automático",
+      "claro": "Claro",
+      "oscuro": "Escuro",
+      "idioma": "IDIOMA",
+      "idiomaNota": "Mudar o idioma não altera sua biblioteca: os livros que você já marcou para a Família mantêm a etiqueta.",
+      "idiomaBroots": "Idioma do Broots",
+      "idiomaDetalle": "Se você não escolher, é usado o idioma do Windows. O leitor traduz para este idioma.",
+      "lector": "LEITOR",
+      "lectorNota": "É o tamanho com que os livros abrem. Se você mudar durante a leitura (A− / A+), o leitor lembra o último.",
+      "tamañoLetra": "Tamanho da letra",
+      "letraChica": "Letra menor",
+      "letraGrande": "Letra maior",
+      "muestra": "É assim que o texto aparece no leitor. Ajuste até seus olhos dizerem “aí sim”.",
+      "traduccion": "TRADUÇÃO COM O GEMINI",
+      "claveGemini": "Chave do Gemini",
+      "guardada": "Salva (criptografada pelo Windows)",
+      "sinClave": "Sem chave: o leitor não consegue traduzir",
+      "cargando": "Carregando…",
+      "enAmazon": "NA AMAZON (UMA VEZ SÓ)",
+      "enAmazonNota": "Sem este passo, a Amazon descarta os livros que você manda. Para enviar para outra pessoa, cadastre o Kindle dela em Família.",
+      "enAmazonTexto": "Na sua conta da Amazon: Gerenciar seu conteúdo e dispositivos → Preferências → Configurações de documentos pessoais → adicione seu Gmail à lista de e-mails aprovados.",
+      "subrayados": "DESTAQUES",
+      "importarSubrayados": "Importar os destaques do Kindle",
+      "importarDetalle": "Pelo botão Kindle da barra de cima, ou arrastando o My Clippings.txt para a janela.",
+      "abrirKindle": "Abrir Kindle",
+      "familiaCompartida": "Esta é uma biblioteca compartilhada (somente leitura): daqui não dá para compartilhar. Abra sua própria biblioteca para usar a Família.",
+      "ultimaVersion": "✓ Tudo em dia: você tem a última versão ({version}).",
+      "buscandoVersion": "Procurando a última versão…",
+      "descargando": "Baixando o Calibre {version}… {porcentaje}%",
+      "preparando": "Preparando o Calibre {version}…",
+      "fuenteInstalado": "O Calibre instalado neste PC",
+      "fuentePropia": "Uma cópia própria do Broots (o Calibre não está instalado)",
+      "fuenteNinguna": "Nenhuma ainda: elas são baixadas sozinhas (precisa de internet)",
+      "herramientas": "FERRAMENTAS DO CALIBRE",
+      "herramientasNota": "O Broots lê sua biblioteca diretamente, mas só a muda com estas ferramentas, uma mudança por vez e com um backup antes em .broots/respaldos.",
+      "queUsa": "O que o Broots usa",
+      "revisando": "Verificando…",
+      "actualizacion": "ATUALIZAÇÃO",
+      "actualizacionNota": "O Broots verifica sozinho uma vez por semana. O download vem do site oficial do Calibre e é verificado antes de ser usado.",
+      "buscarVersion": "Procurar uma versão nova do Calibre",
+      "buscarActualizacion": "Procurar atualização",
+      "mismaVersion": "O Broots usa sempre a mesma versão do seu Calibre. Para atualizá-lo, abra o Calibre e procure a versão nova por lá (ou baixe em calibre-ebook.com).",
+      "broots": "BROOTS",
+      "versionInstalada": "Versão instalada",
+      "salidas": {
+        "traduccion": {
+          "que": "Tradução",
+          "donde": "Gemini (Google)",
+          "detalle": "O texto dos parágrafos que você traduz no leitor. Só se você cadastrou sua chave e ativou a tradução."
+        },
+        "kindle": {
+          "que": "Envio para o Kindle",
+          "donde": "Gmail (Google) → Amazon",
+          "detalle": "O arquivo do livro que você envia, da sua conta do Gmail para o endereço @kindle.com."
+        },
+        "datos": {
+          "que": "Buscar dados e capas",
+          "donde": "Google Books e Open Library",
+          "dondeConAmazon": "Amazon, Google Books e Open Library",
+          "detalle": "O título, o autor e o ISBN do livro que você busca ao editá-lo. Só quando você clica em “Buscar dados”."
+        },
+        "drive": {
+          "que": "Biblioteca e Família",
+          "donde": "Google Drive",
+          "detalle": "Sua biblioteca e as cópias da Família ficam em pastas do Drive: quem faz o upload é o programa do Google Drive do seu PC, não o Broots."
+        },
+        "calibre": {
+          "que": "Ferramentas do Calibre",
+          "donde": "GitHub e calibre-ebook.com",
+          "detalle": "Se o Calibre não estiver instalado, o Broots baixa a cópia oficial e verifica uma vez por semana se há versão nova. Nada seu é enviado."
+        },
+        "actualizaciones": {
+          "que": "Atualizações do Broots",
+          "donde": "GitHub",
+          "detalle": "Sempre que você abre o Broots (e a cada seis horas se ele ficar aberto) pergunta se tem versão nova e, se tiver, baixa. Nada seu é enviado. Dá para desligar em Configurações → Atualizações.",
+          "detalleApagado": "Desligado: só quando você clica em “Procurar agora” em Atualizações. Nada seu é enviado."
+        }
+      },
+      "privacidadNota": "O Broots não tem servidores próprios nem vontade de bisbilhotar: sua biblioteca, seus destaques e suas notas não são enviados para lugar nenhum por conta própria.",
+      "privacidadIntro": "O Broots trabalha no seu PC. Isto é a única coisa que sai dele, e só quando você usa essa função:",
+      "queSale": "O QUE SAI E PARA ONDE",
+      "amazon": "AMAZON",
+      "amazonNota": "Vem desligado: o Broots busca dados e capas no Google Books e na Open Library, com a ferramenta do Calibre. Ligado, busca primeiro na Amazon, que costuma ter capas melhores. Colar o endereço da página de um livro (da Amazon ou de qualquer site) funciona sempre.",
+      "amazonInterruptor": "Buscar dados e capas na Amazon",
+      "claves": "CHAVES",
+      "clavesTexto": "A senha de app do Gmail e a chave do Gemini são digitadas por você, ficam criptografadas pelo Windows neste PC e o Broots nunca mais as mostra.",
+      "version": "Versão {version} · sua biblioteca de bolso, amiga do Calibre",
+      "licencia": "LICENÇA",
+      "libre": "O Broots é software livre",
+      "libreDetalle": "Licença GPL versão 3 (ou posterior): você pode usá-lo, compartilhá-lo e modificá-lo. Se publicar uma versão modificada, ela também precisa ser livre e de código aberto.",
+      "botonLicencia": "Licença",
+      "creditos": "CRÉDITOS",
+      "creditosNota": "O Calibre é software livre com licença GPL versão 3.",
+      "calibreDetalle": "O Broots se apoia nos ombros de um gigante: o Calibre, de Kovid Goyal e sua comunidade. Ele usa essas ferramentas para ler formatos e mudar sua biblioteca.",
+      "sonidoFila": "Som da língua de sogra",
+      "sonidoDetalle": "“Party horn 2”, de Joseph Sardin no BigSoundBank.com, livre de direitos. Obrigado pelo barulho.",
+      "sitio": "Site",
+      "donaciones": "DOAÇÕES",
+      "donacionesNota": "O Broots é gratuito. Se ele deixa suas leituras mais gostosas, você pode dar uma força a quem o torna possível.",
+      "donacionesPaises": "O Cafecito é para pagar da Argentina; o GitHub Sponsors, de qualquer país.",
+      "donarCalibre": "Doar ao Calibre",
+      "cafecito": "Pagar um cafecito ao autor",
+      "sponsors": "Apoiar o autor no GitHub Sponsors",
+      "act": {
+        "buscar": "Procurar versão nova",
+        "buscarAhora": "Procurar agora",
+        "nunca": "Ainda não foi verificado neste PC.",
+        "revisado": "Última verificação: {fecha}.",
+        "buscando": "Espiando no GitHub se tem versão nova…",
+        "descargando": "Baixando a {version}… {porcentaje}%",
+        "lista": "A versão {version} está pronta: ela se instala quando você fechar o Broots.",
+        "alDia": "Tudo em dia: você tem a versão mais recente. Última verificação: {fecha}.",
+        "reiniciar": "Reiniciar e instalar",
+        "automaticas": "AUTOMÁTICAS",
+        "automaticasNota": "Sempre que você o abre (e a cada seis horas se ele ficar aberto), o Broots pergunta ao GitHub se tem versão nova. Se tiver, baixa sem incomodar, confere se chegou inteira e instala quando você fecha o Broots. Desligado, só procura quando você clica em “Procurar agora”.",
+        "sola": "Atualizar o Broots automaticamente",
+        "festejo": "FESTA",
+        "festejoNota": "Na primeira vez que você abre uma versão nova tem confete e uma frase aleatória. Se você reduziu as animações no Windows, não tem confete.",
+        "sonido": "Com som de língua de sogra",
+        "probarFila": "Ver como é a festa",
+        "probar": "Testar",
+        "novedades": "NOVIDADES",
+        "novedadesFila": "O que mudou em cada versão",
+        "novedadesDetalle": "Na página do Broots no GitHub.",
+        "verNovedades": "Ver novidades"
+      }
+    },
+    "editar": {
+      "estrellas": {
+        "one": "{n} estrela",
+        "other": "{n} estrelas"
+      },
+      "deCinco": "{n} de 5",
+      "sinValorar": "sem avaliação",
+      "campos": {
+        "title": "Título",
+        "authors": "Autores",
+        "publisher": "Editora",
+        "pubdate": "Publicação",
+        "languages": "Idioma",
+        "ids": "Identificadores",
+        "paginas": "Páginas → {columna}",
+        "tags": "Etiquetas",
+        "comments": "Descrição"
+      },
+      "encontradoEn": "Encontrado em <b>{fuente}</b>. Atenção: às vezes é outra edição do livro, então dê uma conferida.",
+      "portadaEncontrada": "Capa encontrada",
+      "portada": "Capa",
+      "usarMarcado": "Usar o que está marcado",
+      "descartar": "Descartar",
+      "guardandoPortada": "Colocando a capa nova…",
+      "portadaActualizada": "✓ Capa nova. Ficou um charme!",
+      "agregandoFormato": "Adicionando formato…",
+      "formatoAgregado": "✓ Formato adicionado.",
+      "confirmarQuitar": "Remover o arquivo {formato} deste livro? Ele é apagado da biblioteca (o Calibre o envia para a lixeira).",
+      "quitando": "Removendo {formato}…",
+      "quitado": "✓ {formato} removido.",
+      "leyendoPagina": "Dando uma espiada na página…",
+      "buscandoConAmazon": "Vasculhando a Amazon, o Google Books e a Open Library…",
+      "buscando": "Vasculhando o Google Books e a Open Library…",
+      "encontre": "✓ Achei! Tem dados em {fuente}. Dê uma espiada no quadro abaixo e fique com o que servir.",
+      "copiados": "Dados copiados para o formulário. Dê uma conferida e clique em Salvar.",
+      "guardando": "Salvando…",
+      "titulo": "Editar livro",
+      "subtitulo": "É salvo no Calibre com a ferramenta oficial, com um backup antes.",
+      "tituloLibro": "Título",
+      "ordenTitulo": "Ordem do título",
+      "calcular": "Calcular",
+      "autores": "Autores (separe com &)",
+      "ordenAutor": "Ordem do autor",
+      "serie": "Série",
+      "ninguna": "(nenhuma)",
+      "numero": "Número",
+      "arrastra": "Arraste uma imagem aqui para usá-la como capa",
+      "usaraEncontrada": "Ao salvar, é usada a capa encontrada",
+      "elegirImagen": "Escolher imagem…",
+      "buscarPortada": "Buscar capa no Google Imagens",
+      "oArrastra": "ou arraste uma imagem sobre a capa",
+      "calificacion": "Avaliação (do Calibre / importada)",
+      "etiquetas": "Etiquetas (separe com vírgulas)",
+      "identificadores": "Identificadores (ex.: isbn:978…, amazon:B0…)",
+      "agregado": "Adicionado à biblioteca",
+      "publicado": "Publicação",
+      "editorial": "Editora",
+      "idiomas": "Idiomas",
+      "quitarIdioma": "Remover",
+      "agregarIdioma": "+ Adicionar idioma",
+      "descripcion": "Descrição",
+      "formatos": "Formatos",
+      "agregarFormato": "+ Adicionar formato…",
+      "sinArchivos": "Sem arquivos (registro sem arquivo).",
+      "quitar": "Remover",
+      "tusColumnas": "SUAS COLUNAS",
+      "tuya": "{columna} (sua)",
+      "si": "Sim",
+      "no": "Não",
+      "buscaConAmazon": "Busca na Amazon (pelo código da Amazon, ISBN ou título e autor), no Google Books e na Open Library",
+      "buscaSinAmazon": "Busca no Google Books e na Open Library (a Amazon é ativada em Configurações → Privacidade)",
+      "buscarDatos": "Buscar dados",
+      "buscarEnUrl": "Buscar em URL: cole o endereço da página do livro (Amazon, editora, livraria…)",
+      "leerPagina": "Ler página"
+    },
+    "detalle": {
+      "sinArchivo": "Este registro não tem arquivo: não há nada para enviar.",
+      "soloEpubPdf": "A Amazon só aceita EPUB ou PDF por e-mail, e este livro está em {formatos}.",
+      "enviadoA": "✓ Enviado para {destino}. Chega ao Kindle em alguns minutos.",
+      "ultimoEnvio": "Último envio: {fecha} ({formato})",
+      "enviando": "Enviando {formato}…",
+      "enviado": "Enviado",
+      "enviarKindle": "Enviar para o Kindle",
+      "configurarEnvio": "Configurar o envio para o Kindle",
+      "compartirCon": "Compartilhar com",
+      "yaEsta": "Já está na biblioteca de {nombre}: clique para remover",
+      "sumarA": "Adicionar à biblioteca de {nombre}",
+      "enviandoA": "Enviando para o Kindle de {nombre}…",
+      "enviadoAKindleDe": "✓ Enviado para o Kindle de {nombre}.",
+      "tambienAl": "Também para o Kindle de",
+      "clubExplicacion": "Cria um arquivo .md com os dados do livro e seus destaques, para bater papo sobre ele com o Claude ou o NotebookLM",
+      "llevarClub": "Levar ao clube de leitura",
+      "clubSubrayados": {
+        "one": "({n} destaque)",
+        "other": "({n} destaques)"
+      },
+      "clubListo": "✓ Rumo ao clube! “{nombre}” está pronto. Abri a pasta para você: arraste o arquivo para o chat e bora conversar.",
+      "abrir": "Abrir",
+      "verArchivo": "ver arquivo",
+      "instruccionesClub": "Instruções do clube para o Claude e o Gemini",
+      "convertido": "✓ Abracadabra! Convertido para {destino} (a partir de {desde}).",
+      "convirtiendo": "Convertendo para {destino}… segura aí!",
+      "convertir": "Converter para {destino}",
+      "misSubrayados": "Meus destaques · {n}",
+      "pagina": "pág. {n}",
+      "posicion": "pos. {n}",
+      "verMenos": "Ver menos",
+      "verTodos": "Ver os {n} destaques",
+      "guardando": "Salvando…",
+      "editarExplicacion": "Editar os dados do livro",
+      "editar": "Editar",
+      "verPortada": "Ver a capa ampliada",
+      "libroN": " · livro {n}",
+      "quitarEstado": "Remover o status",
+      "marcarComo": "Marcar como “{estado}”",
+      "importada": "Importada",
+      "leerExplicacion": "Abrir o EPUB no leitor do Broots (com tradução)",
+      "leer": "Ler",
+      "abrirFormato": "Abrir o {formato} com o programa padrão",
+      "mostrarCarpeta": "Mostrar na pasta",
+      "verEtiqueta": "Mostrar os livros com esta etiqueta",
+      "publicado": "Publicação",
+      "editorial": "Editora",
+      "idioma": "Idioma",
+      "agregado": "Adicionado",
+      "descripcion": "Descrição",
+      "dañadas": {
+        "one": "Este livro tem {n} etiqueta danificada no Calibre (texto com código ou só símbolos), provavelmente de um download de metadados. Ela está oculta; você pode apagá-la em Editar.",
+        "other": "Este livro tem {n} etiquetas danificadas no Calibre (texto com código ou só símbolos), provavelmente de um download de metadados. Elas estão ocultas; você pode apagá-las em Editar."
+      },
+      "visor": "{titulo} · clique, aperte Esc ou arraste a capa para voltar"
+    },
+    "lector": {
+      "cerrar": "Fechar",
+      "traduccionGemini": "Tradução com o Gemini",
+      "paginas": "Páginas",
+      "pagina": "Página",
+      "irExplicacion": "Digite um número de página e aperte Enter para ir até ela",
+      "de": "de {total}",
+      "traduciendo": "Traduzindo… o Gemini está nessa",
+      "faltaClave": "Para traduzir, falta a sua chave do Gemini.",
+      "pistaOriginal": "Curiosidade? Clique em um parágrafo traduzido para ver o original.",
+      "contando": "Contando as páginas nos dedos para chegar à página {pagina}…",
+      "pistaPaginas": "Passe as páginas com as setas ← →, a roda do mouse ou um clique nas laterais. Sem precisar molhar o dedo.",
+      "volverEsc": "Voltar para a biblioteca (Esc)",
+      "biblioteca": "Biblioteca",
+      "indice": "Sumário",
+      "verOriginal": "Ver o livro no idioma original",
+      "traducirAl": "Traduzir para o português com o Gemini",
+      "traducido": "Traduzido",
+      "traducir": "Traduzir",
+      "anterior": "Página anterior (←)",
+      "siguiente": "Próxima página (→)",
+      "abriendo": "Abrindo o livro… vá procurando um cantinho confortável.",
+      "volver": "Voltar para a biblioteca",
+      "reintentar": "Tentar de novo",
+      "configurar": "Configurar",
+      "barraExplicacion": "Clique na barra para pular para essa parte do livro"
+    },
+    "actualizacion": {
+      "etiqueta": "Nova versão do Broots",
+      "listaTitulo": "A versão {version} está pronta",
+      "listaDetalle": "Ela se instala sozinha quando você fechar o Broots. Quer estrear já? Reinicie agora: leva alguns segundos e seus livros continuam do jeito que estão.",
+      "masTarde": "Mais tarde",
+      "reiniciar": "Reiniciar agora",
+      "reiniciando": "Reiniciando… já volto",
+      "festejoTitulo": "Você estreou o Broots {version}!",
+      "novedades": "O QUE HÁ DE NOVO",
+      "verNovedades": "Ver novidades",
+      "aLeer": "Bora ler!",
+      "cafecito": "Pagar um cafezinho",
+      "sponsors": "Apoiar no GitHub Sponsors",
+      "frases": {
+        "lista": [
+          "Atualização pronta. Corrigimos mais erros do que tem num livro de autoajuda que promete te deixar milionário em três dias.",
+          "Versão nova pronta. Mais estável que a sua vontade de terminar aquele clássico de 900 páginas que está na fila desde o ano passado.",
+          "Saiu versão nova. Tão viciante que você vai ficar acordado até as 3 da manhã lendo as novidades.",
+          "Habemus versão nova! Igual ao final do seu romance favorito, mas sem o vazio existencial depois.",
+          "Sem spoilers do final da sua saga favorita, mas com melhorias que vão deixar seu nerd interior feliz.",
+          "Demos óculos novos ao Broots para ele ler a sua biblioteca sem nem piscar.",
+          "Menos drama que um romance água com açúcar, mais estabilidade que a sua pilha de pendentes.",
+          "Tem versão nova. Ao contrário dos livros que você emprestou, essa volta.",
+          "Chegou uma versão nova. Prometemos que ela não vem com um prefácio de 40 páginas.",
+          "Instala mais rápido do que você leva para dizer “só mais um capítulo e eu durmo”."
+        ],
+        "instalada": [
+          "Atualização concluída. Ideal para leitores vorazes, acumuladores de PDF e viciados em organização.",
+          "Código renovado. Navegue pela sua biblioteca com a fluidez de uma reviravolta inesperada.",
+          "Subimos de nível. O código ficou tão caprichado que faria o algoritmo de recomendações chorar de emoção.",
+          "O Broots está em dia. Seus livros nem perceberam.",
+          "Instalação concluída. Nenhum livro se machucou durante o processo.",
+          "O Broots se atualizou. Quem dera a sua pilha de pendentes pudesse dizer o mesmo."
+        ],
+        "cafe": [
+          "Instalada com sucesso. Nenhum programador se machucou, mas vários grãos de café deram a vida pela causa. Se quiser repor o estoque, o botão está aí.",
+          "Sentindo que o Broots está voando? É cafeína pura. Se quiser pagar o próximo café antes que o programador durma em cima do teclado, o botão está aí embaixo.",
+          "Se esta versão te poupou o tempo de um capítulo, pague um café para quem a programa. O sistema nervoso agradece."
+        ]
+      }
+    },
+    "app": {
+      "calibreDescargando": "Baixando as ferramentas do Calibre {version}… {porcentaje}%",
+      "calibreActualizando": "Atualizando as ferramentas do Calibre {version}… {porcentaje}%",
+      "calibrePreparando": "Preparando as ferramentas do Calibre {version}…",
+      "calibreListas": "✓ Ferramentas do Calibre {version} prontas",
+      "calibreExplicacion": "O Calibre não está instalado neste PC: o Broots usa a própria cópia das ferramentas do Calibre (para editar, adicionar e converter)",
+      "reintentar": "Tentar de novo",
+      "todos": "Todos os livros",
+      "agregando": {
+        "one": "Abrindo espaço para {n} livro…",
+        "other": "Abrindo espaço para {n} livros…"
+      },
+      "eligiendo": "Escolha os livros…",
+      "agregados": {
+        "one": "✓ {n} livro novo na estante.",
+        "other": "✓ {n} livros novos na estante."
+      },
+      "fallo": "“{nombre}”: {mensaje}",
+      "noPudeLeer": "Não foi possível ler a biblioteca: {error}",
+      "noPudeLeerEn": "Não foi possível ler a biblioteca em {ruta}: {error}",
+      "estrellasOMas": "{n}★ ou mais",
+      "quitarFiltro": "Remover filtro",
+      "sinResultados": "Nada por aqui… nem um marcador de página",
+      "sinResultadosDetalle": "Tente outra busca ou afrouxe algum filtro.",
+      "protegidoExplicacion": "O Broots só muda a biblioteca com as ferramentas oficiais do Calibre e com um backup antes em .broots/respaldos",
+      "protegido": "Calibre protegido",
+      "leida": "Lida às {hora}",
+      "soltar": "Pode soltar que eu abro espaço na estante",
+      "soltarClippings": "ou solte o <b>My Clippings.txt</b> do Kindle para importar seus destaques"
+    }
+  },
+  "electron": {
+    "familia": {
+      "etiqueta": "Para {nombre}",
+      "carpetaRaiz": "Broots compartilhado",
+      "carpetaLibros": "Livros de {nombre}",
+      "elegiCarpeta": "Escolha uma pasta para a cópia.",
+      "fueraDeBiblioteca": "A cópia precisa ficar fora da pasta da sua biblioteca.",
+      "carpetaOcupada": "Essa pasta já tem outros arquivos. Escolha uma pasta vazia ou uma nova.",
+      "noPudeCopia": "Não foi possível montar a cópia: {error}",
+      "escribiNombre": "Digite o nome.",
+      "soloLetras": "Use apenas letras, números e espaços no nome.",
+      "nombreRepetido": "Já existe alguém com esse nome.",
+      "kindleInvalido": "O endereço do Kindle termina em @kindle.com.",
+      "sinPersona": "Não encontrei essa pessoa.",
+      "dialogoCarpeta": "Pasta do Drive para os livros de {nombre}",
+      "sinMarcados": "Você ainda não marcou livros para {nombre}: a estante está vazia."
+    },
+    "main": {
+      "dialogoBiblioteca": "Escolha a pasta da sua biblioteca do Calibre",
+      "sinMetadata": "Essa pasta não tem um arquivo metadata.db do Calibre.",
+      "sinCargar": "A biblioteca ainda não foi carregada.",
+      "sinLibro": "Não encontrei esse livro.",
+      "sinKindleIntegrante": "Falta o endereço do Kindle dessa pessoa (em Configurações → Família).",
+      "elegiClippings": "Escolha o arquivo My Clippings.txt do Kindle.",
+      "noPudeLeerArchivo": "Não foi possível ler o arquivo: {error}",
+      "kindle": {
+        "SIN_KINDLE": "Não encontrei nenhum Kindle conectado. Conecte-o pelo cabo USB, desbloqueie e tente de novo.",
+        "SIN_DOCUMENTOS": "Encontrei o Kindle, mas não a pasta de documentos.",
+        "SIN_CLIPPINGS": "O Kindle ainda não tem destaques (não existe My Clippings.txt).",
+        "SIN_COPIA": "O Windows não conseguiu copiar o arquivo do Kindle. Tente arrastá-lo para a janela.",
+        "otro": "Não foi possível ler o Kindle ({detalle})."
+      },
+      "dialogoClippings": "Escolha o arquivo My Clippings.txt",
+      "filtroSubrayados": "Destaques do Kindle",
+      "yaNoPendiente": "Esse livro não está mais pendente.",
+      "agregadoSinRecarga": "O livro foi adicionado, mas não foi possível recarregar a biblioteca.",
+      "noPudeCrearArchivo": "Não foi possível criar o arquivo: {error}",
+      "dialogoPortada": "Escolha a imagem da capa",
+      "filtroImagenes": "Imagens",
+      "noEsImagen": "Isso não parece uma imagem.",
+      "dialogoFormato": "Escolha o arquivo para adicionar como formato",
+      "filtroLibros": "Livros",
+      "formatoInvalido": "Formato inválido.",
+      "dialogoAgregar": "Escolha os livros para adicionar",
+      "soloEpubPdf": "Só é possível converter para EPUB ou PDF.",
+      "yaNoEstan": "Esses livros não estão mais na biblioteca.",
+      "lectorOtroFormato": "O leitor abre EPUB e este livro está em {formatos}. Converta-o para EPUB pelo painel.",
+      "lectorSinArchivo": "Este registro não tem arquivo: não há nada para ler.",
+      "yaSinEpub": "O livro não tem mais EPUB.",
+      "pegaClave": "Cole a chave primeiro."
+    },
+    "calibre": {
+      "sinHerramientas": "As ferramentas do Calibre ainda não estão aqui: elas são baixadas sozinhas (precisa de internet). Tente de novo em alguns minutos.",
+      "ocupado": "O Calibre está aberto ou ocupado. Feche-o se estiver aberto e tente de novo em alguns segundos.",
+      "errorDesconocido": "erro desconhecido",
+      "noPudo": "O Calibre não conseguiu concluir a operação: {detalle}",
+      "compartida": "Esta é uma biblioteca compartilhada: é somente leitura."
+    },
+    "calibrePropio": {
+      "noPudeConsultar": "não foi possível consultar a última versão do Calibre (o GitHub respondeu {estado})",
+      "formatoVersion": "a versão publicada do Calibre não tem o formato esperado",
+      "sinInstalador": "não encontrei o instalador oficial do Calibre para Windows",
+      "descargaFallo": "o download falhou (o servidor respondeu {estado})",
+      "sinHuella": "não foi possível obter o código de verificação do site do Calibre",
+      "formatoHuella": "o código de verificação do Calibre não tem o formato esperado",
+      "noPudePreparar": "não foi possível preparar as ferramentas (msiexec: {detalle})",
+      "sinHerramientasEsperadas": "o instalador do Calibre não trouxe as ferramentas esperadas",
+      "sinEspacio": "não há espaço suficiente no disco (é preciso cerca de 1 GB livre)",
+      "noCoincide": "o arquivo baixado não confere com o oficial do Calibre (foi descartado por segurança)",
+      "noResponden": "as ferramentas baixadas não respondem como esperado",
+      "noPudeActualizar": "Não foi possível atualizar as ferramentas do Calibre: {motivo}.",
+      "noPudeDescargar": "Não foi possível baixar as ferramentas do Calibre: {motivo}.",
+      "cortada": "a conexão caiu"
+    },
+    "actualizaciones": {
+      "noPudeConsultar": "não foi possível consultar a última versão do Broots (o GitHub respondeu {estado})",
+      "formatoVersion": "a versão publicada não tem o formato esperado",
+      "sinInstalador": "não encontrei o instalador do Broots na página de versões",
+      "descargaFallo": "o download falhou (o servidor respondeu {estado})",
+      "sinEspacio": "não há espaço suficiente no disco (é preciso cerca de 400 MB livres)",
+      "noCoincide": "o arquivo baixado não confere com o publicado (foi descartado por segurança)",
+      "cortada": "a conexão caiu",
+      "noPude": "Não foi possível atualizar o Broots: {motivo}.",
+      "enPruebas": "Nos testes não se procuram versões novas na internet.",
+      "nadaQueInstalar": "Não há nenhuma versão nova baixada para instalar."
+    },
+    "metadatos": {
+      "sinDatosConAmazon": "Não encontrei dados deste livro na Amazon, no Google Books nem na Open Library. Tente colar o endereço de uma página do livro.",
+      "sinDatos": "Não encontrei dados deste livro no Google Books nem na Open Library. Tente colar o endereço de uma página do livro.",
+      "sinDatosInternet": "Não encontrei dados deste livro na internet.",
+      "fuenteCalibre": "Google Books ou Open Library (via Calibre)",
+      "busquedaPortada": "capa livro"
+    },
+    "agregar": {
+      "autorDesconocido": "Desconhecido",
+      "noPudeCopiar": "Não foi possível copiar o livro do Kindle: {error}",
+      "sinId": "O Calibre não informou o livro adicionado."
+    },
+    "edicion": {
+      "sinImagen": "Não encontrei a imagem.",
+      "noEsLibro": "não é um formato de livro",
+      "yaEsta": "já está na sua biblioteca (não foi duplicado)",
+      "protegido": "O arquivo está protegido (DRM): só pode ser lido no Kindle e não pode ser convertido.",
+      "kfx": "Os arquivos KFX da Amazon não podem ser convertidos.",
+      "sinOrigen": "Este livro não tem um arquivo a partir do qual converter.",
+      "yaTiene": "O livro já tem {formato}.",
+      "noPudoConvertir": "O Calibre não conseguiu converter este livro para {formato} (o conversor fechou ao processá-lo). Tente convertê-lo para {otro}."
+    },
+    "duplicados": {
+      "tituloAutor": "mesmo título e autor",
+      "isbn": "mesmo ISBN"
+    },
+    "envio": {
+      "sinCifrado": "O Windows não permite criptografar a senha nesta conta.",
+      "sinClave": "Falta a senha de app do Gmail.",
+      "rechazo": "O Gmail recusou o usuário ou a senha. Confira se é uma senha de app (16 letras) dessa mesma conta.",
+      "sinConexion": "Não foi possível conectar ao servidor de e-mail. Você está com internet?",
+      "formatoViejo": "Este livro só tem formatos que a Amazon não aceita mais por e-mail (MOBI/AZW). Será possível convertê-lo mais adiante.",
+      "muyGrande": "O arquivo passa dos 50 MB que a Amazon aceita por e-mail.",
+      "sinDestino": "Falta o endereço do seu Kindle (o que termina em @kindle.com).",
+      "cuerpo": "Enviado pelo Broots."
+    },
+    "traduccion": {
+      "sinCifrado": "O Windows não permite criptografar a chave nesta conta.",
+      "respondio": "O Gemini respondeu {estado}",
+      "incompleta": "A tradução voltou incompleta.",
+      "claveInvalida": "A chave do Gemini não é válida. Confira-a no botão da chave.",
+      "claveRechazada": "O Gemini recusou a chave (permissão negada). Confira se ela está ativa no Google AI Studio.",
+      "limite": "O limite gratuito do Gemini foi atingido por enquanto. Tente de novo daqui a pouco (a cota se renova sozinha).",
+      "demora": "O Gemini demorou demais para responder.",
+      "noPude": "Não foi possível traduzir: {detalle}",
+      "errorDesconocido": "erro desconhecido",
+      "sinClave": "Falta a sua chave do Gemini.",
+      "funciona": "✓ O Gemini está em forma: “{ejemplo}”"
+    },
+    "lector": {
+      "noEsEpub": "O arquivo não parece ser um EPUB válido.",
+      "sinOpf": "O EPUB não tem a ficha interna (OPF).",
+      "drm": "Este EPUB está protegido (DRM): só pode ser lido na loja onde foi comprado.",
+      "sinCapitulos": "O EPUB não tem capítulos para mostrar.",
+      "sinCapitulo": "Não encontrei esse capítulo dentro do EPUB."
+    },
+    "web": {
+      "demora": "A página demorou demais para responder.",
+      "paginaWeb": "Página da web",
+      "direccionInvalida": "Esse endereço não parece válido (precisa começar com https://).",
+      "captcha": "A Amazon pediu para verificar que você não é um robô. Tente de novo daqui a pouco.",
+      "sinDatosAmazon": "Não encontrei os dados do livro nessa página da Amazon.",
+      "sinDatos": "Não encontrei dados de um livro nessa página.",
+      "noPudeLeer": "Não foi possível ler a página: {error}",
+      "sinLibroAmazon": "Não encontrei o livro na Amazon.",
+      "noPudeBuscar": "Não foi possível buscar na Amazon: {error}"
+    },
+    "club": {
+      "autorDesconocido": "Autor desconhecido",
+      "pagina": "pág. {n}",
+      "posicion": "posição {n}",
+      "notaSuelta": "Nota avulsa",
+      "miNota": "Minha nota",
+      "autor": "Autor",
+      "serie": "Série",
+      "libroDeSerie": "livro {n}",
+      "publicado": "Publicação",
+      "editorial": "Editora",
+      "idioma": "Idioma",
+      "isbn": "ISBN",
+      "etiquetas": "Etiquetas",
+      "descripcion": "Descrição",
+      "subrayados": {
+        "one": "{n} destaque",
+        "other": "{n} destaques"
+      },
+      "notas": {
+        "one": "{n} nota",
+        "other": "{n} notas"
+      },
+      "sinSubrayados": "Ainda não tenho destaques deste livro.",
+      "resumen": "{subrayados}, na ordem de leitura.",
+      "resumenConNotas": "{subrayados} e {notas}, na ordem de leitura.",
+      "aclaracionNotas": "As notas (✎) são meus próprios pensamentos durante a leitura.",
+      "misSubrayados": "Meus destaques e notas",
+      "exportado": "Exportado do Broots em {fecha}."
+    }
+  }
+}

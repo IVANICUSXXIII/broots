@@ -1,0 +1,266 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/literata';
+
+/*
+  Paleta Broots: verdes, pasteles y tierra.
+  Marine Green #636b3f · Deep Green #2b361c · Barium Yellow #fefae3 · Sepia #d4a369 · Leather #b17036
+  Salvia #a3b18a / #dad7cd. Cambia sola con el tema claro/oscuro de Windows.
+  Si cambiás --ventana o --tinta, actualizá también coloresVentana() en electron/main.cjs.
+*/
+:root {
+  --ventana: #eeecd6; /* fondo de la ventana y barra lateral */
+  --superficie: #fdfaea; /* paneles principales */
+  --superficie-2: #f3f0dc; /* hover, chips, campos */
+  --borde: #dedbc4;
+  --tinta: #2b361c;
+  --tinta-suave: #5c6447;
+  --tinta-tenue: #8d9178;
+  --verde: #636b3f;
+  --seleccion: #dfe3c6;
+  --acento: #b17036;
+  --acento-suave: #f4e3cd;
+  --sobre-acento: #ffffff; /* texto sobre botones color acento */
+  --estrella: #b17036;
+  --scroll: #c9c6ad;
+  --sombra: 43 54 28;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Oscuro: grises cálidos neutros; el verde queda para los detalles (selección, interruptores, logo). */
+  :root {
+    --ventana: #1f1f1d;
+    --superficie: #282826;
+    --superficie-2: #33332f;
+    --borde: #42423d;
+    --tinta: #efece4;
+    --tinta-suave: #bcb9af;
+    --tinta-tenue: #8c8a82;
+    --verde: #a3b18a;
+    --seleccion: #38412f;
+    --acento: #d4a369;
+    --acento-suave: #43372a;
+    --sobre-acento: #22190f;
+    --estrella: #d4a369;
+    --scroll: #5e5d57;
+    --sombra: 0 0 0;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-ventana: var(--ventana);
+  --color-superficie: var(--superficie);
+  --color-superficie-2: var(--superficie-2);
+  --color-borde: var(--borde);
+  --color-tinta: var(--tinta);
+  --color-tinta-suave: var(--tinta-suave);
+  --color-tinta-tenue: var(--tinta-tenue);
+  --color-verde: var(--verde);
+  --color-seleccion: var(--seleccion);
+  --color-acento: var(--acento);
+  --color-acento-suave: var(--acento-suave);
+  --color-sobre-acento: var(--sobre-acento);
+  --color-estrella: var(--estrella);
+  --font-sans: 'Inter Variable', 'Segoe UI Variable Text', system-ui, sans-serif;
+  --font-serif: 'Literata Variable', Georgia, serif;
+  --shadow-panel: 0 0 0 1px var(--borde), 0 1px 2px rgb(var(--sombra) / 0.05), 0 10px 30px -14px rgb(var(--sombra) / 0.18);
+  --shadow-flotante: 0 0 0 1px var(--borde), 0 4px 10px rgb(var(--sombra) / 0.08), 0 24px 48px -16px rgb(var(--sombra) / 0.35);
+}
+
+/*
+  Esquinas "squircle": la curva continua de Apple (sin el quiebre de un redondeo común).
+  Con squircle el radio se ve más chico, por eso los radios de los paneles son generosos.
+*/
+@utility squircle {
+  corner-shape: squircle;
+}
+
+/*
+  Tarjeta de portada: hover y clic animados por el motor gráfico (sin JavaScript),
+  con las curvas de resorte --t-hover / --t-presion calculadas en lib/movimiento.js.
+*/
+.tarjeta .elevacion {
+  transition: transform var(--t-hover, 300ms ease-out);
+}
+.tarjeta:hover .elevacion {
+  transform: translateY(-4px) scale(1.03);
+}
+.tarjeta:active .elevacion {
+  transform: translateY(-1px) scale(0.96);
+  transition: transform var(--t-presion, 120ms ease-out);
+}
+.tarjeta .sombra-profunda {
+  opacity: 0;
+  transition: opacity var(--t-hover, 300ms ease-out);
+}
+.tarjeta:hover .sombra-profunda {
+  opacity: 1;
+}
+.tarjeta:active .sombra-profunda {
+  opacity: 0.35;
+  transition: opacity var(--t-presion, 120ms ease-out);
+}
+.tarjeta .oscurecer {
+  opacity: 0;
+  transition: opacity var(--t-hover, 300ms ease-out);
+}
+.tarjeta:active .oscurecer {
+  opacity: 0.16;
+  transition: opacity var(--t-presion, 120ms ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tarjeta .elevacion,
+  .tarjeta:hover .elevacion,
+  .tarjeta:active .elevacion {
+    transform: none;
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ventana);
+  color: var(--tinta);
+  font-family: var(--font-sans);
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+input,
+textarea,
+.seleccionable {
+  user-select: text;
+}
+
+/* Zonas para arrastrar la ventana (la barra de título está integrada al contenido). */
+.arrastrable {
+  -webkit-app-region: drag;
+}
+.arrastrable button,
+.arrastrable input,
+.arrastrable select,
+.no-arrastrable {
+  -webkit-app-region: no-drag;
+}
+
+/* Barras de desplazamiento redondeadas, visibles en claro y oscuro */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scroll);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--tinta-tenue);
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+/* ---------- Lector de EPUB (etapa 5) ---------- */
+.texto-libro {
+  column-fill: auto;
+  font-family: var(--font-serif);
+  line-height: 1.62;
+  color: var(--tinta);
+  overflow-wrap: break-word;
+  cursor: text;
+}
+.texto-libro :is(p, div[data-p]) {
+  margin: 0 0 0.8em;
+}
+.texto-libro :is(h1, h2, h3, h4, h5, h6) {
+  margin: 1.1em 0 0.6em;
+  line-height: 1.25;
+  font-weight: 600;
+  break-after: avoid;
+}
+.texto-libro h1 { font-size: 1.55em; }
+.texto-libro h2 { font-size: 1.3em; }
+.texto-libro h3 { font-size: 1.12em; }
+.texto-libro :is(h4, h5, h6) { font-size: 1em; }
+.texto-libro img {
+  display: block;
+  max-width: 100%;
+  max-height: var(--alto-pagina);
+  margin: 0.6em auto;
+  object-fit: contain;
+  break-inside: avoid;
+}
+.texto-libro blockquote {
+  margin: 0.8em 0 0.8em 1.2em;
+  color: var(--tinta-suave);
+}
+.texto-libro :is(ul, ol) {
+  margin: 0 0 0.8em;
+  padding-left: 1.4em;
+}
+.texto-libro ul { list-style: disc; }
+.texto-libro ol { list-style: decimal; }
+.texto-libro li { margin-bottom: 0.25em; }
+.texto-libro hr {
+  margin: 1.4em auto;
+  width: 30%;
+  border: 0;
+  border-top: 1px solid var(--borde);
+}
+.texto-libro table {
+  border-collapse: collapse;
+  font-size: 0.86em;
+  margin: 0.8em 0;
+}
+.texto-libro :is(td, th) {
+  border: 1px solid var(--borde);
+  padding: 0.25em 0.5em;
+}
+.texto-libro pre {
+  white-space: pre-wrap;
+  font-size: 0.82em;
+}
+.texto-libro a[data-destino] {
+  color: var(--acento);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.texto-libro sup { line-height: 0; }
+/* Marca del final del capítulo: un bloque sin alto, para contar las páginas */
+.texto-libro [data-fin] {
+  display: block;
+  height: 0;
+}
+/* Párrafos esperando traducción, traducidos (se pueden tocar) y mostrando el original */
+.texto-libro .pendiente {
+  opacity: 0.35;
+  transition: opacity 300ms ease-out;
+}
+.texto-libro .traducido {
+  border-radius: 4px;
+  transition: background-color 160ms ease-out;
+}
+.texto-libro .traducido:hover {
+  background-color: color-mix(in srgb, var(--acento-suave) 45%, transparent);
+}
+.texto-libro .traducido.original {
+  background-color: color-mix(in srgb, var(--seleccion) 70%, transparent);
+  box-shadow: -6px 0 0 color-mix(in srgb, var(--seleccion) 70%, transparent), 6px 0 0 color-mix(in srgb, var(--seleccion) 70%, transparent);
+}

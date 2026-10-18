@@ -1,0 +1,9 @@
+# Clon de REA (repositorio aparte, en pausa)
+rea/
+
+# Generados automáticamente
+node_modules/
+dist/
+
+# Instaladores generados
+app/instalador/

@@ -1,0 +1,53 @@
+{
+  "1.6.2": {
+    "es": [
+      "Broots se fija si hay versión nueva cada vez que lo abrís (y cada seis horas si queda abierto), no una sola vez por día.",
+      "El matasuegras ahora es una grabación de verdad, y suena cuando la ventana ya está a la vista.",
+      "Broots recuerda el tamaño de su ventana, y la primera vez abre maximizado. En una ventana angosta, Ayuda y Configuración ya no quedan escondidas."
+    ],
+    "en": [
+      "Broots checks for a new version every time you open it (and every six hours if it stays open), not just once a day.",
+      "The party horn is now a real recording, and it plays once the window is on screen.",
+      "Broots remembers its window size, and opens maximized the first time. In a narrow window, Help and Settings no longer hide."
+    ],
+    "pt": [
+      "O Broots procura versão nova sempre que você o abre (e a cada seis horas se ele ficar aberto), não só uma vez por dia.",
+      "A língua de sogra agora é uma gravação de verdade, e toca quando a janela já está na tela.",
+      "O Broots lembra o tamanho da janela e, na primeira vez, abre maximizado. Numa janela estreita, Ajuda e Configurações não ficam mais escondidas."
+    ]
+  },
+  "1.6.1": {
+    "es": [
+      "Broots cambió de humor (para bien): las esperas, las búsquedas sin resultados y los pequeños logros ahora vienen con chiste incluido. «Desempolvando tu biblioteca…», ¿viste?",
+      "La Ayuda también se soltó un poco, sin dejar de explicar todo paso a paso.",
+      "Lo importante sigue en serio: los errores, la papelera, los respaldos, el DRM, el envío al Kindle y tus claves."
+    ],
+    "en": [
+      "Broots is in a better mood: waits, empty searches and little wins now come with a joke on the side. “Dusting off your library…”, see?",
+      "The Help loosened up a bit too, while still explaining everything step by step.",
+      "The important stuff stays serious: errors, the trash, backups, DRM, sending to Kindle and your keys."
+    ],
+    "pt": [
+      "O Broots está de bom humor: esperas, buscas sem resultado e pequenas vitórias agora vêm com uma piada de brinde. “Tirando o pó da sua biblioteca…”, viu só?",
+      "A Ajuda também ficou mais descontraída, sem deixar de explicar tudo passo a passo.",
+      "O que é importante continua sério: erros, lixeira, backups, DRM, envio para o Kindle e suas chaves."
+    ]
+  },
+  "1.6.0": {
+    "es": [
+      "Broots se actualiza solo: una vez por día se fija si hay versión nueva, la baja sin molestar y la instala al cerrar.",
+      "Cada versión nueva llega con festejo: confeti, matasuegras y una frase al azar. El sonido se apaga en Configuración → Actualizaciones.",
+      "En Configuración → Actualizaciones podés buscar una versión nueva cuando quieras o apagar las actualizaciones automáticas."
+    ],
+    "en": [
+      "Broots now updates itself: once a day it checks for a new version, downloads it quietly and installs it when you close the app.",
+      "Every new version arrives with a little party: confetti, a party horn and a random one-liner. You can mute the horn in Settings → Updates.",
+      "In Settings → Updates you can check for a new version anytime or turn automatic updates off."
+    ],
+    "pt": [
+      "O Broots agora se atualiza sozinho: uma vez por dia ele vê se tem versão nova, baixa sem incomodar e instala quando você fecha o app.",
+      "Toda versão nova chega com festa: confete, língua de sogra e uma frase aleatória. O som pode ser desligado em Configurações → Atualizações.",
+      "Em Configurações → Atualizações você pode procurar uma versão nova quando quiser ou desligar as atualizações automáticas."
+    ]
+  }
+}

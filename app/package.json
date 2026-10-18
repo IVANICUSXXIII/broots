@@ -1,0 +1,66 @@
+{
+  "name": "broots",
+  "version": "1.6.2",
+  "description": "Broots: gestor moderno de e-books compatible con Calibre",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "vite build",
+    "start": "vite build && electron .",
+    "instalador": "vite build && electron-builder --win nsis",
+    "pruebas": "node pruebas/correr.mjs",
+    "publicar": "node scripts/publicar.mjs"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^6.1.2",
+    "electron": "^44.7.2",
+    "electron-builder": "^26.15.3",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.4"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/literata": "^5.3.0",
+    "fflate": "^0.8.3",
+    "motion": "^14.3.0",
+    "nodemailer": "^10.1.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "productName": "Broots",
+  "private": true,
+  "author": "IVANICUSXXIII",
+  "license": "GPL-3.0-or-later",
+  "build": {
+    "appId": "com.ivanicusxxiii.broots",
+    "productName": "Broots",
+    "copyright": "IVANICUSXXIII",
+    "directories": {
+      "output": "instalador",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "idiomas/**/*",
+      "novedades.json",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Broots",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "Instalar Broots ${version}.${ext}"
+    }
+  }
+}
