@@ -7,7 +7,7 @@ Broots es gratis y es software libre. **[Bajar la última versión](https://gith
 
 > **English.** An e-book manager for Windows that works with your Calibre library. Free software (GPL-3.0 or
 > later), in English, Spanish and Brazilian Portuguese. [Download the latest version](https://github.com/IVANICUSXXIII/broots/releases/latest);
-> it updates itself from 1.6.0 on. The installer isn’t digitally signed yet: if Windows says “Windows protected
+> it updates itself from 1.6.0 on. The installer isn’t digitally signed yet ([code signing policy](#code-signing-policy)): if Windows says “Windows protected
 > your PC”, click “More info” and then “Run anyway”.
 >
 > **Português.** Um gerenciador de e-books para Windows que funciona com a sua biblioteca do Calibre. Software
@@ -114,6 +114,32 @@ El sonido del matasuegras es «Party horn 2», de Joseph Sardin en [BigSoundBank
 libre de derechos.
 
 Broots no está asociado con Calibre, Amazon ni Google. Kindle es una marca de Amazon.
+
+## Code signing policy
+
+*Política de firma de código* (en inglés, como la pide SignPath) · *Política de assinatura de código* (em inglês).
+
+Free code signing provided by [SignPath.io](https://about.signpath.io/), certificate by
+[SignPath Foundation](https://signpath.org/). Until the project is approved, Broots installers are not signed yet.
+
+- **What gets signed:** only Broots’ own Windows installer (`Instalar-Broots-X.Y.Z.exe`). It is built by GitHub
+  Actions ([`instalador.yml`](.github/workflows/instalador.yml)) from the source code in this repository, at the
+  commit each release points to, and every release lists its SHA-256 and has a
+  [build provenance attestation](https://github.com/IVANICUSXXIII/broots/attestations). Nothing built on a
+  personal computer is signed. Calibre’s tools, which Broots may download when Calibre is not installed, are not
+  part of the installer and keep Calibre’s own signature.
+- **Team and roles:** Broots is maintained by [IVANICUSXXIII](https://github.com/IVANICUSXXIII), who is its only
+  committer and reviewer (changes proposed by anyone else are reviewed before they are included) and the approver
+  of every signing request, one by one. The maintainer’s accounts use multi-factor authentication.
+- **Privacy policy:** this program will not transfer any information to other networked systems unless
+  specifically requested by the user or the person installing or operating it, with two exceptions that send no
+  personal data: the check for new versions of Broots on GitHub (when Broots opens and every six hours; it can be
+  turned off in Settings → Updates) and, only when Calibre is not installed, the download of Calibre’s official
+  tools from GitHub and calibre-ebook.com and a weekly check for new versions of them. Everything else happens only
+  when the user uses that feature: translating text with Gemini (Google), with the user’s own key; sending a book
+  to a Kindle through the user’s Gmail account; and looking up a book’s title, author and ISBN on Google Books and
+  Open Library (and Amazon, only if the user turns it on). Broots has no servers of its own and no telemetry. Details, in Spanish, in
+  [Privacidad](#privacidad).
 
 ## Para quien quiera programar
 

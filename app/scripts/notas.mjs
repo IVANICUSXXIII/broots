@@ -33,7 +33,8 @@ export function notas({ version, novedades, sha256, commit }) {
       'Si Windows dice «Windows protegió su PC», tocá «Más información» → «Ejecutar de todas formas»: el instalador todavía no tiene firma digital.',
     '',
     `**Huella SHA-256:** ${huella}. Lo armó GitHub Actions a partir del código de ${origen}, ` +
-      `con [constancia de origen](https://github.com/${REPOSITORIO}/attestations).`,
+      `con [constancia de origen](https://github.com/${REPOSITORIO}/attestations). ` +
+      `[Code signing policy](https://github.com/${REPOSITORIO}#code-signing-policy).`,
     '',
     ...['en', 'pt'].flatMap((idioma) => [`<details><summary>${IDIOMAS[idioma]}</summary>`, '', lista(idioma), '', '</details>', '']),
     `<!-- novedades ${JSON.stringify(novedades)} -->`,
