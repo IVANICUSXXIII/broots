@@ -120,15 +120,16 @@ Broots no está asociado con Calibre, Amazon ni Google. Kindle es una marca de A
 Todo el código está en la carpeta `app/` (Electron, React y Tailwind). Hace falta [Node.js](https://nodejs.org/).
 Este repositorio recibe el código de cada versión publicada, un commit por versión («Broots X.Y.Z»), y la versión de
 la página de descargas apunta a ese commit. El código de la 1.6.2 se subió después de publicarla: es el primer commit
-con código.
+con código. Desde la 1.6.3, el instalador lo arma GitHub Actions a partir de ese código
+([`instalador.yml`](.github/workflows/instalador.yml)), con su huella SHA-256 y una constancia de origen.
 
 ```
 cd app
 npm install
 npm run dev                       # Broots en modo desarrollo
 node pruebas/correr.mjs todos     # pruebas automáticas
-npm run instalador                # arma el instalador de Windows
-npm run publicar                  # lo publica en GitHub (hace falta permiso en el repositorio)
+npm run instalador                # arma el instalador de Windows (para probar)
+npm run publicar                  # publica la versión: GitHub Actions arma el instalador (hace falta permiso)
 ```
 
 Las pruebas nunca tocan tu biblioteca: copian su base y algunos libros a una carpeta temporal y, al final,

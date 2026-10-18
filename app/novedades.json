@@ -1,4 +1,15 @@
 {
+  "1.6.3": {
+    "es": [
+      "Por dentro: ahora el instalador lo arma GitHub, a la vista de todos y con su huella publicada. Es el primer paso para que Windows deje de mirarlo con desconfianza."
+    ],
+    "en": [
+      "Under the hood: the installer is now built by GitHub, out in the open, with its fingerprint published. First step toward Windows no longer giving it the side-eye."
+    ],
+    "pt": [
+      "Por dentro: agora o instalador é montado pelo GitHub, à vista de todos e com a impressão digital publicada. É o primeiro passo para o Windows parar de olhar torto para ele."
+    ]
+  },
   "1.6.2": {
     "es": [
       "Broots se fija si hay versión nueva cada vez que lo abrís (y cada seis horas si queda abierto), no una sola vez por día.",

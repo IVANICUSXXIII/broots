@@ -1,0 +1,90 @@
+# Arma el instalador de Windows de Broots a partir del código público y publica la versión.
+# Lo dispara scripts/publicar.mjs (npm run publicar) con «gh workflow run»:
+#   - sobre la etiqueta vX.Y.Z: arma, deja la constancia de origen y crea la versión con el instalador. La versión
+#     aparece entera (gh la crea como borrador, sube el .exe y recién ahí la publica): mientras tanto, las copias
+#     instaladas siguen viendo la anterior;
+#   - sobre main (npm run publicar -- --prueba-ci): arma y deja el instalador y la descripción como descarga de
+#     prueba durante 5 días, sin crear ninguna versión.
+name: Instalador
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: instalador-${{ github.ref }}
+
+jobs:
+  armar:
+    # Solo en el repositorio público: el privado (el taller) no arma ni publica nada.
+    if: github.repository == 'IVANICUSXXIII/broots'
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write # crear la versión
+      id-token: write # constancia de origen
+      attestations: write
+    defaults:
+      run:
+        working-directory: app
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Armar el instalador
+        run: npm run instalador -- --publish never
+
+      - name: Preparar el archivo y la descripción
+        id: version
+        run: node scripts/preparar-version.mjs
+
+      - name: Constancia de origen
+        if: github.ref_type == 'tag'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: ${{ steps.version.outputs.archivo }}
+
+      - name: Guardar la prueba
+        if: github.ref_type != 'tag'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: prueba-${{ steps.version.outputs.version }}
+          path: |
+            ${{ steps.version.outputs.archivo }}
+            ${{ steps.version.outputs.notas }}
+          retention-days: 5
+
+      - name: Publicar la versión
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          ETIQUETA: ${{ steps.version.outputs.etiqueta }}
+          ARCHIVO: ${{ steps.version.outputs.archivo }}
+          NOMBRE: ${{ steps.version.outputs.nombre }}
+          NOTAS: ${{ steps.version.outputs.notas }}
+          SHA256: ${{ steps.version.outputs.sha256 }}
+        run: |
+          gh release create "$ETIQUETA" "$ARCHIVO#Instalar Broots $VERSION (Windows)" --repo "$GITHUB_REPOSITORY" \
+            --verify-tag --title "Broots $VERSION" --notes-file "$NOTAS" --latest
+          # Broots verifica lo que baja con la huella que calcula GitHub: tiene que ser la del instalador armado acá.
+          # Si no coincide, la versión vuelve a borrador para que ninguna copia instalada la baje.
+          digest=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$ETIQUETA" --jq ".assets[] | select(.name == \"$NOMBRE\") | .digest")
+          if [ "$digest" != "sha256:$SHA256" ]; then
+            gh release edit "$ETIQUETA" --repo "$GITHUB_REPOSITORY" --draft=true
+            echo "::error::La huella en GitHub (${digest:-ninguna}) no coincide con la del instalador (sha256:$SHA256). La versión quedó como borrador."
+            exit 1
+          fi
+          echo "Publicada con la huella sha256:$SHA256"

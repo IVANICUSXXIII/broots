@@ -16,6 +16,8 @@ Gestor de e-books de escritorio (Windows) compatible con Calibre: misma carpeta 
 - `app/idiomas/`: los textos de Broots, un archivo por idioma (`es.json`, `en.json`, `pt.json`), con una sección `interfaz` y otra `electron`.
 - `app/pruebas/`: pruebas automáticas (ver abajo).
 - `app/build/`: ícono. `app/instalador/`: instaladores generados (no van al repositorio).
+- `app/scripts/`: `dev`, `publicar` (ver Versiones), `notas` (la descripción de cada versión) y `preparar-version` (lo usa Actions).
+- `.github/workflows/instalador.yml`: GitHub Actions arma el instalador en el repositorio público.
 
 ## Reglas de oro
 
@@ -64,8 +66,10 @@ Un escenario puede sumar claves al `config.json` de prueba con `config: () => ({
 
 ## Versiones e instalador
 
-- `npm run instalador` (en `app/`) genera `instalador/Instalar Broots X.Y.Z.exe`. Antes, subir `version` en `package.json` y escribir lo que cambió en `novedades.json` (es, en y pt: lo muestra el aviso de actualización).
-- `npm run publicar` (desde `main`, con todo en commit) sube a `IVANICUSXXIII/broots` la foto del código de esa versión (un commit «Broots X.Y.Z», con el mail anónimo de GitHub), arma el instalador y crea la versión apuntando a ese commit (con `gh`); las copias instaladas desde la 1.6.0 la bajan solas. Publicar solo con el OK del usuario. `-- --ensayo` muestra qué publicaría; `-- --solo-codigo` sube solo el código.
+- Antes de publicar, subir `version` en `package.json` (y en `package-lock.json`) y escribir lo que cambió en `novedades.json` (es, en y pt: lo muestra el aviso de actualización y la descripción de la versión).
+- `npm run instalador` (en `app/`) arma el instalador en la PC, para probarlo; el que se publica lo arma GitHub Actions.
+- `npm run publicar` (desde `main`, con todo en commit) sube a `IVANICUSXXIII/broots` la foto del código de esa versión (un commit «Broots X.Y.Z», con el mail anónimo de GitHub), le pone la etiqueta `vX.Y.Z` y le pide a Actions (`.github/workflows/instalador.yml`, `gh workflow run` sobre la etiqueta) que arme el instalador y cree la versión; se queda mirando y al final verifica que quedó como «Latest» con su huella. Las copias instaladas desde la 1.6.0 la bajan solas. Publicar solo con el OK del usuario. `-- --ensayo` muestra qué publicaría; `-- --solo-codigo` sube solo el código; `-- --prueba-ci` sube el código y pide un armado de prueba (el .exe queda 5 días en los Artifacts de la corrida, sin versión).
+- En Actions (Windows de GitHub, gratis por ser público): `npm ci`, `npm run instalador -- --publish never`, `scripts/preparar-version.mjs` (nombre sin espacios, SHA-256 y descripción con `scripts/notas.mjs`, incluido el comentario oculto `<!-- novedades … -->` que lee `actualizaciones.cjs`), constancia de origen (`attest-build-provenance`) y `gh release create`. Mientras arma, la versión no existe (gh la crea como borrador, sube el .exe y recién ahí la publica): `releases/latest` sigue dando la anterior. Si la huella de GitHub no coincide con la del .exe, la vuelve a borrador. Si Actions falla, volver a correr `npm run publicar` reusa la etiqueta. El workflow solo corre en el público (en el privado no hace nada) y llega ahí con `publicar`, como el resto del código: nunca subirlo a mano. Las acciones van fijadas por commit (SHA).
 - Antes de subir el código, `publicar` busca datos personales: mails de Gmail y de Kindle (salvo los ejemplos), rutas de la PC, claves, y las palabras de `%APPDATA%\Broots\publicar\revision.txt` (fuera del repositorio, porque son los datos personales). Si encuentra algo, no publica nada: corregirlo en el código, nunca saltear la revisión.
 - Si falla con `EPERM ... rename win-unpacked.tmp` es el antivirus revisando el programa recién armado: borrar `instalador/` y correr `npx electron-builder --win nsis` de nuevo. No usar `--prepackaged` con la carpeta renombrada a mano: sale un instalador sin la app (revisar que exista `win-unpacked/resources/app.asar`).
 - La app instalada y la de desarrollo comparten `%APPDATA%\Broots`.

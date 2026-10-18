@@ -1,9 +1,11 @@
 // Publica la versión actual de Broots en GitHub (IVANICUSXXIII/broots): sube la foto del código de esa versión
-// (un commit «Broots X.Y.Z», revisado para que no lleve datos personales), arma el instalador y crea la versión
-// con sus novedades. Las actualizaciones automáticas de Broots la encuentran ahí.
+// (un commit «Broots X.Y.Z», revisado para que no lleve datos personales), le pone la etiqueta vX.Y.Z y le pide a
+// GitHub Actions (.github/workflows/instalador.yml) que arme el instalador a partir de ese código y cree la versión
+// con sus novedades. Mientras Actions trabaja, se queda mirando; al final verifica que la versión quedó publicada
+// con su instalador y su huella. Las actualizaciones automáticas de Broots la encuentran ahí.
 //
-//   npm run publicar                     arma el instalador y publica el código y la versión
-//   npm run publicar -- --sin-armar      lo mismo, con el instalador que ya está en instalador/
+//   npm run publicar                     publica el código y la versión
+//   npm run publicar -- --prueba-ci      sube el código y pide a Actions un armado de prueba, sin crear versión
 //   npm run publicar -- --solo-codigo    sube solo la foto del código, sin crear una versión
 //   npm run publicar -- --ensayo         revisa todo y muestra qué publicaría, sin publicar nada
 //
@@ -14,15 +16,14 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import crypto from 'node:crypto';
 import { spawnSync } from 'node:child_process';
+import { REPOSITORIO, novedadesDe, nombreEnGitHub, notas } from './notas.mjs';
 
 const APP = path.resolve(import.meta.dirname, '..');
-const REPOSITORIO = 'IVANICUSXXIII/broots';
-const IDIOMAS = { es: 'Español', en: 'English', pt: 'Português' };
+const WORKFLOW = 'instalador.yml';
 const ensayo = process.argv.includes('--ensayo');
-const sinArmar = process.argv.includes('--sin-armar');
 const soloCodigo = process.argv.includes('--solo-codigo');
+const pruebaCi = process.argv.includes('--prueba-ci');
 const REVISION = path.join(process.env.APPDATA ?? os.homedir(), 'Broots', 'publicar', 'revision.txt');
 
 function frenar(mensaje) {
@@ -31,23 +32,29 @@ function frenar(mensaje) {
 }
 const gh = (...argumentos) => spawnSync('gh', argumentos, { cwd: APP, encoding: 'utf8' });
 const git = (carpeta, ...argumentos) => spawnSync('git', ['-C', carpeta, ...argumentos], { encoding: 'utf8' });
+const esperar = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 
 // 1. Versión y novedades.
 const { version } = JSON.parse(fs.readFileSync(path.join(APP, 'package.json'), 'utf8'));
-const novedades = JSON.parse(fs.readFileSync(path.join(APP, 'novedades.json'), 'utf8'))[version];
+let novedades;
 if (!soloCodigo) {
-  for (const idioma of Object.keys(IDIOMAS)) {
-    if (!Array.isArray(novedades?.[idioma]) || !novedades[idioma].length) frenar(`Faltan las novedades de la ${version} en «${idioma}» (novedades.json).`);
+  try {
+    novedades = novedadesDe(APP, version);
+  } catch (error) {
+    frenar(error.message);
   }
 }
 const etiqueta = `v${version}`;
 console.log(`Broots ${version} → github.com/${REPOSITORIO}`);
 
-// 2. GitHub: la sesión de gh y que esta versión no esté publicada.
-if (gh('auth', 'status').status !== 0) frenar('gh no tiene una sesión iniciada en GitHub (gh auth login).');
-if (!soloCodigo && gh('release', 'view', etiqueta, '--repo', REPOSITORIO).status === 0) frenar(`La ${version} ya está publicada. Subí la versión en package.json.`);
+// 2. GitHub: la sesión de gh (con permiso para subir el workflow) y que esta versión no esté publicada.
+const sesion = gh('auth', 'status');
+if (sesion.status !== 0) frenar('gh no tiene una sesión iniciada en GitHub (gh auth login).');
+if (!/\bworkflow\b/.test(sesion.stdout + sesion.stderr)) frenar('A la sesión de gh le falta el permiso «workflow» (gh auth refresh -s workflow).');
+const publicarVersion = !soloCodigo && !pruebaCi;
+if (publicarVersion && gh('release', 'view', etiqueta, '--repo', REPOSITORIO).status === 0) frenar(`La ${version} ya está publicada. Subí la versión en package.json.`);
 
-// 3. El código: lo que se publica es lo que está en main, con commit (el mismo con que se arma el instalador).
+// 3. El código: lo que se publica es lo que está en main, con commit (el mismo con que Actions arma el instalador).
 // En el ensayo solo avisa, y revisa el último commit.
 const avisar = (mensaje) => (ensayo ? console.log(`⚠ ${mensaje}`) : frenar(mensaje));
 const raiz = git(APP, 'rev-parse', '--show-toplevel').stdout.trim();
@@ -57,6 +64,7 @@ if (!enMain) avisar('Lo que se publica tiene que estar en main: unilo a main pri
 
 // La foto: el repositorio público tal como está, con todos sus archivos reemplazados por los de main.
 const carpeta = fs.mkdtempSync(path.join(os.tmpdir(), 'broots-publicar-'));
+process.on('exit', () => fs.rmSync(carpeta, { recursive: true, force: true }));
 const codigo = path.join(carpeta, 'codigo');
 const clon = gh('repo', 'clone', REPOSITORIO, codigo, '--', '--quiet', '--depth', '1', '-c', 'core.autocrlf=false');
 if (clon.status !== 0) frenar(`No pude bajar ${REPOSITORIO}:\n${clon.stderr}`);
@@ -67,6 +75,7 @@ if (git(raiz, 'archive', '--format=tar', '-o', tar, 'HEAD').status !== 0) frenar
 const extraer = spawnSync(path.join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe'), ['-xf', tar, '-C', codigo], { encoding: 'utf8' });
 if (extraer.status !== 0) frenar(`No pude abrir la foto del código:\n${extraer.stderr}`);
 fs.rmSync(tar);
+if (!fs.existsSync(path.join(codigo, '.github', 'workflows', WORKFLOW))) avisar(`Falta .github/workflows/${WORKFLOW}: sin él, GitHub no puede armar el instalador.`);
 
 // Revisión de datos personales: lo general acá; lo personal (nombres, mails, cuentas), en revision.txt.
 if (!fs.existsSync(REVISION)) frenar(`Falta la lista de datos personales a revisar: creá «${REVISION}» con una palabra o expresión por línea (tu nombre, tu mail, tu cuenta…).`);
@@ -101,47 +110,14 @@ git(codigo, 'add', '-A');
 const cambios = git(codigo, 'diff', '--cached', '--stat').stdout.trim();
 console.log(cambios ? `Cambios en el código público:\n${cambios}` : 'El código público ya está al día.');
 
-// 4. El instalador.
-let archivo, notas, sha256;
-if (!soloCodigo) {
-  if (!sinArmar && !ensayo) {
-    console.log('Armando el instalador…');
-    const r = spawnSync('npm run instalador', { cwd: APP, shell: true, stdio: 'inherit' });
-    if (r.status !== 0) frenar('No se pudo armar el instalador (ver arriba).');
-  }
-  const instalador = path.join(APP, 'instalador', `Instalar Broots ${version}.exe`);
-  if (!fs.existsSync(instalador)) frenar(`No encontré «${path.relative(APP, instalador)}».`);
-  const contenido = fs.readFileSync(instalador);
-  sha256 = crypto.createHash('sha256').update(contenido).digest('hex');
-  // En GitHub el nombre va sin espacios (los cambiaría por puntos).
-  archivo = path.join(carpeta, `Instalar-Broots-${version}.exe`);
-  fs.copyFileSync(instalador, archivo);
-
-  // 5. La descripción: las novedades a la vista y, escondidas, para que Broots las muestre en su aviso.
-  const lista = (idioma) => novedades[idioma].map((n) => `- ${n}`).join('\n');
-  notas = [
-    '## Novedades',
-    '',
-    lista('es'),
-    '',
-    `**Para instalar:** bajá «${path.basename(archivo)}» y abrilo. Si ya tenés Broots 1.6.0 o posterior, se actualiza solo. ` +
-      'Si Windows dice «Windows protegió su PC», tocá «Más información» → «Ejecutar de todas formas»: el instalador todavía no tiene firma digital.',
-    '',
-    ...['en', 'pt'].flatMap((idioma) => [`<details><summary>${IDIOMAS[idioma]}</summary>`, '', lista(idioma), '', '</details>', '']),
-    `<!-- novedades ${JSON.stringify(novedades)} -->`,
-    '',
-  ].join('\n');
-  console.log(`Instalador: ${path.basename(archivo)} (${(contenido.length / 1024 ** 2).toFixed(0)} MB, SHA-256 ${sha256.slice(0, 16)}…)`);
-}
 if (ensayo) {
-  if (notas) console.log(`\n--- descripción ---\n${notas}--- fin ---`);
+  if (publicarVersion) console.log(`\nActions armaría «${nombreEnGitHub(version)}» y publicaría la versión con esta descripción:\n\n--- descripción ---\n${notas({ version, novedades })}--- fin ---`);
+  if (pruebaCi) console.log('\nActions armaría el instalador de prueba, sin crear ninguna versión.');
   console.log('\nEnsayo: no se publicó nada.');
-  fs.rmSync(carpeta, { recursive: true, force: true });
   process.exit(0);
 }
 
-// 6. Publicar: primero el código (con el mail anónimo de GitHub, nunca el personal) y después la versión, que
-// apunta a ese commit.
+// 4. El código: commit con el mail anónimo de GitHub (nunca el personal) y push a main.
 if (cambios) {
   const cuenta = JSON.parse(gh('api', 'user').stdout || '{}');
   if (!cuenta.id) frenar('No pude leer la cuenta de GitHub (gh api user).');
@@ -153,18 +129,51 @@ if (cambios) {
   console.log(`✓ Código publicado: https://github.com/${REPOSITORIO}`);
 }
 const commitPublico = git(codigo, 'rev-parse', 'HEAD').stdout.trim();
-if (soloCodigo) {
-  fs.rmSync(carpeta, { recursive: true, force: true });
-  process.exit(0);
+if (soloCodigo) process.exit(0);
+
+// 5. La etiqueta de la versión, en ese commit. Si quedó de un intento anterior (Actions falló), se reusa.
+if (publicarVersion) {
+  const remota = git(codigo, 'ls-remote', '--tags', 'origin', `refs/tags/${etiqueta}`).stdout.trim().split(/\s/)[0];
+  if (remota && remota !== commitPublico) frenar(`La etiqueta ${etiqueta} ya existe en GitHub y apunta a otro commit (${remota.slice(0, 7)}). Subí la versión en package.json.`);
+  if (!remota) {
+    git(codigo, 'tag', etiqueta, commitPublico);
+    const subida = git(codigo, 'push', '-q', 'origin', `refs/tags/${etiqueta}`);
+    if (subida.status !== 0) frenar(`GitHub no aceptó la etiqueta ${etiqueta}:\n${subida.stderr}`);
+  }
 }
 
-console.log('Publicando la versión…');
-const archivoNotas = path.join(carpeta, 'notas.md');
-fs.writeFileSync(archivoNotas, notas);
-const creada = gh('release', 'create', etiqueta, `${archivo}#Instalar Broots ${version} (Windows)`, '--repo', REPOSITORIO, '--target', commitPublico, '--title', `Broots ${version}`, '--notes-file', archivoNotas, '--latest');
-if (creada.status !== 0) frenar(`GitHub no aceptó la versión:\n${creada.stderr}`);
-const publicada = JSON.parse(gh('api', `repos/${REPOSITORIO}/releases/tags/${etiqueta}`).stdout || '{}');
-const subido = publicada.assets?.find((a) => a.name === path.basename(archivo));
-fs.rmSync(carpeta, { recursive: true, force: true });
-if (subido?.digest !== `sha256:${sha256}`) frenar(`La versión se creó, pero el archivo en GitHub no coincide con el local (${subido?.digest ?? 'sin huella'}). Revisala en ${publicada.html_url}.`);
-console.log(`\n✓ Publicada: ${publicada.html_url}`);
+// 6. Actions: sobre la etiqueta arma y publica; sobre main (--prueba-ci), arma una prueba. Recién subido, GitHub
+// puede tardar unos segundos en conocer el workflow: se reintenta un minuto.
+const ref = publicarVersion ? etiqueta : 'main';
+const inicio = Date.now();
+let pedido;
+for (let intento = 0; intento < 12; intento++) {
+  pedido = gh('workflow', 'run', WORKFLOW, '--repo', REPOSITORIO, '--ref', ref);
+  if (pedido.status === 0) break;
+  esperar(5000);
+}
+if (pedido.status !== 0) frenar(`No pude pedirle a GitHub Actions que arme el instalador:\n${pedido.stderr}`);
+let corrida = /\/actions\/runs\/(\d+)/.exec(pedido.stdout)?.[1];
+for (let intento = 0; !corrida && intento < 20; intento++) {
+  esperar(3000);
+  const lista = JSON.parse(gh('run', 'list', '--repo', REPOSITORIO, '--workflow', WORKFLOW, '--event', 'workflow_dispatch', '--json', 'databaseId,headBranch,createdAt', '--limit', '10').stdout || '[]');
+  corrida = lista.find((c) => c.headBranch === ref && Date.parse(c.createdAt) >= inicio - 60000)?.databaseId;
+}
+if (!corrida) frenar(`Le pedí a Actions que arme el instalador, pero no encuentro la corrida. Mirala en https://github.com/${REPOSITORIO}/actions.`);
+const enlace = `https://github.com/${REPOSITORIO}/actions/runs/${corrida}`;
+console.log(`\nGitHub Actions está armando el instalador (tarda unos minutos): ${enlace}`);
+if (spawnSync('gh', ['run', 'watch', String(corrida), '--repo', REPOSITORIO, '--exit-status', '--interval', '15'], { stdio: 'inherit' }).status !== 0) {
+  frenar(`Actions no pudo terminar (ver ${enlace}). Ninguna copia instalada ve una versión a medias. ` +
+    (publicarVersion ? 'Si fue un problema de GitHub, volvé a correr npm run publicar; si hay que cambiar el código, subí la versión.' : ''));
+}
+
+// 7. Verificar el resultado.
+if (pruebaCi) {
+  console.log(`\n✓ Prueba armada: el instalador y la descripción quedaron en ${enlace} (Artifacts), por 5 días. No se publicó ninguna versión.`);
+  process.exit(0);
+}
+const ultima = JSON.parse(gh('api', `repos/${REPOSITORIO}/releases/latest`).stdout || '{}');
+const subido = ultima.assets?.find((a) => a.name === nombreEnGitHub(version));
+if (ultima.tag_name !== etiqueta) frenar(`Actions terminó, pero la última versión en GitHub es ${ultima.tag_name ?? 'ninguna'}, no ${etiqueta}. Revisá ${enlace}.`);
+if (!subido?.digest?.startsWith('sha256:')) frenar(`La versión está publicada, pero su instalador no tiene huella. Revisala en ${ultima.html_url}.`);
+console.log(`\n✓ Publicada: ${ultima.html_url}\n  Huella del instalador: ${subido.digest}`);
