@@ -362,7 +362,7 @@
       "idiomaBroots": "Broots language",
       "idiomaDetalle": "If you don’t choose one, Windows’ language is used. The reader translates into this language.",
       "lector": "READER",
-      "lectorNota": "This is the size books open with. If you change it while reading (A− / A+), the reader remembers the last one.",
+      "lectorNota": "Same as the reader’s “Aa” button: whatever you change here or while reading applies to every book on this PC.",
       "tamañoLetra": "Font size",
       "letraChica": "Smaller text",
       "letraGrande": "Larger text",
@@ -922,6 +922,62 @@
         "copiado": "✓ Copied. Paste away.",
         "pista": "New: select some text with your mouse to highlight it and jot down whatever comes to mind."
       }
+    },
+    "lectura": {
+      "titulo": "Reading your way",
+      "boton": "Reading your way: theme, size, font and margins",
+      "tema": "Theme",
+      "temas": {
+        "auto": "Auto",
+        "claro": "Light",
+        "sepia": "Sepia",
+        "oscuro": "Dark",
+        "negro": "Black"
+      },
+      "temasExplica": {
+        "auto": "Same as Broots: light or dark, whatever you picked in Settings",
+        "claro": "Light paper, the classic",
+        "sepia": "Warm, yellowed paper that’s easier on the eyes. Smells like an old book (almost)",
+        "oscuro": "Dark gray, for reading at night",
+        "negro": "Pure black: read in the dark without the glare (and it saves battery on OLED screens)"
+      },
+      "letra": "Size",
+      "px": "{n} px",
+      "fuente": "Font",
+      "fuentes": {
+        "literata": "The usual one: designed for reading books on screen",
+        "georgia": "A classic, like your morning newspaper",
+        "atkinson": "Highly legible: every letter stands apart from the rest. Great for tired eyes",
+        "inter": "Sans serif, like the rest of Broots",
+        "dislexia": "Designed for people with dyslexia: heavier bottoms keep letters from flipping around"
+      },
+      "interlineado": "Line spacing",
+      "interlineados": {
+        "junto": "Tight",
+        "normal": "Normal",
+        "aireado": "Airy"
+      },
+      "margenes": "Margins",
+      "margenesOpciones": {
+        "chicos": "Small",
+        "normales": "Normal",
+        "grandes": "Wide"
+      },
+      "justificar": "Justify text",
+      "justificarDetalle": "Even on both sides, like a printed book. Now and then it leaves a gap between words."
+    },
+    "explicar": {
+      "boton": "Explain",
+      "botonExplica": "Ask Gemini what this means, in context and spoiler-free",
+      "pensando": "Gemini is putting its reading glasses on…",
+      "guardarComoNota": "Save as note",
+      "guardarExplica": "Saves it as the highlight’s note (and highlights it, if it wasn’t already)",
+      "guardadaComoNota": "✓ Saved as a note. It’s not getting away now.",
+      "prefijoNota": "Gemini: ",
+      "deGemini": "Gemini · 30 days",
+      "cuantoDura": "Broots keeps the explanation for 30 days, so asking again doesn’t eat into your quota. To keep it for good, save it as a note.",
+      "faltaClave": "To explain things, Broots needs your Gemini key (it’s free and you only add it once).",
+      "noPude": "Couldn’t get the explanation. Try again."
     }
   },
   "electron": {
@@ -1063,7 +1119,9 @@
       "noPude": "Couldn't translate: {detalle}",
       "errorDesconocido": "unknown error",
       "sinClave": "Your Gemini key is missing.",
-      "funciona": "✓ Gemini is in great shape: “{ejemplo}”"
+      "funciona": "✓ Gemini is in great shape: “{ejemplo}”",
+      "noPudeExplicar": "Couldn’t explain it: {detalle}",
+      "nadaQueExplicar": "Nothing is selected to explain."
     },
     "lector": {
       "noEsEpub": "The file doesn't look like a valid EPUB.",

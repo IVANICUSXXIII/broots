@@ -362,7 +362,7 @@
       "idiomaBroots": "Idioma de Broots",
       "idiomaDetalle": "Si no elegís ninguno, se usa el de Windows. El lector traduce a este idioma.",
       "lector": "LECTOR",
-      "lectorNota": "Es el tamaño con el que se abren los libros. Si lo cambiás leyendo (A− / A+), el lector recuerda el último.",
+      "lectorNota": "Lo mismo que el botón «Aa» del lector: lo que cambies acá o leyendo vale para todos los libros, en esta PC.",
       "tamañoLetra": "Tamaño de letra",
       "letraChica": "Letra más chica",
       "letraGrande": "Letra más grande",
@@ -922,6 +922,62 @@
         "copiado": "✓ Copiado. Pegalo donde quieras.",
         "pista": "Novedad: seleccioná un pedazo de texto con el mouse para subrayarlo y anotarle lo que se te ocurra."
       }
+    },
+    "lectura": {
+      "titulo": "Lectura a medida",
+      "boton": "Lectura a medida: tema, letra, fuente y márgenes",
+      "tema": "Tema",
+      "temas": {
+        "auto": "Auto",
+        "claro": "Claro",
+        "sepia": "Sepia",
+        "oscuro": "Oscuro",
+        "negro": "Negro"
+      },
+      "temasExplica": {
+        "auto": "Como Broots: claro u oscuro, según elegiste en Configuración",
+        "claro": "Papel claro, el de siempre",
+        "sepia": "Papel amarillento, más cálido para la vista. Huele a libro viejo (casi)",
+        "oscuro": "Gris oscuro, para leer de noche",
+        "negro": "Negro puro: para leer a oscuras sin encandilarte (y en pantallas OLED gasta menos batería)"
+      },
+      "letra": "Letra",
+      "px": "{n} px",
+      "fuente": "Fuente",
+      "fuentes": {
+        "literata": "La de siempre: hecha para leer libros en pantalla",
+        "georgia": "Clásica, como la de un diario de papel",
+        "atkinson": "Muy legible: cada letra se distingue de las demás. Ideal para la vista cansada",
+        "inter": "Sin serifa, como el resto de Broots",
+        "dislexia": "Pensada para personas con dislexia: cada letra tiene más peso abajo y no se confunde con otra"
+      },
+      "interlineado": "Interlineado",
+      "interlineados": {
+        "junto": "Junto",
+        "normal": "Normal",
+        "aireado": "Aireado"
+      },
+      "margenes": "Márgenes",
+      "margenesOpciones": {
+        "chicos": "Chicos",
+        "normales": "Normales",
+        "grandes": "Grandes"
+      },
+      "justificar": "Justificar el texto",
+      "justificarDetalle": "Parejo de los dos lados, como en papel. A veces deja algún hueco entre palabras."
+    },
+    "explicar": {
+      "boton": "Explicar",
+      "botonExplica": "Que Gemini te explique qué quiere decir, en este contexto y sin spoilers",
+      "pensando": "Gemini se está poniendo los anteojos…",
+      "guardarComoNota": "Guardar como nota",
+      "guardarExplica": "La guarda como nota del subrayado (si no estaba subrayado, lo subraya)",
+      "guardadaComoNota": "✓ Guardada como nota. Ya no se te escapa.",
+      "prefijoNota": "Gemini: ",
+      "deGemini": "Gemini · 30 días",
+      "cuantoDura": "Broots guarda la explicación 30 días, así preguntar lo mismo otra vez no gasta tu cupo. Para quedártela, guardala como nota.",
+      "faltaClave": "Para explicar hace falta tu clave de Gemini (es gratis y se carga una sola vez).",
+      "noPude": "No pude pedir la explicación. Probá de nuevo."
     }
   },
   "electron": {
@@ -1063,7 +1119,9 @@
       "noPude": "No pude traducir: {detalle}",
       "errorDesconocido": "error desconocido",
       "sinClave": "Falta tu clave de Gemini.",
-      "funciona": "✓ Gemini está en forma: «{ejemplo}»"
+      "funciona": "✓ Gemini está en forma: «{ejemplo}»",
+      "noPudeExplicar": "No pude explicarlo: {detalle}",
+      "nadaQueExplicar": "No hay nada seleccionado para explicar."
     },
     "lector": {
       "noEsEpub": "El archivo no parece un EPUB válido.",

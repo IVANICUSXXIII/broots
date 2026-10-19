@@ -1,4 +1,21 @@
 {
+  "1.9.0": {
+    "es": [
+      "Lectura a medida: el botón «Aa» del lector elige el tema (claro, sepia, oscuro o negro puro), el tamaño de letra, la fuente, el interlineado y los márgenes. Todo se ve en el momento y no perdés el párrafo donde estabas.",
+      "Cinco fuentes que andan sin internet: Literata, Georgia, Atkinson (muy legible, ideal para la vista cansada), Inter y OpenDyslexic (pensada para personas con dislexia). Y si te gusta como en papel, podés justificar el texto.",
+      "«Explicar»: seleccioná una palabra, un nombre o una frase y Gemini te cuenta qué quiere decir en ese contexto, sin spoilers. Si te sirve, la guardás como nota del subrayado."
+    ],
+    "en": [
+      "Reading your way: the reader’s “Aa” button picks the theme (light, sepia, dark or pure black), text size, font, line spacing and margins. Changes show up right away and you never lose your paragraph.",
+      "Five fonts that work offline: Literata, Georgia, Atkinson (highly legible, great for tired eyes), Inter and OpenDyslexic (designed for people with dyslexia). And if you like it bookish, you can justify the text.",
+      "“Explain”: select a word, a name or a sentence and Gemini tells you what it means in context, spoiler-free. If it helps, save it as the highlight’s note."
+    ],
+    "pt": [
+      "Leitura do seu jeito: o botão «Aa» do leitor escolhe o tema (claro, sépia, escuro ou preto puro), o tamanho da letra, a fonte, a entrelinha e as margens. Tudo aparece na hora e você não perde o parágrafo onde estava.",
+      "Cinco fontes que funcionam sem internet: Literata, Georgia, Atkinson (muito legível, ótima para a vista cansada), Inter e OpenDyslexic (pensada para pessoas com dislexia). E se você curte o jeito do papel, dá para justificar o texto.",
+      "«Explicar»: selecione uma palavra, um nome ou uma frase e o Gemini conta o que quer dizer nesse contexto, sem spoilers. Se ajudar, salve como nota do destaque."
+    ]
+  },
   "1.8.0": {
     "es": [
       "Subrayá y anotá en el lector: seleccioná un pedazo de texto, elegí uno de cuatro colores y, si querés, sumale una nota. Tocá un subrayado para cambiarlo o borrarlo (con «Deshacer», por las dudas).",

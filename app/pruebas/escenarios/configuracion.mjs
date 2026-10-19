@@ -19,7 +19,7 @@ export default {
     // Cada sección muestra lo suyo.
     const esperado = {
       general: ['Carpeta de la biblioteca', 'broots-prueba', 'Tema', 'Idioma de Broots', 'el de Windows'],
-      lectura: ['Tamaño de letra', 'Clave de Gemini', 'Google AI Studio'],
+      lectura: ['Interlineado', 'Márgenes', 'Clave de Gemini', 'Google AI Studio'],
       kindle: ['ENVIAR AL KINDLE POR MAIL', 'Documentos personales'],
       familia: ['Agregar'],
       calibre: ['Qué usa Broots'],
@@ -93,6 +93,16 @@ export default {
     boton(lectura, 'Letra más grande').click();
     await esperar(200);
     comprobar('cambia el tamaño de letra del lector', JSON.parse(localStorage.getItem('broots-lector-letra')) === antes + 1);
+    // 1.9: el tema y la fuente del lector también, con la muestra al lado.
+    lectura.querySelector('[data-tema="sepia"]').click();
+    lectura.querySelector('[data-fuente="atkinson"]').click();
+    await esperar(300);
+    const muestra = lectura.querySelector('[data-muestra-lectura]');
+    const medida = JSON.parse(localStorage.getItem('broots-lector-medida') ?? '{}');
+    comprobar('cambia el tema y la fuente del lector', medida.tema === 'sepia' && medida.fuente === 'atkinson', JSON.stringify(medida));
+    comprobar('la muestra se ve en sepia y con Atkinson', muestra?.dataset.temaLector === 'sepia' && getComputedStyle(muestra.querySelector('.texto-libro')).fontFamily.includes('Atkinson'));
+    lectura.querySelector('[data-tema="auto"]').click();
+    lectura.querySelector('[data-fuente="literata"]').click();
     const estado = await window.lector.estadoTraduccion();
     comprobar('la clave de Gemini nunca vuelve a la interfaz', !Object.keys(estado).some((k) => /^clave$|cifrada/i.test(k)), Object.keys(estado).join(','));
 

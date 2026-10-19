@@ -4,13 +4,14 @@
 // Las preferencias nuevas (p. ej. Amazon o el idioma) se guardan en config.json de esta PC (window.preferencias).
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { IDIOMAS, ponerIdioma, region, resorte, resorteRapido, t, useIdioma } from '../lib/index.js';
+import { IDIOMAS, MARGENES, ponerIdioma, region, resorte, resorteRapido, t, useAjustesLectura, useIdioma, variablesTexto } from '../lib/index.js';
 import {
   IconoAyuda, IconoCafe, IconoCarpeta, IconoCerrar, IconoCheck, IconoCompartir, IconoCorazon, IconoEngranaje, IconoEscudo, IconoInfo, IconoKindle, IconoLibros,
   IconoRecargar, IconoTraducir, LogoBroots,
 } from './Iconos.jsx';
 import { Boton, Interruptor } from './Piezas.jsx';
 import { FormularioGemini } from './Gemini.jsx';
+import { ControlesLectura } from './LecturaAMedida.jsx';
 import { ConfigEnvio } from './Kindle.jsx';
 import { ContenidoFamilia } from './Compartir.jsx';
 import { ContenidoAyuda } from './Ayuda.jsx';
@@ -37,18 +38,6 @@ export const SECCIONES = [
     return t(`configuracion.secciones.${s.id}.descripcion`);
   },
 }));
-
-// Tamaño de letra del lector: es el mismo valor que recuerda el lector (Lector.jsx) en esta PC.
-const CLAVE_LETRA = 'broots-lector-letra';
-const LETRA = { defecto: 19, min: 14, max: 30 };
-function leerLetra() {
-  try {
-    const v = JSON.parse(localStorage.getItem(CLAVE_LETRA));
-    return typeof v === 'number' ? v : LETRA.defecto;
-  } catch {
-    return LETRA.defecto;
-  }
-}
 
 // ---------- Piezas ----------
 
@@ -195,33 +184,31 @@ function HabitoDeLectura({ preferencias, onPreferencias }) {
 }
 
 function Lectura({ preferencias, onPreferencias }) {
-  const [letra, setLetra] = useState(leerLetra);
+  // 1.9: tema, letra, fuente, interlineado, márgenes y justificado: lo mismo que el botón «Aa» del lector, en esta PC.
+  const [ajustes, cambiarAjustes] = useAjustesLectura();
   const [tieneClave, setTieneClave] = useState(null);
   const leerEstado = () => window.lector.estadoTraduccion().then((e) => setTieneClave(e.tieneClave)).catch(() => {});
   useEffect(() => {
     leerEstado();
   }, []);
-  const cambiarLetra = (paso) => {
-    const nueva = Math.min(LETRA.max, Math.max(LETRA.min, letra + paso));
-    setLetra(nueva);
-    try {
-      localStorage.setItem(CLAVE_LETRA, JSON.stringify(nueva));
-    } catch {}
-  };
 
   return (
     <>
       <Grupo titulo={t('configuracion.lector')} nota={t('configuracion.lectorNota')}>
-        <Fila etiqueta={t('configuracion.tamañoLetra')}>
-          <div className="flex items-center gap-1.5">
-            <Boton onClick={() => cambiarLetra(-1)} disabled={letra <= LETRA.min} title={t('configuracion.letraChica')}>A−</Boton>
-            <span className="w-14 text-center text-[0.8rem] tabular-nums" data-letra>{letra} px</span>
-            <Boton onClick={() => cambiarLetra(1)} disabled={letra >= LETRA.max} title={t('configuracion.letraGrande')}>A+</Boton>
+        <div className="grid gap-5 py-4 sm:grid-cols-[minmax(0,17rem)_minmax(0,1fr)]">
+          <ControlesLectura ajustes={ajustes} onCambiar={cambiarAjustes} idGrupo="configuracion" />
+          {/* La muestra con el tema, la letra y los márgenes elegidos, como se vería en el lector */}
+          <div
+            data-muestra-lectura
+            data-tema-lector={ajustes.tema === 'auto' ? undefined : ajustes.tema}
+            className="squircle self-start rounded-[14px] bg-superficie px-5 py-4 shadow-[inset_0_0_0_1px_var(--borde)]"
+            style={{ ...variablesTexto(ajustes), paddingInline: `${Math.round(MARGENES[ajustes.margenes].lateral / 3)}px` }}
+          >
+            <p className="texto-libro cursor-auto text-tinta" style={{ fontSize: `${ajustes.letra}px` }}>
+              {t('configuracion.muestra')}
+            </p>
           </div>
-        </Fila>
-        <p className="py-3 font-serif leading-relaxed text-tinta" style={{ fontSize: `${letra}px` }}>
-          {t('configuracion.muestra')}
-        </p>
+        </div>
       </Grupo>
 
       <HabitoDeLectura preferencias={preferencias} onPreferencias={onPreferencias} />

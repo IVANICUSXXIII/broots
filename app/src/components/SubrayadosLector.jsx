@@ -12,7 +12,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { fechaCorta, idiomaActual, resorte, resortePresion, resorteRapido, t } from '../lib/index.js';
 import { COLORES, anclaDeSeleccion, buscarEnParrafos, despintar, envolver, indiceNormalizado, normalizar, ordenar, textoDeAncla } from '../lib/subrayados.js';
-import { IconoBorrar, IconoCerrar, IconoCopiar, IconoEditar, IconoSubrayar } from './Iconos.jsx';
+import { IconoBorrar, IconoCerrar, IconoCopiar, IconoEditar, IconoExplicar, IconoSubrayar } from './Iconos.jsx';
+import { explicable } from './Explicar.jsx';
 
 const LARGO_MAXIMO = 8000; // caracteres: más que eso ya no es un subrayado, es medio capítulo
 
@@ -263,6 +264,40 @@ export function useSubrayados({ libro, r, texto, marco, abierto, avisar }) {
     }
   };
 
+  // ---------- 1.9: «Explicar» ----------
+
+  /** Lo que «Explicar» le manda a Gemini: lo seleccionado (o el subrayado tocado) y el párrafo donde está. */
+  const paraExplicar = () => {
+    const b = estado.current.barra;
+    if (!b) return null;
+    if (b.modo === 'nuevo') return { modo: 'nuevo', ancla: b.ancla, texto: b.ancla.texto, parrafo: r.parrafos[b.ancla.parrafo]?.textContent ?? '', caja: b.caja };
+    const e = lista.current.find((x) => x.id === b.id);
+    const a = r.anclas?.get(b.id);
+    if (!e) return null;
+    return { modo: b.modo, id: b.id, texto: e.texto, parrafo: a ? r.parrafos[a.parrafo]?.textContent ?? '' : '', caja: b.caja };
+  };
+
+  /** Subraya una selección con una nota ya escrita (la explicación de Gemini). Devuelve true si se guardó. */
+  const crearConNota = async (ancla, notaNueva) => {
+    const registro = { ...nuevoRegistro(ancla, preferencia('broots-subrayado-color', COLORES[0])), nota: notaNueva };
+    window.getSelection()?.removeAllRanges();
+    aplicar(comoEntrada(registro));
+    if (await guardar(registro)) return true;
+    quitar(registro.id);
+    return false;
+  };
+
+  /** Suma un texto al final de la nota de un subrayado de Broots. Devuelve true si se guardó. */
+  const sumarANota = async (id, agregado) => {
+    const e = lista.current.find((x) => x.id === id);
+    if (!e || e.origen === 'kindle') return false;
+    const cambiado = { ...e, nota: e.nota ? `${e.nota}\n\n${agregado}` : agregado };
+    aplicar(cambiado);
+    if (await guardar(cambiado)) return true;
+    aplicar(e);
+    return false;
+  };
+
   const cambiarColor = async (id, color) => {
     const e = lista.current.find((x) => x.id === id);
     setBarra(null);
@@ -343,6 +378,7 @@ export function useSubrayados({ libro, r, texto, marco, abierto, avisar }) {
     entradas, md, barra, nota, panelAbierto, setPanelAbierto, contexto,
     alAbrirCapitulo: pintarCapitulo, alCambiarParrafo: pintarParrafo,
     alSoltar, alTocar, crear, cambiarColor, abrirNota, guardarNota, borrar, copiar, cerrarBarra, cerrarAlgo, destacar,
+    paraExplicar, crearConNota, sumarANota, // 1.9: «Explicar» (Explicar.jsx)
     escribiendo: () => Boolean(estado.current.nota), // con la nota abierta, las flechas no pasan de página
     escribirNota: (escrita) => setNota((n) => (n ? { ...n, texto: escrita } : n)),
     descartarNota: () => setNota(null),
@@ -351,7 +387,7 @@ export function useSubrayados({ libro, r, texto, marco, abierto, avisar }) {
 
 // ---------- La barrita ----------
 
-const ANCHO_BARRA = 300;
+const ANCHO_BARRA = 380; // con «Explicar» (1.9)
 
 function BotonBarrita({ children, ...props }) {
   return (
@@ -372,9 +408,10 @@ function posicion(caja) {
   return { left: centro, top: caja.y > 54 ? caja.y - 46 : caja.y + caja.alto + 8 };
 }
 
-export function BarraSubrayado({ sub }) {
+export function BarraSubrayado({ sub, onExplicar }) {
   const { barra } = sub;
   const entrada = barra?.id ? sub.entradas.find((e) => e.id === barra.id) : null;
+  const seExplica = barra && explicable(barra.modo === 'nuevo' ? barra.ancla?.texto : entrada?.texto); // 1.9
   return (
     <AnimatePresence>
       {barra && (
@@ -419,6 +456,11 @@ export function BarraSubrayado({ sub }) {
           <BotonBarrita data-accion="copiar" onClick={sub.copiar}>
             <IconoCopiar className="size-3.5" /> {t('subrayados.lector.copiar')}
           </BotonBarrita>
+          {seExplica && onExplicar && (
+            <BotonBarrita data-accion="explicar" onClick={onExplicar} title={t('explicar.botonExplica')}>
+              <IconoExplicar className="size-3.5 text-acento" /> {t('explicar.boton')}
+            </BotonBarrita>
+          )}
           {barra.modo === 'editar' && (
             <BotonBarrita data-accion="borrar" onClick={() => sub.borrar(barra.id)} title={t('subrayados.lector.borrar')}>
               <IconoBorrar className="size-3.5" />

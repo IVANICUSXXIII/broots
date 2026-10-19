@@ -62,6 +62,10 @@ contextBridge.exposeInMainWorld('lector', {
   borrarClave: () => ipcRenderer.invoke('traduccion:borrarClave'),
   ayudaClave: () => ipcRenderer.invoke('traduccion:ayuda'),
   traducir: (id, textos, urgente) => ipcRenderer.invoke('traduccion:traducir', id, textos, urgente),
+  // 1.9: los colores del tema del lector para la barra de título de Windows (null: los de Broots).
+  colorBarra: (colores) => ipcRenderer.invoke('lector:colorBarra', colores),
+  // 1.9: «Explicar»: qué quiere decir lo seleccionado, en su contexto (Gemini, al idioma de Broots).
+  explicar: (id, pedido) => ipcRenderer.invoke('traduccion:explicar', id, pedido),
 });
 
 // 1.7: hábito de lectura (sesiones, estadísticas, relecturas y la columna «Estado»).

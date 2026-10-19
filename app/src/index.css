@@ -1,6 +1,12 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/inter';
 @import '@fontsource-variable/literata';
+/* 1.9: fuentes que se pueden elegir en el lector (Georgia la trae Windows) */
+@import '@fontsource-variable/atkinson-hyperlegible-next';
+@import '@fontsource-variable/atkinson-hyperlegible-next/wght-italic.css';
+@import '@fontsource/opendyslexic/400.css';
+@import '@fontsource/opendyslexic/400-italic.css';
+@import '@fontsource/opendyslexic/700.css';
 
 /*
   Paleta Broots: verdes, pasteles y tierra.
@@ -68,6 +74,126 @@
     --linea-kindle: #8c8a7e;
     color-scheme: dark;
   }
+}
+
+/*
+  1.9: temas del lector. Pintan todo el lector (barras, paneles y página): el atributo data-tema-lector va en su
+  caja y redefine las mismas variables. Sin atributo (Automático), el lector sigue el claro u oscuro de Broots.
+  Cada tema tiene sus colores de subrayado (fondo y línea), pensados para su papel.
+  Si cambiás --superficie o --tinta de un tema, actualizá también COLORES_BARRA en src/lib/lectura.js.
+*/
+[data-tema-lector='claro'] {
+  --ventana: #eeecd6;
+  --superficie: #fdfaea;
+  --superficie-2: #f3f0dc;
+  --borde: #dedbc4;
+  --tinta: #2b361c;
+  --tinta-suave: #5c6447;
+  --tinta-tenue: #8d9178;
+  --verde: #636b3f;
+  --seleccion: #dfe3c6;
+  --acento: #b17036;
+  --acento-suave: #f4e3cd;
+  --sobre-acento: #ffffff;
+  --estrella: #b17036;
+  --scroll: #c9c6ad;
+  --sombra: 43 54 28;
+  --subrayado-amarillo: #f5df98;
+  --subrayado-verde: #d3e0b0;
+  --subrayado-celeste: #cde0ea;
+  --subrayado-rosa: #f1cfd4;
+  --subrayado-kindle: #e3dfcb;
+  --linea-amarillo: #d4ae3c;
+  --linea-verde: #8ea565;
+  --linea-celeste: #78a3bd;
+  --linea-rosa: #cf8593;
+  --linea-kindle: #a9a58e;
+  color-scheme: light;
+}
+[data-tema-lector='sepia'] {
+  --ventana: #ecdfc4;
+  --superficie: #f4e8d0;
+  --superficie-2: #ebdcbf;
+  --borde: #dccaa6;
+  --tinta: #4b3a2a;
+  --tinta-suave: #6e5640;
+  --tinta-tenue: #977d62;
+  --verde: #6b6a3a;
+  --seleccion: #e5d6b3;
+  --acento: #9a5b25;
+  --acento-suave: #ecd3b4;
+  --sobre-acento: #ffffff;
+  --estrella: #9a5b25;
+  --scroll: #cdb995;
+  --sombra: 74 54 38;
+  --subrayado-amarillo: #ecd27e;
+  --subrayado-verde: #cfd8a4;
+  --subrayado-celeste: #c4d6d6;
+  --subrayado-rosa: #ebc3bd;
+  --subrayado-kindle: #ddcfae;
+  --linea-amarillo: #c49a2c;
+  --linea-verde: #87994f;
+  --linea-celeste: #6f9696;
+  --linea-rosa: #c27a72;
+  --linea-kindle: #a39272;
+  color-scheme: light;
+}
+[data-tema-lector='oscuro'] {
+  --ventana: #1f1f1d;
+  --superficie: #282826;
+  --superficie-2: #33332f;
+  --borde: #42423d;
+  --tinta: #efece4;
+  --tinta-suave: #bcb9af;
+  --tinta-tenue: #8c8a82;
+  --verde: #a3b18a;
+  --seleccion: #38412f;
+  --acento: #d4a369;
+  --acento-suave: #43372a;
+  --sobre-acento: #22190f;
+  --estrella: #d4a369;
+  --scroll: #5e5d57;
+  --sombra: 0 0 0;
+  --subrayado-amarillo: #5b4e24;
+  --subrayado-verde: #3e4a2b;
+  --subrayado-celeste: #2d4250;
+  --subrayado-rosa: #553239;
+  --subrayado-kindle: #45443d;
+  --linea-amarillo: #c0a148;
+  --linea-verde: #8ea46b;
+  --linea-celeste: #6f99b3;
+  --linea-rosa: #c27d8a;
+  --linea-kindle: #8c8a7e;
+  color-scheme: dark;
+}
+/* Negro puro (para pantallas OLED o leer a oscuras): la letra no es blanca del todo, para no encandilar. */
+[data-tema-lector='negro'] {
+  --ventana: #000000;
+  --superficie: #000000;
+  --superficie-2: #161615;
+  --borde: #2b2b29;
+  --tinta: #c9c6bc;
+  --tinta-suave: #9c998f;
+  --tinta-tenue: #75736c;
+  --verde: #8f9c78;
+  --seleccion: #262c20;
+  --acento: #c99a5f;
+  --acento-suave: #2d2419;
+  --sobre-acento: #1a130b;
+  --estrella: #c99a5f;
+  --scroll: #3a3936;
+  --sombra: 0 0 0;
+  --subrayado-amarillo: #4a3f1c;
+  --subrayado-verde: #2e3820;
+  --subrayado-celeste: #1f3340;
+  --subrayado-rosa: #46262c;
+  --subrayado-kindle: #2f2e29;
+  --linea-amarillo: #a88d3e;
+  --linea-verde: #7b8f5c;
+  --linea-celeste: #5f879e;
+  --linea-rosa: #a86c78;
+  --linea-kindle: #7a786d;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -197,10 +323,14 @@ textarea,
 }
 
 /* ---------- Lector de EPUB (etapa 5) ---------- */
+/* 1.9: fuente, interlineado y justificado salen de variables que el lector pone en su caja, así la página y el
+   medidor (el que cuenta las páginas) miden siempre igual. */
 .texto-libro {
   column-fill: auto;
-  font-family: var(--font-serif);
-  line-height: 1.62;
+  font-family: var(--fuente-libro, var(--font-serif));
+  line-height: var(--interlineado-libro, 1.62);
+  text-align: var(--alineado-libro, start);
+  hyphens: var(--guiones-libro, manual);
   color: var(--tinta);
   overflow-wrap: break-word;
   cursor: text;

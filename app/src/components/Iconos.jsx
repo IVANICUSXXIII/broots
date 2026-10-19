@@ -161,3 +161,10 @@ export const IconoCopiar = (p) => (
 export const IconoBorrar = (p) => (
   <Icono {...p}><path d="M4 7h16M10 11v6M14 11v6" /><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" /></Icono>
 );
+// 1.9: «Explicar» (una lamparita) y el botón de la lectura a medida (una «A» grande y una chica).
+export const IconoExplicar = (p) => (
+  <Icono {...p}><path d="M9 18h6M10 21h4" /><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1.1 2V16h5v-.2c.1-.8.5-1.5 1.1-2A6 6 0 0 0 12 3z" /></Icono>
+);
+export const IconoMedida = (p) => (
+  <Icono {...p}><path d="M3 19 8.5 5 14 19M5 14.5h7" /><path d="m14.5 19 3.5-9 3.5 9M15.6 16h4.8" /></Icono>
+);

@@ -5,6 +5,9 @@
 //   (por el texto original), un archivo por libro y por idioma: <uuid>.json para el español (como hasta
 //   la 1.4.0) y <uuid>.en.json o <uuid>.pt.json para los otros. Así releer un libro no gasta cupo y la
 //   traducción queda en Drive. En una biblioteca compartida (solo lectura) se guarda en esta PC.
+// - 1.9 «Explicar»: qué quiere decir lo que seleccionaste en el lector, en el contexto de su párrafo y sin spoilers.
+//   Las explicaciones se guardan 30 días en <biblioteca>/.broots/explicaciones/<uuid>.<idioma>.json (preguntar dos
+//   veces lo mismo no gasta cupo); después se borran solas. Para conservar una, el lector la guarda como nota.
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
@@ -116,20 +119,19 @@ function guardarCache(archivo) {
 
 const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function pedir(modelo, clave, textos, destino, conPensamiento = true) {
-  const generationConfig = {
-    temperature: 0.3,
-    responseMimeType: 'application/json',
-    responseSchema: { type: 'ARRAY', items: { type: 'STRING' } },
-  };
+/** Un pedido a un modelo: devuelve el texto de la respuesta. esquema: el JSON que se espera (sin esquema, texto libre). */
+async function llamar(modelo, clave, { sistema, contenido, esquema, temperatura = 0.3 }, conPensamiento = true) {
+  const generationConfig = esquema
+    ? { temperature: temperatura, responseMimeType: 'application/json', responseSchema: esquema }
+    : { temperature: temperatura, responseMimeType: 'text/plain' };
   if (modelo.pensar && conPensamiento) generationConfig.thinkingConfig = { thinkingLevel: modelo.pensar };
   const respuesta = await net.fetch(`${API}/${modelo.nombre}:generateContent`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-goog-api-key': clave },
     signal: AbortSignal.timeout(TIEMPO_MAXIMO),
     body: JSON.stringify({
-      systemInstruction: { parts: [{ text: INSTRUCCIONES[destino] }] },
-      contents: [{ role: 'user', parts: [{ text: JSON.stringify(textos) }] }],
+      systemInstruction: { parts: [{ text: sistema }] },
+      contents: [{ role: 'user', parts: [{ text: contenido }] }],
       generationConfig,
     }),
   });
@@ -143,8 +145,12 @@ async function pedir(modelo, clave, textos, destino, conPensamiento = true) {
     error.esperar = demora ? Math.ceil(parseFloat(demora) * 1000) : null;
     throw error;
   }
-  const texto = cuerpo.candidates?.[0]?.content?.parts?.filter((p) => !p.thought).map((p) => p.text ?? '').join('') ?? '';
-  const traducidos = JSON.parse(texto);
+  return cuerpo.candidates?.[0]?.content?.parts?.filter((p) => !p.thought).map((p) => p.text ?? '').join('') ?? '';
+}
+
+async function pedir(modelo, clave, textos, destino, conPensamiento = true) {
+  const pedido = { sistema: INSTRUCCIONES[destino], contenido: JSON.stringify(textos), esquema: { type: 'ARRAY', items: { type: 'STRING' } } };
+  const traducidos = JSON.parse(await llamar(modelo, clave, pedido, conPensamiento));
   if (!Array.isArray(traducidos) || traducidos.length !== textos.length) throw Object.assign(new Error(t('traduccion.incompleta')), { incompleta: true });
   return traducidos.map(String);
 }
@@ -152,14 +158,18 @@ async function pedir(modelo, clave, textos, destino, conPensamiento = true) {
 const sinModelo = new Set(); // modelos que esta clave no tiene (404): no se vuelven a probar
 const sinPensamiento = new Set(); // modelos que no aceptan elegir el nivel de "pensamiento"
 
-/** Traduce una tanda probando los modelos en orden. Si la respuesta vuelve desarmada, parte la tanda en dos. */
-async function traducirTanda(clave, textos, destino) {
+/**
+ * Prueba los modelos en orden con hacer(modelo, conPensamiento) hasta que uno conteste. Si la respuesta vuelve
+ * desarmada, alDesarmarse() puede ofrecer otro camino (al traducir, partir la tanda en dos). noPude: la clave del
+ * mensaje final si ninguno pudo.
+ */
+async function conModelos(hacer, { alDesarmarse = () => null, noPude = 'traduccion.noPude' } = {}) {
   let ultimoError = null;
   for (const modelo of MODELOS) {
     if (sinModelo.has(modelo.nombre)) continue;
     for (let intento = 0; intento < 2; intento++) {
       try {
-        return await pedir(modelo, clave, textos, destino, !sinPensamiento.has(modelo.nombre));
+        return await hacer(modelo, !sinPensamiento.has(modelo.nombre));
       } catch (error) {
         ultimoError = error;
         const detalle = `${error.motivo} ${error.message}`;
@@ -175,10 +185,8 @@ async function traducirTanda(clave, textos, destino) {
           break;
         }
         if (error.incompleta || error instanceof SyntaxError) {
-          if (textos.length > 1) {
-            const mitad = Math.ceil(textos.length / 2);
-            return [...(await traducirTanda(clave, textos.slice(0, mitad), destino)), ...(await traducirTanda(clave, textos.slice(mitad), destino))];
-          }
+          const otroCamino = alDesarmarse();
+          if (otroCamino) return await otroCamino;
           if (intento === 0) continue;
           break;
         }
@@ -195,7 +203,18 @@ async function traducirTanda(clave, textos, destino) {
   }
   if (ultimoError?.estado === 429) throw new Error(t('traduccion.limite'));
   if (ultimoError?.name === 'TimeoutError' || ultimoError?.name === 'AbortError') throw new Error(t('traduccion.demora'));
-  throw new Error(t('traduccion.noPude', { detalle: ultimoError?.message ?? t('traduccion.errorDesconocido') }));
+  throw new Error(t(noPude, { detalle: ultimoError?.message ?? t('traduccion.errorDesconocido') }));
+}
+
+/** Traduce una tanda probando los modelos en orden. Si la respuesta vuelve desarmada, parte la tanda en dos. */
+function traducirTanda(clave, textos, destino) {
+  return conModelos((modelo, pensar) => pedir(modelo, clave, textos, destino, pensar), {
+    alDesarmarse: () => {
+      if (textos.length < 2) return null;
+      const mitad = Math.ceil(textos.length / 2);
+      return (async () => [...(await traducirTanda(clave, textos.slice(0, mitad), destino)), ...(await traducirTanda(clave, textos.slice(mitad), destino))])();
+    },
+  });
 }
 
 // Cola de pedidos a Gemini: de a uno (para no chocar con el límite por minuto) y lo que está en
@@ -297,4 +316,124 @@ async function probar(config, destino = 'es') {
   }
 }
 
-module.exports = { estado, conClave, traducir, probar };
+// ---------- 1.9: «Explicar» ----------
+
+const DIAS_EXPLICACION = 30;
+const LARGO = { texto: 400, parrafo: 2400 }; // lo que se manda como máximo (el lector no ofrece Explicar para más)
+
+// Para Gemini, en el idioma de la respuesta (el de Broots). El libro, el fragmento y su párrafo van en el pedido.
+const INSTRUCCIONES_EXPLICAR = {
+  es: `Sos un compañero de lectura que sabe mucho y explica fácil. El lector seleccionó un fragmento del libro que está leyendo y quiere entenderlo. Explicale, en español latinoamericano natural y en 2 a 4 oraciones, qué quiere decir ese fragmento EN ESE CONTEXTO (el párrafo donde aparece).
+Reglas:
+- Si es una palabra o una expresión, decí qué significa acá. Si está en otro idioma, traducila.
+- Si es un nombre de persona, lugar, obra o hecho histórico, contá brevemente quién o qué es.
+- Si es una frase, explicá con palabras simples qué quiere decir.
+- Nunca adelantes nada de lo que pasa después en el libro: nada de spoilers.
+- Texto plano: sin títulos, sin listas, sin markdown y sin repetir el fragmento al principio.`,
+  en: `You're a well-read reading buddy who explains things simply. The reader selected a passage from the book they're reading and wants to understand it. In natural English and in 2 to 4 sentences, explain what that passage means IN THIS CONTEXT (the paragraph it appears in).
+Rules:
+- If it's a word or an expression, say what it means here. If it's in another language, translate it.
+- If it's the name of a person, place, work or historical event, briefly say who or what it is.
+- If it's a sentence, explain in plain words what it means.
+- Never reveal anything that happens later in the book: no spoilers.
+- Plain text: no headings, no lists, no markdown, and don't repeat the passage at the start.`,
+  pt: `Você é um companheiro de leitura que sabe muito e explica de um jeito fácil. O leitor selecionou um trecho do livro que está lendo e quer entendê-lo. Explique, em português do Brasil natural e em 2 a 4 frases, o que esse trecho quer dizer NESSE CONTEXTO (o parágrafo onde aparece).
+Regras:
+- Se for uma palavra ou expressão, diga o que significa aqui. Se estiver em outro idioma, traduza.
+- Se for o nome de uma pessoa, lugar, obra ou fato histórico, conte brevemente quem ou o que é.
+- Se for uma frase, explique com palavras simples o que ela quer dizer.
+- Nunca adiante nada do que acontece depois no livro: nada de spoilers.
+- Texto puro: sem títulos, sem listas, sem markdown e sem repetir o trecho no começo.`,
+};
+const ROTULOS = {
+  es: { libro: 'Libro', autor: 'Autor', fragmento: 'Fragmento seleccionado', parrafo: 'Párrafo donde aparece' },
+  en: { libro: 'Book', autor: 'Author', fragmento: 'Selected passage', parrafo: 'Paragraph it appears in' },
+  pt: { libro: 'Livro', autor: 'Autor', fragmento: 'Trecho selecionado', parrafo: 'Parágrafo onde aparece' },
+};
+
+function archivoExplicaciones(carpetaDatos, uuid, destino) {
+  const nombre = String(uuid).replace(/[^a-z0-9-]/gi, '');
+  return path.join(carpetaDatos, 'explicaciones', `${nombre}.${destino}.json`);
+}
+
+function escribirExplicaciones(archivo, datos) {
+  try {
+    if (!Object.keys(datos).length) return fs.rmSync(archivo, { force: true });
+    fs.mkdirSync(path.dirname(archivo), { recursive: true });
+    fs.writeFileSync(archivo, JSON.stringify(datos));
+  } catch (error) {
+    console.error('[explicar] no pude guardar las explicaciones:', error.message);
+  }
+}
+
+/** Las explicaciones guardadas de un libro, sin las de más de 30 días (si había viejas, el archivo se limpia). */
+function leerExplicaciones(archivo, ahora = Date.now()) {
+  let datos = {};
+  try {
+    datos = JSON.parse(fs.readFileSync(archivo, 'utf8'));
+  } catch {}
+  const vigentes = {};
+  let viejas = 0;
+  for (const [clave, e] of Object.entries(datos && typeof datos === 'object' ? datos : {})) {
+    const fecha = Date.parse(e?.fecha);
+    if (e?.explicacion && fecha && ahora - fecha < DIAS_EXPLICACION * 86400000) vigentes[clave] = e;
+    else viejas++;
+  }
+  if (viejas) escribirExplicaciones(archivo, vigentes);
+  return vigentes;
+}
+
+// Por si Gemini igual manda negritas o títulos de markdown: se ven como texto común.
+const limpiarRespuesta = (texto) => String(texto ?? '').replace(/\*\*|__/g, '').replace(/^\s*#+\s*/gm, '').trim();
+const unaLinea = (texto, largo) => String(texto ?? '').replace(/\s+/g, ' ').trim().slice(0, largo);
+
+/**
+ * Explica un fragmento en su contexto, en el idioma destino. pedido: { texto, parrafo, titulo, autores }.
+ * Devuelve { ok, explicacion, guardada } (guardada: ya se había pedido en los últimos 30 días) o { ok: false, mensaje, sinClave }.
+ */
+async function explicar(config, carpetaDatos, uuid, pedido, destino = 'es') {
+  if (!INSTRUCCIONES_EXPLICAR[destino]) destino = 'es';
+  const texto = unaLinea(pedido?.texto, LARGO.texto);
+  const parrafo = unaLinea(pedido?.parrafo, LARGO.parrafo);
+  if (!texto) return { ok: false, mensaje: t('traduccion.nadaQueExplicar') };
+  const archivo = archivoExplicaciones(carpetaDatos, uuid, destino);
+  const clave = huella(`${texto}\n${parrafo}`);
+  const guardada = leerExplicaciones(archivo)[clave];
+  if (guardada) return { ok: true, explicacion: guardada.explicacion, guardada: true };
+
+  let explicacion;
+  if (FALSA) {
+    await esperar(400);
+    explicacion = `${destino.toUpperCase()}· «${texto}»: explicación de prueba, en el contexto de su párrafo.`;
+  } else {
+    const claveGemini = leerClave(config);
+    if (!claveGemini) return { ok: false, sinClave: true, mensaje: t('traduccion.sinClave') };
+    const r = ROTULOS[destino];
+    const contenido = [
+      pedido?.titulo && `${r.libro}: ${unaLinea(pedido.titulo, 300)}`,
+      pedido?.autores && `${r.autor}: ${unaLinea(pedido.autores, 300)}`,
+      `${r.fragmento}: «${texto}»`,
+      parrafo && `${r.parrafo}: «${parrafo}»`,
+    ].filter(Boolean).join('\n');
+    try {
+      // Por la misma cola que las traducciones (para no chocar con el límite por minuto), y adelante: lo pidió recién.
+      explicacion = await encolar(true, () =>
+        conModelos(
+          async (modelo, pensar) => {
+            const respuesta = limpiarRespuesta(await llamar(modelo, claveGemini, { sistema: INSTRUCCIONES_EXPLICAR[destino], contenido, temperatura: 0.4 }, pensar));
+            if (!respuesta) throw Object.assign(new Error(t('traduccion.incompleta')), { incompleta: true });
+            return respuesta;
+          },
+          { noPude: 'traduccion.noPudeExplicar' },
+        ),
+      );
+    } catch (error) {
+      return { ok: false, mensaje: error.message };
+    }
+  }
+  // Se vuelve a leer el archivo por si mientras tanto se guardó otra explicación.
+  escribirExplicaciones(archivo, { ...leerExplicaciones(archivo), [clave]: { texto, explicacion, fecha: new Date().toISOString() } });
+  return { ok: true, explicacion, guardada: false };
+}
+
+module.exports = { estado, conClave, traducir, probar, explicar };

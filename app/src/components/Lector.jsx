@@ -16,18 +16,24 @@
 //
 // 1.8: subrayados y notas (SubrayadosLector.jsx). Seleccionar texto muestra una barrita con colores; los subrayados
 // se pintan al abrir cada capítulo y cada vez que un párrafo cambia de idioma, anclados al texto (no a la página).
+//
+// 1.9: lectura a medida (LecturaAMedida.jsx y lib/lectura.js). El botón «Aa» elige tema, letra, fuente, interlineado,
+// márgenes y justificado. La fuente, el interlineado y el justificado son variables de CSS en la caja del lector, así
+// la página y el medidor (que cuenta las páginas) miden igual; los márgenes cambian el ancho de página en medir().
+// «Explicar» (Explicar.jsx) le pregunta a Gemini qué quiere decir lo que seleccionaste, desde la barrita de subrayar.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { limpiarCapitulo, limpiarFragmento, parrafosDe } from '../lib/epub.js';
-import { estimacion, idiomaActual, resorte, resortePresion, resorteRapido, ritmoParaEstimar, t } from '../lib/index.js';
+import { COLORES_BARRA, MARGENES, cargarFuente, estimacion, idiomaActual, resorte, resortePresion, resorteRapido, ritmoParaEstimar, t, useAjustesLectura, variablesTexto } from '../lib/index.js';
 import { FormularioGemini } from './Gemini.jsx';
-import { IconoAnterior, IconoCerrar, IconoEnfoque, IconoIndice, IconoLlave, IconoSiguiente, IconoSubrayar, IconoTraducir } from './Iconos.jsx';
+import { IconoAnterior, IconoCerrar, IconoEnfoque, IconoIndice, IconoLlave, IconoMedida, IconoSiguiente, IconoSubrayar, IconoTraducir } from './Iconos.jsx';
+import { PanelLectura } from './LecturaAMedida.jsx';
+import { TarjetaExplicacion, useExplicar } from './Explicar.jsx';
 import { AvisoSesion, BotonSesion, useSesionLectura } from './SesionLectura.jsx';
 import { BarraSubrayado, NotaSubrayado, PanelSubrayados, useSubrayados } from './SubrayadosLector.jsx';
 
 const ESPACIO = 64; // separación entre columnas (y entre páginas), en px
-const MARGEN_LATERAL = 72;
-const MARGEN_VERTICAL = 26;
+const MARGEN_VERTICAL = 26; // el ancho de página y el margen de los costados dependen de los márgenes elegidos (1.9)
 const PAGINAS_ADELANTE = 5; // cuántas páginas se traducen por adelantado
 const TANDA = 2800; // caracteres por pedido de traducción adelantada
 const DURACION_PASO = 450; // ms aproximados del resorte al pasar de página
@@ -137,7 +143,9 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
   const [info, setInfo] = useState({ cap: 0, vista: 0, total: 1, columnas: 1, cols: 1 });
   const [medidas, setMedidas] = useState(null); // { ancho, alto, cols }: cambia al redimensionar
   const [paginasCap, setPaginasCap] = useState([]); // páginas de cada capítulo (texto original)
-  const [letra, setLetra] = useState(() => preferencia('broots-lector-letra', 19));
+  const [ajustes, cambiarAjustes] = useAjustesLectura(); // 1.9: tema, letra, fuente, interlineado, márgenes, justificar
+  const { letra } = ajustes;
+  const [panelMedida, setPanelMedida] = useState(false);
   const [traducir, setTraducir] = useState(false);
   const [aviso, setAviso] = useState(null); // { tipo: 'traduciendo' | 'error' | 'sinClave' | 'pista', texto }
   const [indiceAbierto, setIndiceAbierto] = useState(false);
@@ -159,7 +167,10 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
     traducidos: new Map(), viendoOriginal: new Set(), enCurso: new Map(), fallidos: new Set(), traducir: false,
     prefetch: new Set(), quietoDesde: 0,
     textosOriginales: [], anclas: new Map(), // 1.8: el texto de cada párrafo en su idioma y dónde cae cada subrayado
+    margenes: MARGENES.normales, // 1.9: { ancho, lateral } de los márgenes elegidos
   }).current;
+  r.margenes = MARGENES[ajustes.margenes] ?? MARGENES.normales;
+  r.ajustes = ajustes;
 
   // Cartelitos de los subrayados (borrado con «Deshacer», copiado, errores): se van solos a los 6 segundos.
   const avisar = useCallback((texto, tipo = 'subrayado', accion = null) => {
@@ -168,14 +179,15 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
     setTimeout(() => setAviso((a) => (a?.clave === clave ? null : a)), 6000);
   }, []);
   const sub = useSubrayados({ libro, r, texto, marco, abierto: Boolean(datos), avisar });
+  const explicar = useExplicar({ libro, sub, avisar }); // 1.9
 
   // ---------- Medidas y páginas ----------
 
   const medir = useCallback(() => {
     const caja = marco.current.getBoundingClientRect();
-    const disponible = caja.width - MARGEN_LATERAL * 2;
+    const disponible = caja.width - r.margenes.lateral * 2;
     const cols = disponible >= 1000 ? 2 : 1;
-    const ancho = Math.floor(Math.min(620, (disponible - ESPACIO * (cols - 1)) / cols));
+    const ancho = Math.floor(Math.min(r.margenes.ancho, (disponible - ESPACIO * (cols - 1)) / cols));
     const alto = Math.floor(caja.height - MARGEN_VERTICAL * 2);
     const anchoTotal = cols * ancho + (cols - 1) * ESPACIO;
     if (!r.geo || r.geo.ancho !== ancho || r.geo.alto !== alto || r.geo.cols !== cols) setMedidas({ ancho, alto, cols });
@@ -387,7 +399,8 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
       r.fallidos = new Set();
       r.rangos = [];
       sub.alAbrirCapitulo(); // pinta los subrayados de este capítulo (solo el fondo: no mueve el texto)
-      await Promise.all([...el.querySelectorAll('img')].map((img) => esperarImagen(img)));
+      // Las imágenes y la fuente elegida, cargadas antes de medir (si no, las páginas no dan).
+      await Promise.all([...[...el.querySelectorAll('img')].map((img) => esperarImagen(img)), cargarFuente(r.ajustes)]);
       if (token !== r.token) return;
 
       medir();
@@ -530,6 +543,7 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
   useEffect(() => {
     if (capitulos.length) guardarPosicion(Math.round(progreso * 1000) / 1000);
     sub.cerrarBarra();
+    explicar.cerrar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [info.cap, info.vista]);
 
@@ -557,13 +571,15 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
     if (lado !== asomar) setAsomar(lado);
   };
 
-  // Cuenta en segundo plano las páginas de cada capítulo (con la letra y el tamaño actuales).
+  // Cuenta en segundo plano las páginas de cada capítulo (con la letra, la fuente, el interlineado y el tamaño
+  // actuales: el medidor está dentro de la caja del lector, así que hereda las mismas variables que la página).
   useEffect(() => {
     if (!datos || !medidas) return;
     let vivo = true;
     setPaginasCap([]);
     (async () => {
-      await dormir(600); // que primero se muestre la página
+      await Promise.all([dormir(600), cargarFuente(ajustes)]); // que primero se muestre la página
+      if (!vivo) return;
       const el = medidor.current;
       Object.assign(el.style, { width: `${medidas.ancho}px`, height: `${medidas.alto}px`, columnCount: 1, columnGap: `${ESPACIO}px`, fontSize: `${letra}px` });
       el.style.setProperty('--alto-pagina', `${medidas.alto - 24}px`);
@@ -588,7 +604,8 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
     return () => {
       vivo = false;
     };
-  }, [datos, medidas, letra, libro.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [datos, medidas, letra, ajustes.fuente, ajustes.interlineado, ajustes.justificar, libro.id]);
 
   // ---------- Efectos ----------
 
@@ -630,13 +647,25 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [datos]);
 
-  // Tamaño de letra y de ventana: se reacomoda manteniendo el párrafo de arriba.
+  // Letra, fuente, interlineado, márgenes y tamaño de ventana: se reacomoda manteniendo el párrafo de arriba. El
+  // párrafo se busca antes de esperar la fuente nueva (r.rangos todavía es del acomodo anterior).
   useEffect(() => {
     texto.current.style.fontSize = `${letra}px`;
-    recordar('broots-lector-letra', letra);
-    if (r.parrafos.length) reacomodar(anclaActual());
+    if (!r.parrafos.length) return;
+    const ancla = anclaActual();
+    let vivo = true;
+    cargarFuente(ajustes).then(() => vivo && reacomodar(ancla));
+    return () => {
+      vivo = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [letra]);
+  }, [letra, ajustes.fuente, ajustes.interlineado, ajustes.margenes, ajustes.justificar]);
+
+  // La barra de título de Windows (sus botones se dibujan encima del lector) toma el color del tema elegido.
+  useEffect(() => {
+    window.lector.colorBarra?.(ajustes.tema === 'auto' ? null : COLORES_BARRA[ajustes.tema]);
+  }, [ajustes.tema]);
+  useEffect(() => () => window.lector.colorBarra?.(null), []);
 
   useEffect(() => {
     let espera = null;
@@ -659,8 +688,10 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
       if (e.target.closest?.('input, textarea')) return;
       actividad();
       if (e.key === 'Escape') {
+        if (explicar.tarjeta) return explicar.cerrar(); // 1.9: la tarjetita de «Explicar»
         if (sub.cerrarAlgo()) return; // la nota, la barrita de subrayar o la lista de subrayados
         if (claveAbierta) setClaveAbierta(false);
+        else if (panelMedida) setPanelMedida(false);
         else if (indiceAbierto) setIndiceAbierto(false);
         else if (sesion.panelAbierto) sesion.setPanelAbierto(false);
         else if (enfoque) setEnfoque(false);
@@ -680,12 +711,12 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
     };
     window.addEventListener('keydown', alPresionar);
     return () => window.removeEventListener('keydown', alPresionar);
-  }, [siguiente, anterior, onCerrar, claveAbierta, indiceAbierto, enfoque, actividad, sesion.panelAbierto, sesion.setPanelAbierto]);
+  }, [siguiente, anterior, onCerrar, explicar.tarjeta, claveAbierta, panelMedida, indiceAbierto, enfoque, actividad, sesion.panelAbierto, sesion.setPanelAbierto]);
 
   // Rueda del mouse o del touchpad: una página por gesto.
   const ultimaRueda = useRef(0);
   const alRodar = (e) => {
-    if (sub.nota || sub.panelAbierto) return; // escribiendo una nota o mirando la lista, la rueda no pasa de página
+    if (sub.nota || sub.panelAbierto || panelMedida || explicar.tarjeta) return; // escribiendo una nota o con un panel abierto, la rueda no pasa de página
     const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
     if (Math.abs(delta) < 12 || Date.now() - ultimaRueda.current < 380) return;
     ultimaRueda.current = Date.now();
@@ -780,17 +811,20 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
     const escondida = barraEscondida(lado) ? `pointer-events-none opacity-0 ${lado === 'arriba' ? '-translate-y-2' : 'translate-y-2'}` : '';
     return `absolute inset-x-0 z-30 bg-superficie transition-[opacity,translate] duration-200 ${borde} ${escondida}`;
   };
-  const flecha = 'grid size-10place-items-center rounded-full text-tinta-tenue opacity-50 transition-[opacity,background-color,color] group-hover:bg-superficie-2 group-hover:text-tinta group-hover:opacity-100';
+  const flecha = 'grid size-10 place-items-center rounded-full text-tinta-tenue opacity-50 transition-[opacity,background-color,color] group-hover:bg-superficie-2 group-hover:text-tinta group-hover:opacity-100';
 
   return (
     <motion.div
-      className="fixed inset-0 z-[80] flex flex-col bg-superficie"
+      className="fixed inset-0 z-[80] flex flex-col bg-superficie text-tinta"
       initial={{ opacity: 0, transform: 'scale(0.985)' }}
       animate={{ opacity: 1, transform: 'scale(1)' }}
       exit={{ opacity: 0, transform: 'scale(0.985)', transition: { duration: 0.16 } }}
       transition={resorte}
       onMouseMove={alMoverMouse}
       data-enfoque={enfoque ? 'si' : 'no'}
+      // 1.9: el tema pinta todo el lector; la fuente, el interlineado y el justificado llegan a la página y al medidor.
+      data-tema-lector={ajustes.tema === 'auto' ? undefined : ajustes.tema}
+      style={variablesTexto(ajustes)}
     >
       <header
         onMouseEnter={() => setSobreBarra(true)}
@@ -803,7 +837,10 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
         <BotonBarra activo={indiceAbierto} onClick={() => setIndiceAbierto((v) => !v)} disabled={!datos?.indice.length} title={t('lector.indice')}>
           <IconoIndice className="size-4" /> {t('lector.indice')}
         </BotonBarra>
-        <BotonBarra activo={sub.panelAbierto} onClick={() => sub.setPanelAbierto((v) => !v)} disabled={!datos} title={t('subrayados.lector.boton')} data-boton-subrayados>
+        <BotonBarra activo={sub.panelAbierto} onClick={() => {
+            setPanelMedida(false);
+            sub.setPanelAbierto((v) => !v);
+          }} disabled={!datos} title={t('subrayados.lector.boton')} data-boton-subrayados>
           <IconoSubrayar className="size-4" />
           {sub.entradas.length > 0 && <span className="tabular-nums">{sub.entradas.length}</span>}
         </BotonBarra>
@@ -811,11 +848,13 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
           <p className="truncate font-serif text-[0.86rem] font-semibold">{libro.title}</p>
           {entradaActual && <p className="truncate text-[0.68rem] text-tinta-tenue">{entradaActual.titulo}</p>}
         </div>
-        <BotonBarra onClick={() => setLetra((l) => Math.max(14, l - 1))} title={t('configuracion.letraChica')}>
-          <span className="text-[0.72rem]">A</span>
-        </BotonBarra>
-        <BotonBarra onClick={() => setLetra((l) => Math.min(30, l + 1))} title={t('configuracion.letraGrande')}>
-          <span className="text-[1rem] leading-none">A</span>
+        <BotonBarra
+          activo={panelMedida}
+          onClick={() => {
+            sub.setPanelAbierto(false); // los dos paneles van a la derecha: se abre uno a la vez
+            setPanelMedida((v) => !v);
+          }} title={t('lectura.boton')} data-boton-medida>
+          <IconoMedida className="size-4" />
         </BotonBarra>
         <BotonBarra activo={traducir && tieneClave} onClick={cambiarTraducir} disabled={!datos} title={traducir ? t('lector.verOriginal') : t('lector.traducirAl')}>
           <IconoTraducir className="size-4" /> {traducir && tieneClave ? t('lector.traducido') : t('lector.traducir')}
@@ -865,7 +904,7 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
 
         {/* Medidor invisible para contar las páginas de cada capítulo */}
         <div aria-hidden="true" className="pointer-events-none fixed top-0 left-[-20000px] overflow-hidden" style={{ visibility: 'hidden' }}>
-          <div ref={medidor} className="texto-libro" />
+          <div ref={medidor} lang={datos?.idioma || undefined} className="texto-libro" />
         </div>
 
         {!datos && !error && <p className="absolute inset-0 grid place-items-center text-sm text-tinta-tenue">{t('lector.abriendo')}</p>}
@@ -956,9 +995,14 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
         {/* Subrayados: la lista de la derecha y, al seleccionar o tocar uno, la barrita y la nota. El velo hace que
             el clic afuera solo las cierre (no pasa de página); si estabas escribiendo una nota, la guarda. */}
         <PanelSubrayados sub={sub} libroId={libro.id} onIr={irASubrayado} alResultado={(texto, error) => avisar(texto, error ? 'errorSubrayado' : 'subrayado')} />
-        {(sub.barra || sub.nota) && <div data-velo-subrayado className="absolute inset-0 z-[25]" onClick={() => (sub.nota ? sub.guardarNota() : sub.cerrarBarra())} />}
-        <BarraSubrayado sub={sub} />
+        {(sub.barra || sub.nota || explicar.tarjeta) && (
+          <div data-velo-subrayado className="absolute inset-0 z-[25]" onClick={() => (sub.nota ? sub.guardarNota() : explicar.tarjeta ? explicar.cerrar() : sub.cerrarBarra())} />
+        )}
+        <BarraSubrayado sub={sub} onExplicar={explicar.abrir} />
         <NotaSubrayado sub={sub} />
+        <TarjetaExplicacion explicar={explicar} onConfigurar={() => setClaveAbierta(true)} />
+
+        <PanelLectura abierto={panelMedida} onCerrar={() => setPanelMedida(false)} ajustes={ajustes} onCambiar={cambiarAjustes} />
 
         <AvisoSesion sesion={sesion} onCerrarLibro={onCerrar} enfoque={enfoque} />
 

@@ -481,7 +481,9 @@ function servirPortada(request) {
 
 // Colores de la barra de título (deben coincidir con --ventana y --tinta de index.css).
 const ALTO_BARRA_TITULO = 44;
+let coloresLector = null; // 1.9: con el lector abierto en un tema propio (sepia, negro…), la barra toma sus colores
 function coloresVentana() {
+  if (coloresLector) return coloresLector;
   return nativeTheme.shouldUseDarkColors
     ? { fondo: '#1f1f1d', simbolos: '#efece4' }
     : { fondo: '#eeecd6', simbolos: '#2b361c' };
@@ -513,6 +515,20 @@ function recordarTamaño(win) {
     console.error('No pude guardar el tamaño de la ventana:', error.message);
   }
 }
+
+function pintarBarraTitulo() {
+  if (!ventana || ventana.isDestroyed()) return;
+  const { fondo, simbolos } = coloresVentana();
+  ventana.setBackgroundColor(fondo);
+  ventana.setTitleBarOverlay({ color: fondo, symbolColor: simbolos, height: ALTO_BARRA_TITULO });
+}
+
+// El lector pide los colores de su tema (o null para volver a los de Broots). Solo se aceptan colores #rrggbb.
+ipcMain.handle('lector:colorBarra', (_e, colores) => {
+  const color = (v) => (/^#[0-9a-f]{6}$/i.test(String(v ?? '')) ? String(v) : null);
+  coloresLector = colores && color(colores.fondo) && color(colores.simbolos) ? { fondo: color(colores.fondo), simbolos: color(colores.simbolos) } : null;
+  pintarBarraTitulo();
+});
 
 function crearVentana() {
   const colores = coloresVentana();
@@ -546,12 +562,7 @@ function crearVentana() {
     ventana.show();
   });
   ventana.on('close', () => recordarTamaño(ventana));
-  nativeTheme.on('updated', () => {
-    if (ventana.isDestroyed()) return;
-    const { fondo, simbolos } = coloresVentana();
-    ventana.setBackgroundColor(fondo);
-    ventana.setTitleBarOverlay({ color: fondo, symbolColor: simbolos, height: ALTO_BARRA_TITULO });
-  });
+  nativeTheme.on('updated', pintarBarraTitulo);
   ventana.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   ventana.webContents.on('will-navigate', (evento, url) => {
     if (!DEV_URL || !url.startsWith(DEV_URL)) evento.preventDefault();
@@ -827,6 +838,13 @@ ipcMain.handle('traduccion:traducir', (_e, id, textos, urgente) => {
   if (!libro) return { ok: false, mensaje: t('main.sinLibro') };
   // Siempre al idioma de Broots (cada idioma tiene su propia caché).
   return traduccion.traducir(leerConfig(), carpetaDatos(), libro.uuid, (textos ?? []).map(String), Boolean(urgente), idioma.actual());
+});
+// 1.9: «Explicar» lo seleccionado en el lector, en el idioma de Broots (se guarda 30 días, como caché).
+ipcMain.handle('traduccion:explicar', (_e, id, pedido) => {
+  const libro = libroPorId(id);
+  if (!libro) return { ok: false, mensaje: t('main.sinLibro') };
+  const { texto, parrafo } = pedido ?? {};
+  return traduccion.explicar(leerConfig(), carpetaDatos(), libro.uuid, { texto, parrafo, titulo: libro.title, autores: (libro.authors ?? []).join(', ') }, idioma.actual());
 });
 
 // ---------- Familia: compartir libros con cada integrante ----------

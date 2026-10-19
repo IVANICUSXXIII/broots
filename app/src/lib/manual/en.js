@@ -102,11 +102,45 @@ export const MANUAL = [
       {
         lista: [
           'Turn the page with the ← → arrows, the mouse wheel or a click on either side (no finger-licking required).',
-          'At the top you have the table of contents, the font size and the page number: type a number and press Enter to go there.',
+          'At the top you have the table of contents and the “Aa” button (theme, size, font and margins; see Reading your way). At the bottom, the page number: type a number and press Enter to go there.',
           'To translate into Broots’ language, add your Gemini key in Settings → Reading & translation (see Frequently asked questions) and click the reader’s translate button.',
           'Click a translated paragraph to see the original, in case you want to compare.',
           'Select some text with your mouse to highlight it and add a note (see Highlights and notes).',
           'Esc takes you back to the library.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'medida',
+    titulo: 'Reading your way',
+    bloques: [
+      { texto: 'The “Aa” button at the top of the reader opens the “Reading your way” panel. Changes show up right away, and the page rearranges itself without losing the paragraph you were on.' },
+      {
+        lista: [
+          'Theme: Light, Sepia (warm, yellowed paper), Dark or Pure black (read in the dark without the glare). “Auto” follows Broots’ light or dark mode. The theme paints the whole reader, and highlights get colors that suit each one.',
+          'Size: the text size, with the small and big A.',
+          'Font: Literata (the usual one), Georgia (a classic), Atkinson (highly legible, great for tired eyes), Inter (sans serif) and OpenDyslexic (designed for people with dyslexia). They all come with Broots and work offline.',
+          'Line spacing: Tight, Normal or Airy. Margins: Small, Normal or Wide (they change how long each line is).',
+          '“Justify text” makes it even on both sides, like a printed book. It starts off because now and then it leaves a gap between words.',
+          'Your choices apply to every book on this PC. You can also change them in Settings → Reading and translation, with a preview.',
+          'Your highlights stick to the text: with another font or other margins they stay put (the page number changes, the sentence doesn’t).',
+        ],
+      },
+      { subtitulo: 'Explain a word or a sentence' },
+      {
+        pasos: [
+          'Select the word, name or sentence you don’t get (double-click picks a single word).',
+          'In the highlight bar, tap “Explain”.',
+          'Gemini tells you what it means in context (the paragraph it appears in), in Broots’ language and spoiler-free. If it’s a name or a place, it tells you who or what it is.',
+        ],
+      },
+      {
+        lista: [
+          '“Save as note” keeps it as the highlight’s note (and highlights it, if it wasn’t already). “Copy” copies it so you can paste it anywhere.',
+          'It uses your free Gemini key, the same one as translation. If you haven’t added it yet, the card offers to.',
+          'Broots keeps each explanation for 30 days in your library’s .broots folder, so asking again doesn’t eat into your quota. After that it’s deleted; to keep it, save it as a note.',
+          '“Explain” doesn’t show up for very long passages (more than a short paragraph).',
         ],
       },
     ],

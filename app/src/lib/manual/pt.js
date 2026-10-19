@@ -102,11 +102,45 @@ export const MANUAL = [
       {
         lista: [
           'Passe as páginas com as setas ← →, com a roda do mouse ou com um clique nas laterais (sem precisar molhar o dedo).',
-          'Em cima ficam o sumário, o tamanho da letra e o número da página: digite um número e aperte Enter para ir até lá.',
+          'Em cima ficam o sumário e o botão «Aa» (tema, letra, fonte e margens; veja Leitura do seu jeito). Embaixo, o número da página: digite um número e aperte Enter para ir até lá.',
           'Para traduzir para o idioma do Broots, cadastre sua chave do Gemini em Configurações → Leitura e tradução (veja Perguntas frequentes) e clique no botão de traduzir do leitor.',
           'Clique em um parágrafo traduzido para ver o original, caso queira comparar.',
           'Selecione um trecho com o mouse para destacá-lo e anotar algo (veja Destaques e notas).',
           'Esc volta para a biblioteca.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'medida',
+    titulo: 'Leitura do seu jeito',
+    bloques: [
+      { texto: 'O botão «Aa», em cima no leitor, abre o painel «Leitura do seu jeito». O que você muda aparece na hora, e a página se reorganiza sem perder o parágrafo onde você estava.' },
+      {
+        lista: [
+          'Tema: Claro, Sépia (papel amarelado, mais quentinho), Escuro ou Preto puro (para ler no escuro sem ofuscar). «Auto» segue o claro ou escuro do Broots. O tema pinta o leitor inteiro, e os destaques têm cores próprias para cada um.',
+          'Letra: o tamanho, com o A pequeno e o A grande.',
+          'Fonte: Literata (a de sempre), Georgia (clássica), Atkinson (muito legível, ótima para a vista cansada), Inter (sem serifa) e OpenDyslexic (pensada para pessoas com dislexia). Todas vêm com o Broots e funcionam sem internet.',
+          'Entrelinha: Justa, Normal ou Arejada. Margens: Pequenas, Normais ou Grandes (mudam a largura da linha).',
+          '«Justificar o texto» deixa alinhado dos dois lados, como no papel. Vem desligado porque às vezes deixa um vão entre as palavras.',
+          'O que você escolher vale para todos os livros, neste PC. Também dá para mudar em Configurações → Leitura e tradução, com uma amostra.',
+          'Seus destaques ficam presos ao texto: com outra fonte ou outras margens continuam no mesmo lugar (muda o número da página, não a frase).',
+        ],
+      },
+      { subtitulo: 'Explicar uma palavra ou uma frase' },
+      {
+        pasos: [
+          'Selecione com o mouse a palavra, o nome ou a frase que você não entendeu (clique duplo escolhe uma palavra).',
+          'Na barrinha de destaque, toque em «Explicar».',
+          'O Gemini conta o que quer dizer nesse contexto (o parágrafo onde aparece), no idioma do Broots e sem spoilers. Se for um nome ou um lugar, diz quem ou o que é.',
+        ],
+      },
+      {
+        lista: [
+          '«Salvar como nota» guarda como nota do destaque (se não estava destacado, destaca). «Copiar» copia para você colar onde quiser.',
+          'Usa a sua chave gratuita do Gemini, a mesma da tradução. Se você ainda não colocou, o cartãozinho oferece fazer isso.',
+          'O Broots guarda cada explicação por 30 dias na pasta .broots da sua biblioteca, assim perguntar de novo não gasta sua cota. Depois ela é apagada; para guardar de vez, salve como nota.',
+          'Para trechos muito longos (mais que um parágrafo curto), «Explicar» não aparece.',
         ],
       },
     ],

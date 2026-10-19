@@ -106,11 +106,45 @@ export const MANUAL = [
       {
         lista: [
           'Pasá de página con las flechas ← →, la rueda del mouse o un clic en los costados (sin chuparte el dedo).',
-          'Arriba tenés el índice, el tamaño de letra y el número de página: escribí un número y apretá Enter para ir ahí.',
+          'Arriba tenés el índice y el botón «Aa» (tema, letra, fuente y márgenes; ver Lectura a medida). Abajo, el número de página: escribí un número y apretá Enter para ir ahí.',
           'Para traducir al idioma de Broots, cargá tu clave de Gemini en Configuración → Lectura y traducción (ver Preguntas frecuentes) y tocá el botón de traducir del lector.',
           'Tocá un párrafo traducido para ver el original, por si querés comparar.',
           'Seleccioná texto con el mouse para subrayarlo y anotarle algo (ver Subrayados y notas).',
           'Esc vuelve a la biblioteca.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'medida',
+    titulo: 'Lectura a medida',
+    bloques: [
+      { texto: 'El botón «Aa», arriba en el lector, abre el panel «Lectura a medida». Lo que cambiás se ve en el momento y la página se reacomoda sin perder el párrafo donde estabas.' },
+      {
+        lista: [
+          'Tema: Claro, Sepia (papel amarillento, más cálido), Oscuro o Negro puro (para leer a oscuras sin encandilarte). «Auto» sigue el claro u oscuro de Broots. El tema pinta todo el lector, y los subrayados tienen sus colores para cada uno.',
+          'Letra: el tamaño, con la A chica y la A grande.',
+          'Fuente: Literata (la de siempre), Georgia (clásica), Atkinson (muy legible, ideal para la vista cansada), Inter (sin serifa) y OpenDyslexic (pensada para personas con dislexia). Todas vienen con Broots y andan sin internet.',
+          'Interlineado: Junto, Normal o Aireado. Márgenes: Chicos, Normales o Grandes (cambian el ancho del renglón).',
+          '«Justificar el texto» lo deja parejo de los dos lados, como en papel. Viene apagado porque a veces deja algún hueco entre palabras.',
+          'Lo que elijas vale para todos los libros, en esta PC. También lo cambiás en Configuración → Lectura y traducción, con una muestra.',
+          'Tus subrayados quedan pegados al texto: con otra fuente u otros márgenes siguen en el mismo lugar (cambia el número de página, no la frase).',
+        ],
+      },
+      { subtitulo: 'Explicar una palabra o una frase' },
+      {
+        pasos: [
+          'Seleccioná con el mouse la palabra, el nombre o la frase que no entendés (doble clic elige una palabra).',
+          'En la barrita de subrayar, tocá «Explicar».',
+          'Gemini te cuenta qué quiere decir en ese contexto (el párrafo donde aparece), en el idioma de Broots y sin spoilers. Si es un nombre o un lugar, te dice quién o qué es.',
+        ],
+      },
+      {
+        lista: [
+          '«Guardar como nota» la deja como nota del subrayado (si no estaba subrayado, lo subraya). «Copiar» la copia para pegarla donde quieras.',
+          'Usa tu clave gratuita de Gemini, la misma de la traducción. Si todavía no la cargaste, la tarjetita te ofrece hacerlo.',
+          'Broots guarda cada explicación 30 días en la carpeta .broots de tu biblioteca, así preguntar lo mismo otra vez no gasta tu cupo. Después se borra sola; para quedártela, guardala como nota.',
+          'Para pedazos muy largos (más de un párrafo corto) no aparece «Explicar».',
         ],
       },
     ],

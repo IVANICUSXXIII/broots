@@ -158,9 +158,15 @@ export default {
     await hasta(() => textoDe(id1) === esperado1, 15000);
     comprobar('y el de la traducción vuelve a verse exacto', textoDe(id1) === esperado1, textoDe(id1));
 
-    // 6) Otra letra: los subrayados siguen en su lugar.
-    boton(lector, 'Letra más grande').click();
-    boton(lector, 'Letra más grande').click();
+    // 6) Otra letra (desde el panel «Aa» de la 1.9): los subrayados siguen en su lugar.
+    lector.querySelector('[data-boton-medida]').click();
+    const medida = await hasta(() => lector.querySelector('[data-panel-medida]'), 5000);
+    boton(medida, 'Letra más grande').click();
+    await esperar(150);
+    boton(medida, 'Letra más grande').click();
+    await esperar(300);
+    tecla('Escape');
+    await hasta(() => !lector.querySelector('[data-panel-medida]'), 3000);
     await esperar(1500);
     comprobar('con otra letra los subrayados siguen igual', textoDe(id1) === esperado1 && otroParrafo.classList.contains('subrayado-otro'), textoDe(id1));
 
