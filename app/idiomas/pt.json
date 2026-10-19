@@ -4,7 +4,7 @@
       "sinEstado": "Sem status",
       "si": "Sim",
       "no": "Não",
-      "subrayados": "Destaques do Kindle",
+      "subrayados": "Destaques",
       "conSubrayados": "Com destaques",
       "sinSubrayados": "Sem destaques",
       "idioma": "Idioma",
@@ -141,8 +141,8 @@
     },
     "vistas": {
       "subrayados": {
-        "one": "{n} destaque do Kindle",
-        "other": "{n} destaques do Kindle"
+        "one": "{n} destaque",
+        "other": "{n} destaques"
       },
       "columnas": {
         "titulo": "Título",
@@ -493,6 +493,12 @@
         "borrarConfirmar": "Vão ser apagadas as sessões e as releituras anotadas nesta biblioteca (de todos os PCs). A sequência e o mapa voltam a zero.\n\nPor via das dúvidas, o Broots não as elimina: renomeia a pasta .broots/habito para habito-borrado-… (com a data de hoje), de onde dá para recuperá-las.\n\nContinuamos?",
         "borrado": "Pronto: estatísticas zeradas. A cópia ficou em .broots, na pasta habito-borrado-… de hoje.",
         "noPudeBorrar": "Não consegui apagar as estatísticas."
+      },
+      "subrayadosLector": {
+        "titulo": "Destaques e notas",
+        "nota": "O que você destaca no leitor do Broots fica salvo na pasta da sua biblioteca, junto com os destaques do Kindle.",
+        "archivoMd": "Manter um .md de cada livro na pasta dele",
+        "archivoMdDetalle": "Com seus destaques e notas por capítulo, sempre em dia. Fica na pasta “data” do livro (o Calibre mostra em “Arquivos de dados”): perfeito para Obsidian ou Notion. O que você escrever no final do arquivo, o Broots não mexe."
       }
     },
     "editar": {
@@ -866,6 +872,56 @@
         "releer": "Reler",
         "releerExplica": "Começa uma leitura nova do início. O que você leu antes fica guardado à parte."
       }
+    },
+    "subrayados": {
+      "colores": {
+        "amarillo": "Amarelo",
+        "verde": "Verde",
+        "celeste": "Azul",
+        "rosa": "Rosa"
+      },
+      "origen": {
+        "todos": "Todos",
+        "broots": "Broots",
+        "kindle": "Kindle"
+      },
+      "enLaTraduccion": "na tradução",
+      "delKindleSinCapitulo": "Do Kindle, sem capítulo",
+      "seccion": "Seção {n}",
+      "noEncontrado": "Não encontrei neste EPUB (pode ser de outra edição)",
+      "mostrarMd": "Mostrar o .md",
+      "mostrarMdExplica": "Abre a pasta do livro com o .md dos seus destaques e notas (para Obsidian, Notion ou o que você usar)",
+      "guardarCopia": "Salvar uma cópia…",
+      "guardarCopiaExplica": "Salva o .md com seus destaques e notas onde você quiser",
+      "mdMostrado": "✓ Taí: “{nombre}”, na pasta do livro.",
+      "copiaGuardada": "✓ Cópia salva: “{nombre}”.",
+      "noPudeMd": "Não consegui montar o .md.",
+      "lector": {
+        "boton": "Destaques e notas",
+        "titulo": {
+          "0": "Seus destaques",
+          "one": "Seus destaques · 1",
+          "other": "Seus destaques · {n}"
+        },
+        "vacio": "Nada por aqui ainda. Selecione um trecho com o mouse e escolha uma cor: fica destacado, e se quiser você adiciona uma nota. Os destaques do Kindle deste livro também aparecem aqui.",
+        "mdSolo": "Ficam salvos sozinhos num .md na pasta do livro.",
+        "irAlSubrayado": "Ir para este destaque",
+        "delKindle": "Do Kindle",
+        "nota": "Nota",
+        "verNota": "Ver nota",
+        "copiar": "Copiar",
+        "borrar": "Apagar o destaque",
+        "notaEjemplo": "O que isso te fez pensar? Anote aqui…",
+        "ctrlEnter": "Ctrl+Enter ou Esc salvam",
+        "muyLargo": "É muito texto para um destaque: escolha um trecho menor.",
+        "noPudeGuardar": "Não consegui salvar o destaque. Tente de novo.",
+        "noPudeBorrar": "Não consegui apagar o destaque. Ele continua lá.",
+        "borrado": "Destaque apagado.",
+        "borradoConNota": "Destaque apagado, junto com a nota.",
+        "deshacer": "Desfazer",
+        "copiado": "✓ Copiado. É só colar onde quiser.",
+        "pista": "Novidade: selecione um trecho com o mouse para destacar e anotar o que vier à cabeça."
+      }
     }
   },
   "electron": {
@@ -917,7 +973,13 @@
       "lectorOtroFormato": "O leitor abre EPUB e este livro está em {formatos}. Converta-o para EPUB pelo painel.",
       "lectorSinArchivo": "Este registro não tem arquivo: não há nada para ler.",
       "yaSinEpub": "O livro não tem mais EPUB.",
-      "pegaClave": "Cole a chave primeiro."
+      "pegaClave": "Cole a chave primeiro.",
+      "subrayadoInvalido": "Esse destaque veio vazio: não salvei.",
+      "noPudeGuardarSubrayado": "Não consegui salvar o destaque: {error}",
+      "mdCompartida": "Esta biblioteca é compartilhada (somente leitura): o .md não fica na pasta do livro. Use “Salvar uma cópia…”.",
+      "mdApagado": "O .md de cada livro está desligado (Configurações → Leitura e tradução). Ligue de novo ou use “Salvar uma cópia…”.",
+      "mdSinSubrayados": "Este livro ainda não tem destaques: não há .md para mostrar.",
+      "dialogoCopiaMd": "Salvar uma cópia dos destaques"
     },
     "calibre": {
       "sinHerramientas": "As ferramentas do Calibre ainda não estão aqui: elas são baixadas sozinhas (precisa de internet). Tente de novo em alguns minutos.",
@@ -1049,7 +1111,8 @@
       "resumenConNotas": "{subrayados} e {notas}, na ordem de leitura.",
       "aclaracionNotas": "As notas (✎) são meus próprios pensamentos durante a leitura.",
       "misSubrayados": "Meus destaques e notas",
-      "exportado": "Exportado do Broots em {fecha}."
+      "exportado": "Exportado do Broots em {fecha}.",
+      "capitulo": "“{titulo}”"
     },
     "habito": {
       "columna": "Status",
@@ -1060,6 +1123,24 @@
         "leido": "Lido",
         "abandonado": "Abandonado"
       }
+    },
+    "cuaderno": {
+      "comentario": "Feito pelo Broots com seus destaques e notas: o que está acima de broots:fin se atualiza sozinho e o que está abaixo é seu.",
+      "sinSubrayados": "Ainda não há destaques.",
+      "ultimoCambio": "última mudança: {fecha}",
+      "seccion": "Seção {n}",
+      "delKindle": "Do Kindle, sem capítulo",
+      "pistaPendiente": "Para ordenar por capítulo, abra o livro no leitor do Broots: é lá que eu procuro no texto.",
+      "pistaNoEncontrados": "Não os encontrei neste EPUB (pode ser outra edição): estão na ordem do Kindle.",
+      "enLaTraduccion": "na tradução",
+      "colores": {
+        "amarillo": "Amarelo",
+        "verde": "Verde",
+        "celeste": "Azul",
+        "rosa": "Rosa"
+      },
+      "tuyo": "Daqui para baixo é seu: escreva o que quiser, o Broots não mexe.",
+      "antes": "antes"
     }
   }
 }

@@ -13,13 +13,17 @@
 // 1.7: la sesión de lectura (reloj opcional, descanso para la vista, «te quedan») vive en SesionLectura.jsx;
 // acá se le avisa cada vez que pasás de página. El modo enfoque (F) esconde las barras y pone la ventana
 // en pantalla completa; llevando el mouse al borde de arriba o de abajo, la barra se asoma.
+//
+// 1.8: subrayados y notas (SubrayadosLector.jsx). Seleccionar texto muestra una barrita con colores; los subrayados
+// se pintan al abrir cada capítulo y cada vez que un párrafo cambia de idioma, anclados al texto (no a la página).
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { limpiarCapitulo, limpiarFragmento, parrafosDe } from '../lib/epub.js';
 import { estimacion, idiomaActual, resorte, resortePresion, resorteRapido, ritmoParaEstimar, t } from '../lib/index.js';
 import { FormularioGemini } from './Gemini.jsx';
-import { IconoAnterior, IconoCerrar, IconoEnfoque, IconoIndice, IconoLlave, IconoSiguiente, IconoTraducir } from './Iconos.jsx';
+import { IconoAnterior, IconoCerrar, IconoEnfoque, IconoIndice, IconoLlave, IconoSiguiente, IconoSubrayar, IconoTraducir } from './Iconos.jsx';
 import { AvisoSesion, BotonSesion, useSesionLectura } from './SesionLectura.jsx';
+import { BarraSubrayado, NotaSubrayado, PanelSubrayados, useSubrayados } from './SubrayadosLector.jsx';
 
 const ESPACIO = 64; // separación entre columnas (y entre páginas), en px
 const MARGEN_LATERAL = 72;
@@ -154,7 +158,16 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
     cap: 0, href: '', vista: 0, total: 1, columnas: 1, token: 0, geo: null, parrafos: [], originales: [], rangos: [],
     traducidos: new Map(), viendoOriginal: new Set(), enCurso: new Map(), fallidos: new Set(), traducir: false,
     prefetch: new Set(), quietoDesde: 0,
+    textosOriginales: [], anclas: new Map(), // 1.8: el texto de cada párrafo en su idioma y dónde cae cada subrayado
   }).current;
+
+  // Cartelitos de los subrayados (borrado con «Deshacer», copiado, errores): se van solos a los 6 segundos.
+  const avisar = useCallback((texto, tipo = 'subrayado', accion = null) => {
+    const clave = Date.now();
+    setAviso({ tipo, texto, accion, clave });
+    setTimeout(() => setAviso((a) => (a?.clave === clave ? null : a)), 6000);
+  }, []);
+  const sub = useSubrayados({ libro, r, texto, marco, abierto: Boolean(datos), avisar });
 
   // ---------- Medidas y páginas ----------
 
@@ -225,6 +238,7 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
 
   const ponerTexto = (i, html) => {
     r.parrafos[i].replaceChildren(limpiarFragmento(html, r.href, libro.id));
+    sub.alCambiarParrafo(i); // el párrafo cambió de idioma: sus subrayados se vuelven a pintar
   };
 
   const enPantalla = (i) => r.rangos[i] && r.rangos[i].inicio <= r.vista && r.rangos[i].fin >= r.vista;
@@ -366,11 +380,13 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
       r.parrafos = parrafosDe(el);
       r.parrafos.forEach((p, k) => (p.dataset.p = k));
       r.originales = r.parrafos.map((p) => p.innerHTML);
+      r.textosOriginales = r.parrafos.map((p) => p.textContent);
       r.traducidos = new Map();
       r.viendoOriginal = new Set();
       r.enCurso = new Map();
       r.fallidos = new Set();
       r.rangos = [];
+      sub.alAbrirCapitulo(); // pinta los subrayados de este capítulo (solo el fondo: no mueve el texto)
       await Promise.all([...el.querySelectorAll('img')].map((img) => esperarImagen(img)));
       if (token !== r.token) return;
 
@@ -379,7 +395,10 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
       let vista = 0;
       if (destino.fin) vista = r.total - 1;
       else if (destino.vista != null) vista = destino.vista;
-      else if (destino.parrafo != null) vista = r.rangos[destino.parrafo]?.inicio ?? 0;
+      else if (destino.subrayado) {
+        const objetivo = el.querySelector(`mark[data-subrayado="${CSS.escape(destino.subrayado)}"]`) ?? r.parrafos[destino.parrafo ?? 0];
+        if (objetivo) vista = vistaDe(objetivo.getBoundingClientRect(), el.getBoundingClientRect().left);
+      } else if (destino.parrafo != null) vista = r.rangos[destino.parrafo]?.inicio ?? 0;
       else if (destino.ancla) {
         const objetivo = el.querySelector(`[data-ancla="${CSS.escape(destino.ancla)}"]`);
         if (objetivo) vista = vistaDe(objetivo.getBoundingClientRect(), el.getBoundingClientRect().left);
@@ -436,6 +455,19 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [datos, r, irVista, abrirCapitulo],
   );
+
+  /** Desde la lista de subrayados: a la página donde está (y un anillo un momento, para encontrarlo). */
+  const irASubrayado = async (e) => {
+    if (!datos || !e.href) return;
+    sub.setPanelAbierto(false);
+    const i = datos.capitulos.findIndex((c) => c.href === e.href);
+    if (i < 0) return;
+    if (i === r.cap) {
+      const objetivo = texto.current.querySelector(`mark[data-subrayado="${CSS.escape(e.id)}"]`) ?? r.parrafos[e.parrafo ?? 0];
+      if (objetivo) irVista(vistaDe(objetivo.getBoundingClientRect(), texto.current.getBoundingClientRect().left), false);
+    } else await abrirCapitulo(i, { subrayado: e.id, parrafo: e.parrafo });
+    sub.destacar(e.id);
+  };
 
   // ---------- Números de página del libro entero ----------
 
@@ -494,9 +526,10 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aproximado]);
 
-  // Guarda por dónde vas cada vez que cambia la página.
+  // Guarda por dónde vas cada vez que cambia la página (y la barrita de subrayar, si quedó abierta, se va).
   useEffect(() => {
     if (capitulos.length) guardarPosicion(Math.round(progreso * 1000) / 1000);
+    sub.cerrarBarra();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [info.cap, info.vista]);
 
@@ -570,9 +603,11 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
       const traducirAlAbrir = preferencia(`broots-traducir-${libro.uuid}`, !esDelIdioma(idioma, idiomaActual()));
       r.traducir = traducirAlAbrir;
       setTraducir(traducirAlAbrir);
-      if (!preferencia('broots-lector-pista-paginas', false)) {
-        recordar('broots-lector-pista-paginas', true);
-        setAviso({ tipo: 'pista', texto: t('lector.pistaPaginas') });
+      // Pistas de la primera vez: cómo pasar de página y, la vez siguiente, que se puede subrayar (1.8).
+      const pista = !preferencia('broots-lector-pista-paginas', false) ? 'paginas' : !preferencia('broots-lector-pista-subrayar', false) ? 'subrayar' : null;
+      if (pista) {
+        recordar(`broots-lector-pista-${pista}`, true);
+        setAviso({ tipo: 'pista', texto: pista === 'paginas' ? t('lector.pistaPaginas') : t('subrayados.lector.pista') });
         setTimeout(() => setAviso((a) => (a?.tipo === 'pista' ? null : a)), 7000);
       }
     });
@@ -624,11 +659,14 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
       if (e.target.closest?.('input, textarea')) return;
       actividad();
       if (e.key === 'Escape') {
+        if (sub.cerrarAlgo()) return; // la nota, la barrita de subrayar o la lista de subrayados
         if (claveAbierta) setClaveAbierta(false);
         else if (indiceAbierto) setIndiceAbierto(false);
         else if (sesion.panelAbierto) sesion.setPanelAbierto(false);
         else if (enfoque) setEnfoque(false);
         else onCerrar();
+      } else if (sub.escribiendo()) {
+        // Escribiendo una nota (aunque el cursor haya salido del cuadro): ni F ni las flechas hacen nada.
       } else if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.altKey && !e.metaKey) {
         e.preventDefault();
         setEnfoque((v) => !v);
@@ -647,6 +685,7 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
   // Rueda del mouse o del touchpad: una página por gesto.
   const ultimaRueda = useRef(0);
   const alRodar = (e) => {
+    if (sub.nota || sub.panelAbierto) return; // escribiendo una nota o mirando la lista, la rueda no pasa de página
     const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
     if (Math.abs(delta) < 12 || Date.now() - ultimaRueda.current < 380) return;
     ultimaRueda.current = Date.now();
@@ -656,14 +695,25 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
   const cambiarTraducir = () => (!tieneClave ? setClaveAbierta(true) : cambiarTraducirA(!traducir));
 
   /**
-   * Clic en la página: un enlace interno navega; un párrafo traducido alterna con el original;
-   * en cualquier otro lugar pasa de página (mitad izquierda: atrás, mitad derecha: adelante).
+   * Clic en la página: un enlace interno navega; un subrayado abre su barrita (color, nota, borrar); un párrafo
+   * traducido alterna con el original; en cualquier otro lugar pasa de página (mitad izquierda: atrás, derecha: adelante).
    */
   const alTocarPagina = (e) => {
+    clearTimeout(r.clicPendiente);
     if (window.getSelection()?.toString()) return;
     const enlace = e.target.closest('a[data-destino]');
     if (enlace) return irA(enlace.dataset.destino);
+    if (sub.alTocar(e)) return;
+    // 1.8: el clic espera un instante antes de hacer algo. Si llega un segundo clic (doble clic para elegir una
+    // palabra y subrayarla), no se pasa de página ni se cambia de idioma.
+    if (e.detail > 1) return;
+    const { clientX } = e;
     const p = e.target.closest('[data-p]');
+    r.clicPendiente = setTimeout(() => {
+      if (!window.getSelection()?.toString()) tocarPagina(p, clientX);
+    }, 260);
+  };
+  const tocarPagina = (p, clientX) => {
     const i = p ? Number(p.dataset.p) : -1;
     if (p && r.traducir && r.traducidos.has(i)) {
       const ancla = anclaActual();
@@ -679,7 +729,7 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
       return reacomodar(ancla);
     }
     const caja = recorte.current.getBoundingClientRect();
-    e.clientX < caja.left + caja.width / 2 ? anterior() : siguiente();
+    clientX < caja.left + caja.width / 2 ? anterior() : siguiente();
   };
 
   const claveLista = async () => {
@@ -721,6 +771,7 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
     }
     return actual;
   })();
+  sub.contexto.current.titulo = entradaActual?.titulo ?? null; // cada subrayado nuevo recuerda su capítulo
   // En modo enfoque las barras flotan escondidas y se asoman al acercar el mouse al borde (o mientras lo tenés encima).
   const barraEscondida = (lado) => enfoque && asomar !== lado && !(lado === 'arriba' && sobreBarra);
   const flotante = (lado) => {
@@ -752,6 +803,10 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
         <BotonBarra activo={indiceAbierto} onClick={() => setIndiceAbierto((v) => !v)} disabled={!datos?.indice.length} title={t('lector.indice')}>
           <IconoIndice className="size-4" /> {t('lector.indice')}
         </BotonBarra>
+        <BotonBarra activo={sub.panelAbierto} onClick={() => sub.setPanelAbierto((v) => !v)} disabled={!datos} title={t('subrayados.lector.boton')} data-boton-subrayados>
+          <IconoSubrayar className="size-4" />
+          {sub.entradas.length > 0 && <span className="tabular-nums">{sub.entradas.length}</span>}
+        </BotonBarra>
         <div className="min-w-0 flex-1 px-3 text-center">
           <p className="truncate font-serif text-[0.86rem] font-semibold">{libro.title}</p>
           {entradaActual && <p className="truncate text-[0.68rem] text-tinta-tenue">{entradaActual.titulo}</p>}
@@ -776,7 +831,14 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
 
       <div ref={marco} className="relative min-h-0 flex-1" onWheel={alRodar}>
         <div ref={recorte} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 overflow-hidden">
-          <div ref={texto} lang={traducir ? idiomaActual() : datos?.idioma || undefined} onClick={alTocarPagina} className="texto-libro seleccionable" style={{ opacity: 0 }} />
+          <div
+            ref={texto}
+            lang={traducir ? idiomaActual() : datos?.idioma || undefined}
+            onClick={alTocarPagina}
+            onMouseUp={sub.alSoltar}
+            className="texto-libro seleccionable"
+            style={{ opacity: 0 }}
+          />
         </div>
 
         {/* Costados: todo el margen a cada lado del texto pasa de página, con una flecha siempre visible */}
@@ -826,10 +888,25 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
               animate={{ opacity: 1, transform: 'translate(-50%, 0px)' }}
               exit={{ opacity: 0, transform: 'translate(-50%, -6px)' }}
               transition={resorteRapido}
-              className="squircle absolute top-2 left-1/2 z-10 flex max-w-[80%] items-center gap-2 rounded-full bg-superficie-2 px-3.5 py-1.5 text-[0.74rem] shadow-[0_6px_18px_-8px_rgb(var(--sombra)/0.5),inset_0_0_0_1px_var(--borde)]"
+              data-aviso-lector={aviso.tipo}
+              // Por encima de los paneles y de la barrita de subrayar, para que nunca quede tapado.
+              className="squircle absolute top-2 left-1/2 z-[26] flex max-w-[80%] items-center gap-2 rounded-full bg-superficie-2 px-3.5 py-1.5 text-[0.74rem] shadow-[0_6px_18px_-8px_rgb(var(--sombra)/0.5),inset_0_0_0_1px_var(--borde)]"
             >
               {aviso.tipo === 'traduciendo' && <span className="size-3 shrink-0 animate-spin rounded-full border-2 border-tinta-tenue/40 border-t-acento" />}
-              <span className={`truncate ${aviso.tipo === 'error' ? 'text-[#bc4749]' : ''}`}>{aviso.texto}</span>
+              <span className={`truncate ${aviso.tipo === 'error' || aviso.tipo === 'errorSubrayado' ? 'text-[#bc4749]' : ''}`}>{aviso.texto}</span>
+              {aviso.accion && (
+                <button
+                  type="button"
+                  data-accion-aviso
+                  onClick={() => {
+                    setAviso(null);
+                    aviso.accion.alTocar();
+                  }}
+                  className="shrink-0 font-medium text-acento hover:underline"
+                >
+                  {aviso.accion.texto}
+                </button>
+              )}
               {aviso.tipo === 'error' && (
                 <button type="button" onClick={reintentar} className="shrink-0 font-medium text-acento hover:underline">
                   {t('lector.reintentar')}
@@ -875,6 +952,13 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
             </>
           )}
         </AnimatePresence>
+
+        {/* Subrayados: la lista de la derecha y, al seleccionar o tocar uno, la barrita y la nota. El velo hace que
+            el clic afuera solo las cierre (no pasa de página); si estabas escribiendo una nota, la guarda. */}
+        <PanelSubrayados sub={sub} libroId={libro.id} onIr={irASubrayado} alResultado={(texto, error) => avisar(texto, error ? 'errorSubrayado' : 'subrayado')} />
+        {(sub.barra || sub.nota) && <div data-velo-subrayado className="absolute inset-0 z-[25]" onClick={() => (sub.nota ? sub.guardarNota() : sub.cerrarBarra())} />}
+        <BarraSubrayado sub={sub} />
+        <NotaSubrayado sub={sub} />
 
         <AvisoSesion sesion={sesion} onCerrarLibro={onCerrar} enfoque={enfoque} />
 

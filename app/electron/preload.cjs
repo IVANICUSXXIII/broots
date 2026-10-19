@@ -78,6 +78,16 @@ contextBridge.exposeInMainWorld('habito', {
   pantallaCompleta: (activa) => ipcRenderer.invoke('ventana:pantallaCompleta', activa),
 });
 
+// 1.8: subrayados y notas del lector, la lista única de cada libro (Broots y Kindle) y su .md.
+contextBridge.exposeInMainWorld('subrayados', {
+  delLibro: (id, opciones) => ipcRenderer.invoke('subrayados:libro', id, opciones),
+  guardar: (id, registro) => ipcRenderer.invoke('subrayados:guardar', id, registro),
+  borrar: (id, idSubrayado) => ipcRenderer.invoke('subrayados:borrar', id, idSubrayado),
+  resumen: () => ipcRenderer.invoke('subrayados:resumen'),
+  mostrarMd: (id) => ipcRenderer.invoke('subrayados:mostrarMd', id),
+  guardarCopia: (id) => ipcRenderer.invoke('subrayados:guardarCopia', id),
+});
+
 // Familia: compartir libros con cada integrante (copia en Drive, solo lectura).
 contextBridge.exposeInMainWorld('familia', {
   estado: () => ipcRenderer.invoke('familia:estado'),

@@ -150,3 +150,14 @@ export const IconoRacha = (p) => (
 export const IconoReleer = (p) => (
   <Icono {...p}><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5M20 4v4.5h-4.5" /><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.5M4 20v-4.5h4.5" /></Icono>
 );
+
+// 1.8: subrayados y notas
+export const IconoSubrayar = (p) => (
+  <Icono {...p}><path d="m14.5 4.5 5 5-8 8H6.5v-5z" /><path d="M6.5 17.5 4 20h6" /><path d="m12 7 5 5" /></Icono>
+);
+export const IconoCopiar = (p) => (
+  <Icono {...p}><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></Icono>
+);
+export const IconoBorrar = (p) => (
+  <Icono {...p}><path d="M4 7h16M10 11v6M14 11v6" /><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" /></Icono>
+);

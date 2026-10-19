@@ -1,4 +1,24 @@
 {
+  "1.8.0": {
+    "es": [
+      "Subrayá y anotá en el lector: seleccioná un pedazo de texto, elegí uno de cuatro colores y, si querés, sumale una nota. Tocá un subrayado para cambiarlo o borrarlo (con «Deshacer», por las dudas).",
+      "Los subrayados quedan pegados al texto: se ven igual con otra letra, otra ventana o la traducción. El botón del resaltador, arriba en el lector, los lista por capítulo y te lleva a cada uno.",
+      "Kindle y Broots, juntos: los subrayados del Kindle aparecen en el texto y en una sola lista por libro, con su origen. El club de lectura se los lleva todos.",
+      "Un .md por libro, al día solo, en la carpeta «data» del libro: tus subrayados y notas por capítulo, listos para Obsidian o Notion. Lo que escribas al final del archivo es tuyo: Broots no lo toca."
+    ],
+    "en": [
+      "Highlight and take notes in the reader: select some text, pick one of four colors and add a note if you like. Click a highlight to change or delete it (with “Undo”, just in case).",
+      "Highlights stick to the text: they look the same with another font size, another window size or the translation. The highlighter button at the top of the reader lists them by chapter and takes you to each one.",
+      "Kindle and Broots, together: your Kindle highlights show up in the text and in a single list per book, labeled by source. The book club takes them all along.",
+      "A .md for each book, always up to date, in the book’s “data” folder: your highlights and notes by chapter, ready for Obsidian or Notion. Whatever you write at the end of the file is yours: Broots won’t touch it."
+    ],
+    "pt": [
+      "Destaque e anote no leitor: selecione um trecho, escolha uma de quatro cores e, se quiser, adicione uma nota. Clique num destaque para mudar ou apagar (com “Desfazer”, por via das dúvidas).",
+      "Os destaques ficam presos ao texto: aparecem iguais com outra letra, outra janela ou a tradução. O botão do marca-texto, em cima no leitor, lista todos por capítulo e leva você a cada um.",
+      "Kindle e Broots, juntos: os destaques do Kindle aparecem no texto e numa lista só por livro, com a origem de cada um. O clube de leitura leva todos.",
+      "Um .md por livro, sempre em dia, na pasta “data” do livro: seus destaques e notas por capítulo, prontos para Obsidian ou Notion. O que você escrever no final do arquivo é seu: o Broots não mexe."
+    ]
+  },
   "1.7.0": {
     "es": [
       "Sesiones de lectura: Broots anota solo cuánto leés. Si querés, sumá una meta de minutos o «hasta el fin del capítulo»; los avisos llegan al pasar de página, nunca a mitad de un párrafo.",

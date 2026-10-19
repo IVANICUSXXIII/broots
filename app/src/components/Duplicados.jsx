@@ -76,11 +76,11 @@ function Grupo({ grupo, porId, subrayadosDe, onResuelto, onIgnorado }) {
   );
 }
 
-export function HojaDuplicados({ libros, subrayadosPorUuid, onCambio, onCerrar }) {
+export function HojaDuplicados({ libros, cantidadSubrayados, onCambio, onCerrar }) {
   const [grupos, setGrupos] = useState(null);
   const [aviso, setAviso] = useState(null);
   const porId = new Map(libros.map((l) => [l.id, l]));
-  const subrayadosDe = (l) => subrayadosPorUuid[l.uuid]?.subrayados.length ?? 0;
+  const subrayadosDe = (l) => cantidadSubrayados(l); // del Kindle y del lector de Broots
   const buscar = () => window.edicion.buscarDuplicados().then(setGrupos);
 
   useEffect(() => {

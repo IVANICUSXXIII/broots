@@ -188,4 +188,4 @@ function crearColumna(libraryPath) {
   return calibre.calibredb(libraryPath, ['add_custom_column', '--display', json, ETIQUETA_COLUMNA, t('habito.columna'), 'enumeration']);
 }
 
-module.exports = { crearColumna, ETIQUETA_COLUMNA, guardarSesion, terminar, retomar, releer, alAbrir, todo, archivar, leerSesiones, leerLecturas };
+module.exports = { PC, crearColumna, ETIQUETA_COLUMNA, guardarSesion, terminar, retomar, releer, alAbrir, todo, archivar, leerSesiones, leerLecturas };

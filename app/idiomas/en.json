@@ -4,7 +4,7 @@
       "sinEstado": "No status",
       "si": "Yes",
       "no": "No",
-      "subrayados": "Kindle highlights",
+      "subrayados": "Highlights",
       "conSubrayados": "With highlights",
       "sinSubrayados": "Without highlights",
       "idioma": "Language",
@@ -141,8 +141,8 @@
     },
     "vistas": {
       "subrayados": {
-        "one": "{n} Kindle highlight",
-        "other": "{n} Kindle highlights"
+        "one": "{n} highlight",
+        "other": "{n} highlights"
       },
       "columnas": {
         "titulo": "Title",
@@ -493,6 +493,12 @@
         "borrarConfirmar": "This removes the sessions and rereads tracked in this library (from every PC). Your streak and heat map go back to zero.\n\nJust in case, Broots doesn’t erase them: it renames the .broots/habito folder to habito-borrado-… (with today’s date), where they can be recovered.\n\nGo ahead?",
         "borrado": "Done: stats reset. The copy is in .broots, in today’s habito-borrado-… folder.",
         "noPudeBorrar": "Couldn’t delete the stats."
+      },
+      "subrayadosLector": {
+        "titulo": "Highlights and notes",
+        "nota": "What you highlight in Broots’ reader is saved in your library folder, right next to your Kindle highlights.",
+        "archivoMd": "Keep a .md for each book in its folder",
+        "archivoMdDetalle": "With your highlights and notes by chapter, always up to date. It lives in the book’s “data” folder (Calibre shows it under “Data files”): perfect for Obsidian or Notion. Anything you write at the bottom of the file, Broots leaves alone."
       }
     },
     "editar": {
@@ -866,6 +872,56 @@
         "releer": "Reread",
         "releerExplica": "Starts a new read from the beginning. Your previous reading stays saved separately."
       }
+    },
+    "subrayados": {
+      "colores": {
+        "amarillo": "Yellow",
+        "verde": "Green",
+        "celeste": "Blue",
+        "rosa": "Pink"
+      },
+      "origen": {
+        "todos": "All",
+        "broots": "Broots",
+        "kindle": "Kindle"
+      },
+      "enLaTraduccion": "in the translation",
+      "delKindleSinCapitulo": "From Kindle, no chapter",
+      "seccion": "Section {n}",
+      "noEncontrado": "Couldn’t find it in this EPUB (it may be a different edition)",
+      "mostrarMd": "Show the .md",
+      "mostrarMdExplica": "Opens the book’s folder with the .md of your highlights and notes (for Obsidian, Notion or whatever you use)",
+      "guardarCopia": "Save a copy…",
+      "guardarCopiaExplica": "Saves the .md with your highlights and notes wherever you like",
+      "mdMostrado": "✓ There it is: “{nombre}”, in the book’s folder.",
+      "copiaGuardada": "✓ Copy saved: “{nombre}”.",
+      "noPudeMd": "Couldn’t put the .md together.",
+      "lector": {
+        "boton": "Highlights and notes",
+        "titulo": {
+          "0": "Your highlights",
+          "one": "Your highlights · 1",
+          "other": "Your highlights · {n}"
+        },
+        "vacio": "Nothing here yet. Select some text with your mouse and pick a color: it’s highlighted, and you can add a note if you like. This book’s Kindle highlights show up here too.",
+        "mdSolo": "They’re saved automatically to a .md in the book’s folder.",
+        "irAlSubrayado": "Go to this highlight",
+        "delKindle": "From Kindle",
+        "nota": "Note",
+        "verNota": "See note",
+        "copiar": "Copy",
+        "borrar": "Delete highlight",
+        "notaEjemplo": "What did it make you think? Jot it down…",
+        "ctrlEnter": "Ctrl+Enter or Esc saves",
+        "muyLargo": "That’s a lot of text for one highlight: pick a smaller chunk.",
+        "noPudeGuardar": "Couldn’t save the highlight. Try again.",
+        "noPudeBorrar": "Couldn’t delete the highlight. It’s still there.",
+        "borrado": "Highlight deleted.",
+        "borradoConNota": "Highlight deleted, note and all.",
+        "deshacer": "Undo",
+        "copiado": "✓ Copied. Paste away.",
+        "pista": "New: select some text with your mouse to highlight it and jot down whatever comes to mind."
+      }
     }
   },
   "electron": {
@@ -917,7 +973,13 @@
       "lectorOtroFormato": "The reader opens EPUB files, and this book is in {formatos}. Convert it to EPUB from its panel.",
       "lectorSinArchivo": "This entry has no file: there's nothing to read.",
       "yaSinEpub": "The book no longer has an EPUB.",
-      "pegaClave": "Paste the key first."
+      "pegaClave": "Paste the key first.",
+      "subrayadoInvalido": "That highlight came in empty, so I didn’t save it.",
+      "noPudeGuardarSubrayado": "Couldn’t save the highlight: {error}",
+      "mdCompartida": "This library is shared (read-only): the .md isn’t saved in the book’s folder. Use “Save a copy…”.",
+      "mdApagado": "The per-book .md is turned off (Settings → Reading & translation). Turn it on or use “Save a copy…”.",
+      "mdSinSubrayados": "This book has no highlights yet, so there’s no .md to show.",
+      "dialogoCopiaMd": "Save a copy of your highlights"
     },
     "calibre": {
       "sinHerramientas": "The Calibre tools aren't here yet: they download on their own (this needs internet). Try again in a few minutes.",
@@ -1049,7 +1111,8 @@
       "resumenConNotas": "{subrayados} and {notas}, in reading order.",
       "aclaracionNotas": "The notes (✎) are my own thoughts while reading.",
       "misSubrayados": "My highlights and notes",
-      "exportado": "Exported from Broots on {fecha}."
+      "exportado": "Exported from Broots on {fecha}.",
+      "capitulo": "“{titulo}”"
     },
     "habito": {
       "columna": "Status",
@@ -1060,6 +1123,24 @@
         "leido": "Read",
         "abandonado": "Abandoned"
       }
+    },
+    "cuaderno": {
+      "comentario": "Made by Broots from your highlights and notes: everything above broots:fin updates itself, everything below is yours.",
+      "sinSubrayados": "No highlights yet.",
+      "ultimoCambio": "last change: {fecha}",
+      "seccion": "Section {n}",
+      "delKindle": "From Kindle, no chapter",
+      "pistaPendiente": "To sort them by chapter, open the book in Broots’ reader: that’s where I look them up in the text.",
+      "pistaNoEncontrados": "Couldn’t find them in this EPUB (it may be a different edition): they’re in Kindle order.",
+      "enLaTraduccion": "in the translation",
+      "colores": {
+        "amarillo": "Yellow",
+        "verde": "Green",
+        "celeste": "Blue",
+        "rosa": "Pink"
+      },
+      "tuyo": "From here down it’s all yours: write whatever you like, Broots won’t touch it.",
+      "antes": "before"
     }
   }
 }

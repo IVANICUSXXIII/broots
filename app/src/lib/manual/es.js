@@ -93,6 +93,7 @@ export const MANUAL = [
           'También podés arrastrar el archivo My Clippings.txt del Kindle a la ventana.',
           'Broots reparte los subrayados por libro y los guarda en la carpeta de tu biblioteca. Si no reconoce un libro, te pregunta cuál es (y no se lo olvida más).',
           'Si un libro está en el Kindle pero no en tu biblioteca, lo podés agregar desde la misma hoja.',
+          'Conviven con los que hacés en el lector de Broots: una sola lista por libro y un solo .md (ver Subrayados y notas).',
         ],
       },
     ],
@@ -108,9 +109,45 @@ export const MANUAL = [
           'Arriba tenés el índice, el tamaño de letra y el número de página: escribí un número y apretá Enter para ir ahí.',
           'Para traducir al idioma de Broots, cargá tu clave de Gemini en Configuración → Lectura y traducción (ver Preguntas frecuentes) y tocá el botón de traducir del lector.',
           'Tocá un párrafo traducido para ver el original, por si querés comparar.',
+          'Seleccioná texto con el mouse para subrayarlo y anotarle algo (ver Subrayados y notas).',
           'Esc vuelve a la biblioteca.',
         ],
       },
+    ],
+  },
+  {
+    id: 'subrayados',
+    titulo: 'Subrayados y notas',
+    bloques: [
+      { texto: 'En el lector de Broots podés subrayar como en papel, pero sin manchar el libro ni pelearte con el resaltador.' },
+      {
+        pasos: [
+          'Seleccioná un pedazo de texto con el mouse. Arriba aparece una barrita con cuatro colores.',
+          'Tocá un color y queda subrayado. Con «Nota» le sumás lo que se te ocurrió; «Copiar» lo copia para pegarlo donde quieras.',
+          'Para cambiarle el color, editar la nota o borrarlo, tocá el subrayado. Si lo borrás sin querer, el cartelito de arriba tiene «Deshacer».',
+        ],
+      },
+      {
+        lista: [
+          'El botón del resaltador, arriba en el lector, abre la lista de tus subrayados de ese libro, por capítulo. Tocá uno y vas directo a su página.',
+          'Los subrayados quedan pegados al texto, no a la página: se ven igual con otra letra, otro tamaño de ventana o al volver a abrir el libro.',
+          'Con la traducción también: lo que subrayás en un idioma se marca exacto en ese idioma; en el otro, el párrafo lleva una línea de color abajo (la frase exacta no existe en el otro idioma).',
+          'Los subrayados del Kindle de ese libro aparecen en gris en el texto, cuando Broots encuentra la frase en el EPUB. Si el EPUB es de otra edición y no la encuentra, quedan igual en la lista.',
+          'En el panel de cada libro está la lista completa, con el origen de cada uno (Broots o Kindle) y filtros para ver solo unos u otros. El club de lectura también se los lleva todos.',
+          'Las notas: Ctrl+Enter, Esc o un clic afuera las guardan; «Cancelar» descarta lo que escribiste.',
+        ],
+      },
+      { subtitulo: 'El .md de cada libro (para Obsidian o Notion)' },
+      {
+        lista: [
+          'Broots arma solo un archivo .md por libro con el título, el autor y tus subrayados y notas, ordenados por capítulo. Se actualiza cada vez que subrayás, anotás o importás del Kindle.',
+          'Va en la carpeta «data» del libro, dentro de tu biblioteca. Es la carpeta que Calibre reserva para los archivos extra de cada libro: la muestra en «Archivos de datos» y se la lleva si cambiás el título o el autor.',
+          'Al final del archivo hay una línea que dice «De acá para abajo es tuyo»: lo que escribas debajo, Broots nunca lo toca. Lo de arriba sí: lo rearma solo, así que tus notas escribilas en Broots o abajo de esa línea.',
+          'En el panel del libro (y en la lista del lector) tenés «Mostrar el .md», que abre su carpeta, y «Guardar una copia…», que te pregunta dónde guardarla (por ejemplo, en tu bóveda de Obsidian).',
+          'Si no querés el .md en la carpeta de cada libro, se apaga en Configuración → Lectura y traducción. Tus subrayados siguen guardados igual.',
+        ],
+      },
+      { texto: 'Los subrayados viven en la carpeta .broots de tu biblioteca, junto con los del Kindle. Si usás Broots en dos PC con la biblioteca en Google Drive, cada PC escribe su propio archivo: nunca se pisan, y lo que borrás en una se borra también en la otra.' },
     ],
   },
   {
@@ -155,7 +192,7 @@ export const MANUAL = [
       { texto: 'Para charlar sobre un libro con una inteligencia artificial que leyó tus subrayados. Como un club de lectura, pero sin tener que coordinar horarios.' },
       {
         pasos: [
-          'En el panel del libro, tocá «Llevar al club de lectura». Broots crea un archivo .md con los datos del libro y tus subrayados, y te abre la carpeta.',
+          'En el panel del libro, tocá «Llevar al club de lectura». Broots crea un archivo .md con los datos del libro y tus subrayados y notas (los del Kindle y los del lector de Broots, en orden de lectura), y te abre la carpeta.',
           'Arrastrá ese archivo a tu Project de Claude o a NotebookLM.',
           'La primera vez, la hoja Club de lectura te explica cómo armar el Project de Claude o la skill de Gemini: pegás las instrucciones y completás la parte «Quién soy». Se hace una sola vez.',
         ],
@@ -219,6 +256,7 @@ export const MANUAL = [
           [['F1'], 'Abrir esta ayuda (sí, esta misma)'],
           [['←', '→'], 'En el lector: página anterior y siguiente'],
           [['F'], 'En el lector: modo enfoque (solo el texto, en pantalla completa)'],
+          [['Ctrl+Enter'], 'En el lector: guardar la nota de un subrayado'],
         ],
       },
     ],
@@ -248,6 +286,10 @@ export const MANUAL = [
           [
             'Mi biblioteca está en Google Drive. ¿Hay que tener algún cuidado?',
             'Broots trabaja sobre la carpeta de tu PC y el programa de Google Drive la sube solo. Evitá cambiar la biblioteca desde dos PCs al mismo tiempo, y si un cambio no aparece en la otra PC, esperá a que Drive termine de sincronizar.',
+          ],
+          [
+            'Edité el .md de un libro en Obsidian y Broots me borró lo que escribí. ¿Por qué?',
+            'Broots rearma solo la parte de arriba del .md (la de tus subrayados). Lo que escribas abajo de la línea «De acá para abajo es tuyo» queda siempre como lo dejaste. Si la borraste, Broots guarda el archivo viejo aparte, con «(antes)» en el nombre, y arma uno nuevo: no se pierde nada.',
           ],
           [
             '¿Broots le quita la protección (DRM) a mis libros?',

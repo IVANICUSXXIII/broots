@@ -15,6 +15,8 @@ const metadatos = require('./metadatos.cjs');
 const duplicados = require('./duplicados.cjs');
 const lector = require('./lector.cjs');
 const habito = require('./habito.cjs');
+const anotaciones = require('./anotaciones.cjs');
+const cuaderno = require('./cuaderno.cjs');
 const traduccion = require('./traduccion.cjs');
 const compartir = require('./compartir.cjs');
 const calibrePropio = require('./calibrePropio.cjs');
@@ -97,6 +99,8 @@ function cargar(libraryPath) {
     resultado.datos.compartidaPara = resultado.datos.soloLectura ? compartir.leerMarca(libraryPath)?.nombre ?? null : null;
     archivos = resultado.archivos;
     ultimaCarga = resultado.datos;
+    // 1.8: los .md de cada libro se ponen al día un rato después (cambió un título, llegó algo por Drive…).
+    cuadernos.programar(null, 5000);
     return { status: 'ok', data: resultado.datos };
   } catch (error) {
     return { status: 'error', message: error.message, libraryPath };
@@ -198,7 +202,9 @@ function importarClippings(ruta, origen) {
     return { ok: false, mensaje: t('main.elegiClippings') };
   }
   try {
-    return { ok: true, ...subrayados.importar(libraryPath, ruta, books, origen) };
+    const resultado = subrayados.importar(libraryPath, ruta, books, origen);
+    cuadernos.programar(); // los subrayados nuevos se suman al .md de cada libro
+    return { ok: true, ...resultado };
   } catch (error) {
     return { ok: false, mensaje: t('main.noPudeLeerArchivo', { error: error.message }) };
   }
@@ -241,21 +247,24 @@ ipcMain.handle('kindle:agregarLibro', async (_e, clave) => {
 
 ipcMain.handle('subrayados:asignar', (_e, clave, uuid) => {
   const { libraryPath, books } = bibliotecaCargada();
-  return subrayados.asignarManual(libraryPath, clave, uuid, books);
+  const datos = subrayados.asignarManual(libraryPath, clave, uuid, books);
+  cuadernos.programar(uuid);
+  return datos;
 });
 
 // ---------- Etapa 3: club de lectura ----------
 
 let ultimoExportado = null;
-ipcMain.handle('club:exportar', (_e, bookId) => {
+ipcMain.handle('club:exportar', async (_e, bookId) => {
   const { libraryPath, books } = bibliotecaCargada();
   const libro = books.find((b) => b.id === bookId);
   if (!libro) return { ok: false, mensaje: t('main.sinLibro') };
   try {
-    const propios = subrayados.leerGuardados(libraryPath).libros[libro.uuid]?.subrayados ?? [];
-    ultimoExportado = club.exportar(libraryPath, libro, propios);
+    // 1.8: los de Broots y los del Kindle juntos, en orden de lectura.
+    const { entradas } = await listaDe(libro, { ubicar: true });
+    ultimoExportado = club.exportar(libraryPath, libro, entradas);
     if (!process.env.BROOTS_DATOS) shell.showItemInFolder(ultimoExportado); // en pruebas no abre ventanas
-    return { ok: true, nombre: path.basename(ultimoExportado), subrayados: propios.length };
+    return { ok: true, nombre: path.basename(ultimoExportado), subrayados: entradas.length };
   } catch (error) {
     return { ok: false, mensaje: t('main.noPudeCrearArchivo', { error: error.message }) };
   }
@@ -398,10 +407,11 @@ const claveGrupo = (uuids) => [...uuids].sort().join('|');
 ipcMain.handle('duplicados:buscar', () => {
   const { libraryPath, books } = bibliotecaCargada();
   const guardados = subrayados.leerGuardados(libraryPath).libros;
+  const propios = anotaciones.resumen(carpetaDatos()); // 1.8: también cuentan los del lector de Broots
   const porId = new Map(books.map((b) => [b.id, b]));
   const ignorados = new Set(leerDuplicadosIgnorados());
   return duplicados
-    .buscar(books, (l) => guardados[l.uuid]?.subrayados.length ?? 0)
+    .buscar(books, (l) => (guardados[l.uuid]?.subrayados.length ?? 0) + (propios[l.uuid] ?? 0))
     .filter((g) => !ignorados.has(claveGrupo(g.libros.map((id) => porId.get(id).uuid))));
 });
 ipcMain.handle('duplicados:ignorar', (_e, ids) => {
@@ -421,7 +431,13 @@ ipcMain.handle('duplicados:resolver', (_e, conservar, descartar) =>
     // duplicados.resolver espera id -> { FORMATO: ruta } (no la ficha completa de archivos).
     const formatos = new Map([...archivos].map(([id, a]) => [id, a.formatos]));
     const r = await duplicados.resolver(libraryPath, conservar, descartar, formatos);
-    if (r.ok) for (const id of descartar) subrayados.moverLibro(libraryPath, porId.get(id).uuid, destino.uuid, destino.title);
+    if (r.ok) {
+      for (const id of descartar) {
+        subrayados.moverLibro(libraryPath, porId.get(id).uuid, destino.uuid, destino.title);
+        anotaciones.mover(carpetaDatos(), porId.get(id).uuid, destino.uuid);
+      }
+      cuadernos.programar(destino.uuid);
+    }
     return r;
   }),
 );
@@ -666,6 +682,134 @@ ipcMain.handle('ventana:pantallaCompleta', (_e, activa) => {
   if (ventana && !ventana.isDestroyed()) ventana.setFullScreen(Boolean(activa));
 });
 
+// ---------- 1.8: subrayados y notas ----------
+// Los de Broots, en <datos>/subrayados-lector (anotaciones.cjs); los del Kindle, en .broots/subrayados.json
+// (subrayados.cjs); el .md de cada libro, en la carpeta «data» del libro (cuaderno.cjs), salvo en una biblioteca
+// compartida, que es de solo lectura.
+
+// Dónde quedó cada subrayado del Kindle dentro del EPUB: en la caché de esta PC, una por biblioteca.
+const archivoUbicados = () => {
+  const clave = crypto.createHash('sha1').update(path.resolve(bibliotecaCargada().libraryPath).toLowerCase()).digest('hex').slice(0, 12);
+  return path.join(rutas.cache(), `ubicados-${clave}.json`);
+};
+
+// Los del Kindle (.broots/subrayados.json), leídos de nuevo solo si el archivo cambió: el panel los pide en cada libro.
+let kindleLeido = null; // { ruta, firma, libros }
+function kindleDeLaBiblioteca() {
+  const { libraryPath } = bibliotecaCargada();
+  const ruta = path.join(libraryPath, '.broots', 'subrayados.json');
+  let firma = 'sin archivo';
+  try {
+    const e = fs.statSync(ruta);
+    firma = `${e.mtimeMs}:${e.size}`;
+  } catch {}
+  if (kindleLeido?.ruta !== ruta || kindleLeido.firma !== firma) kindleLeido = { ruta, firma, libros: subrayados.leerGuardados(libraryPath).libros };
+  return kindleLeido.libros;
+}
+
+/** La lista única de un libro (Broots y Kindle). */
+async function listaDe(libro, { ubicar = false } = {}) {
+  const delKindle = kindleDeLaBiblioteca()[libro.uuid]?.subrayados ?? [];
+  return anotaciones.listaDelLibro({
+    datos: carpetaDatos(), uuid: libro.uuid, kindle: delKindle, epub: rutaEpub(libro.id), cache: archivoUbicados(), ubicar, textosDe: lector.textos,
+  });
+}
+
+const mdActivo = () => Boolean(ultimaCarga && !ultimaCarga.soloLectura && preferencias().archivoMd);
+
+const cuadernos = cuaderno.crearCola(() => {
+  if (!mdActivo()) return { activo: false };
+  const { books } = ultimaCarga;
+  const carpetas = archivos; // el de esta carga (cargar() arma uno nuevo cada vez)
+  const kindle = kindleDeLaBiblioteca();
+  const porUuid = new Map(books.map((b) => [b.uuid, b]));
+  return {
+    activo: true,
+    uuids: () => [...new Set([...Object.keys(kindle).filter((u) => kindle[u]?.subrayados?.length), ...Object.keys(anotaciones.resumen(carpetaDatos()))])].filter((u) => porUuid.has(u)),
+    libro: (uuid) => (porUuid.has(uuid) ? { libro: porUuid.get(uuid), carpeta: carpetas.get(porUuid.get(uuid).id)?.carpeta } : null),
+    lista: (libro) => listaDe(libro),
+  };
+});
+
+// El lector la pide con ubicar (busca los del Kindle en el EPUB, que ya está abierto); el panel del libro, sin.
+ipcMain.handle('subrayados:libro', async (_e, id, opciones) => {
+  const libro = libroPorId(id);
+  if (!libro) return { ok: false, mensaje: t('main.sinLibro') };
+  const ubicar = Boolean(opciones?.ubicar);
+  const lista = await listaDe(libro, { ubicar });
+  if (ubicar) cuadernos.programar(libro.uuid); // si se ubicaron los del Kindle, el .md suma los capítulos
+  return { ok: true, ...lista, md: mdActivo() };
+});
+ipcMain.handle('subrayados:guardar', (_e, id, registro) => {
+  const libro = libroPorId(id);
+  if (!libro) return { ok: false, mensaje: t('main.sinLibro') };
+  try {
+    const r = anotaciones.guardar(carpetaDatos(), libro.uuid, registro);
+    if (!r.ok) return { ok: false, mensaje: t('main.subrayadoInvalido') };
+    cuadernos.programar(libro.uuid);
+    return r;
+  } catch (error) {
+    return { ok: false, mensaje: t('main.noPudeGuardarSubrayado', { error: error.message }) };
+  }
+});
+ipcMain.handle('subrayados:borrar', (_e, id, idSubrayado) => {
+  const libro = libroPorId(id);
+  if (!libro) return { ok: false, mensaje: t('main.sinLibro') };
+  try {
+    const r = anotaciones.borrar(carpetaDatos(), libro.uuid, String(idSubrayado));
+    if (r.ok) cuadernos.programar(libro.uuid);
+    return r;
+  } catch (error) {
+    return { ok: false, mensaje: t('main.noPudeGuardarSubrayado', { error: error.message }) };
+  }
+});
+ipcMain.handle('subrayados:resumen', () => anotaciones.resumen(carpetaDatos()));
+
+// «Mostrar el .md»: lo pone al día ya mismo y abre la carpeta (en pruebas, sin abrir ventanas).
+ipcMain.handle('subrayados:mostrarMd', async (_e, id) => {
+  const libro = libroPorId(id);
+  if (!libro) return { ok: false, mensaje: t('main.sinLibro') };
+  if (!mdActivo()) return { ok: false, mensaje: t(ultimaCarga?.soloLectura ? 'main.mdCompartida' : 'main.mdApagado') };
+  try {
+    const r = await cuadernos.ahora(libro.uuid);
+    if (!r?.ruta) return { ok: false, mensaje: t('main.mdSinSubrayados') };
+    if (!process.env.BROOTS_DATOS) shell.showItemInFolder(r.ruta);
+    return { ok: true, nombre: path.basename(r.ruta) };
+  } catch (error) {
+    return { ok: false, mensaje: t('main.noPudeCrearArchivo', { error: error.message }) };
+  }
+});
+
+// «Guardar una copia…»: el mismo .md donde elijas (pregunta cada vez y recuerda la última carpeta).
+ipcMain.handle('subrayados:guardarCopia', async (_e, id) => {
+  const libro = libroPorId(id);
+  if (!libro) return { ok: false, mensaje: t('main.sinLibro') };
+  try {
+    const lista = await listaDe(libro, { ubicar: true });
+    const texto = cuaderno.contenido(mdActivo() ? archivos.get(id)?.carpeta : null, libro, lista);
+    const config = leerConfig();
+    let destino;
+    if (process.env.BROOTS_DATOS) {
+      destino = path.join(app.getPath('userData'), 'copias', club.nombreArchivo(libro)); // en pruebas, sin diálogo
+    } else {
+      const carpeta = config.carpetaCopiasMd && fs.existsSync(config.carpetaCopiasMd) ? config.carpetaCopiasMd : app.getPath('documents');
+      const { canceled, filePath } = await dialog.showSaveDialog(ventana, {
+        title: t('main.dialogoCopiaMd'),
+        defaultPath: path.join(carpeta, club.nombreArchivo(libro)),
+        filters: [{ name: 'Markdown', extensions: ['md'] }],
+      });
+      if (canceled || !filePath) return { ok: false, cancelado: true };
+      destino = filePath;
+      guardarConfig({ ...leerConfig(), carpetaCopiasMd: path.dirname(filePath) });
+    }
+    fs.mkdirSync(path.dirname(destino), { recursive: true });
+    fs.writeFileSync(destino, texto, 'utf8');
+    return { ok: true, nombre: path.basename(destino) };
+  } catch (error) {
+    return { ok: false, mensaje: t('main.noPudeCrearArchivo', { error: error.message }) };
+  }
+});
+
 ipcMain.handle('traduccion:estado',() => traduccion.estado(leerConfig()));
 ipcMain.handle('traduccion:guardarClave', (_e, clave) => {
   try {
@@ -805,6 +949,8 @@ const PREFERENCIAS = {
   // 1.7: anotar las sesiones de lectura (en .broots/habito) y el aviso de descanso para la vista (regla 20-20-20).
   anotarSesiones: { defecto: true, valida: (v) => typeof v === 'boolean' },
   descansoVista: { defecto: true, valida: (v) => typeof v === 'boolean' },
+  // 1.8: el .md con los subrayados y notas de cada libro, en su carpeta «data» (para Obsidian, Notion…).
+  archivoMd: { defecto: true, valida: (v) => typeof v === 'boolean' },
 };
 function preferencias() {
   const config = leerConfig();
@@ -835,6 +981,8 @@ ipcMain.handle('config:guardar', (_e, cambios) => {
   const validos = Object.entries(cambios ?? {}).filter(([clave, valor]) => PREFERENCIAS[clave]?.valida(valor));
   guardarConfig({ ...leerConfig(), ...Object.fromEntries(validos) });
   idioma.poner(leerConfig().idioma);
+  // Al prender el .md por libro (o cambiar el idioma, que es el del .md), se ponen al día todos.
+  if (validos.some(([clave, valor]) => (clave === 'archivoMd' && valor) || clave === 'idioma')) cuadernos.programar();
   return preferencias();
 });
 // La interfaz pregunta el idioma una sola vez, al abrir la ventana (antes de dibujar nada).

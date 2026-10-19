@@ -4,7 +4,7 @@
       "sinEstado": "Sin estado",
       "si": "Sí",
       "no": "No",
-      "subrayados": "Subrayados del Kindle",
+      "subrayados": "Subrayados",
       "conSubrayados": "Con subrayados",
       "sinSubrayados": "Sin subrayados",
       "idioma": "Idioma",
@@ -141,8 +141,8 @@
     },
     "vistas": {
       "subrayados": {
-        "one": "{n} subrayado del Kindle",
-        "other": "{n} subrayados del Kindle"
+        "one": "{n} subrayado",
+        "other": "{n} subrayados"
       },
       "columnas": {
         "titulo": "Título",
@@ -493,6 +493,12 @@
         "borrarConfirmar": "Se van a borrar las sesiones y las relecturas anotadas en esta biblioteca (de todas las PC). La racha y el mapa vuelven a cero.\n\nPor las dudas, Broots no las elimina: renombra la carpeta .broots/habito a habito-borrado-… (con la fecha de hoy), y desde ahí se pueden recuperar.\n\n¿Seguimos?",
         "borrado": "Listo: estadísticas en cero. La copia quedó en .broots, en la carpeta habito-borrado-… de hoy.",
         "noPudeBorrar": "No pude borrar las estadísticas."
+      },
+      "subrayadosLector": {
+        "titulo": "Subrayados y notas",
+        "nota": "Lo que subrayás en el lector de Broots se guarda en la carpeta de tu biblioteca, junto con lo del Kindle.",
+        "archivoMd": "Guardar un .md de cada libro en su carpeta",
+        "archivoMdDetalle": "Con tus subrayados y notas por capítulo, siempre al día. Va en la carpeta «data» del libro (Calibre la muestra en «Archivos de datos»): ideal para Obsidian o Notion. Lo que escribas al final del archivo, Broots no lo toca."
       }
     },
     "editar": {
@@ -866,6 +872,56 @@
         "releer": "Releer",
         "releerExplica": "Empieza una vuelta nueva desde el principio. Lo que leíste antes queda guardado aparte."
       }
+    },
+    "subrayados": {
+      "colores": {
+        "amarillo": "Amarillo",
+        "verde": "Verde",
+        "celeste": "Celeste",
+        "rosa": "Rosa"
+      },
+      "origen": {
+        "todos": "Todos",
+        "broots": "Broots",
+        "kindle": "Kindle"
+      },
+      "enLaTraduccion": "en la traducción",
+      "delKindleSinCapitulo": "Del Kindle, sin capítulo",
+      "seccion": "Sección {n}",
+      "noEncontrado": "No lo encontré en este EPUB (puede ser de otra edición)",
+      "mostrarMd": "Mostrar el .md",
+      "mostrarMdExplica": "Abre la carpeta del libro con el .md de tus subrayados y notas (para Obsidian, Notion o lo que uses)",
+      "guardarCopia": "Guardar una copia…",
+      "guardarCopiaExplica": "Guarda el .md con tus subrayados y notas donde elijas",
+      "mdMostrado": "✓ Ahí está: «{nombre}», en la carpeta del libro.",
+      "copiaGuardada": "✓ Copia guardada: «{nombre}».",
+      "noPudeMd": "No pude armar el .md.",
+      "lector": {
+        "boton": "Subrayados y notas",
+        "titulo": {
+          "0": "Tus subrayados",
+          "one": "Tus subrayados · 1",
+          "other": "Tus subrayados · {n}"
+        },
+        "vacio": "Todavía nada por acá. Seleccioná un pedazo de texto con el mouse y elegí un color: queda subrayado, y si querés le sumás una nota. Los subrayados del Kindle de este libro también aparecen acá.",
+        "mdSolo": "Se guardan solos en un .md en la carpeta del libro.",
+        "irAlSubrayado": "Ir a este subrayado",
+        "delKindle": "Del Kindle",
+        "nota": "Nota",
+        "verNota": "Ver nota",
+        "copiar": "Copiar",
+        "borrar": "Borrar el subrayado",
+        "notaEjemplo": "¿Qué te hizo pensar? Anotalo acá…",
+        "ctrlEnter": "Ctrl+Enter o Esc guardan",
+        "muyLargo": "Es mucho texto para un subrayado: elegí un pedazo más chico.",
+        "noPudeGuardar": "No pude guardar el subrayado. Probá de nuevo.",
+        "noPudeBorrar": "No pude borrar el subrayado. Sigue donde estaba.",
+        "borrado": "Subrayado borrado.",
+        "borradoConNota": "Subrayado borrado, con su nota.",
+        "deshacer": "Deshacer",
+        "copiado": "✓ Copiado. Pegalo donde quieras.",
+        "pista": "Novedad: seleccioná un pedazo de texto con el mouse para subrayarlo y anotarle lo que se te ocurra."
+      }
     }
   },
   "electron": {
@@ -917,7 +973,13 @@
       "lectorOtroFormato": "El lector abre EPUB y este libro está en {formatos}. Convertilo a EPUB desde el panel.",
       "lectorSinArchivo": "Es una ficha sin archivo: no hay nada para leer.",
       "yaSinEpub": "El libro ya no tiene EPUB.",
-      "pegaClave": "Pegá la clave primero."
+      "pegaClave": "Pegá la clave primero.",
+      "subrayadoInvalido": "Ese subrayado llegó vacío: no lo guardé.",
+      "noPudeGuardarSubrayado": "No pude guardar el subrayado: {error}",
+      "mdCompartida": "Esta biblioteca es compartida (solo lectura): el .md no se guarda en la carpeta del libro. Usá «Guardar una copia…».",
+      "mdApagado": "El .md de cada libro está apagado (Configuración → Lectura y traducción). Prendelo o usá «Guardar una copia…».",
+      "mdSinSubrayados": "Este libro todavía no tiene subrayados: no hay .md para mostrar.",
+      "dialogoCopiaMd": "Guardar una copia de los subrayados"
     },
     "calibre": {
       "sinHerramientas": "Todavía no tengo las herramientas de Calibre: se descargan solas (necesita internet). Probá de nuevo en unos minutos.",
@@ -1049,7 +1111,8 @@
       "resumenConNotas": "{subrayados} y {notas}, en orden de lectura.",
       "aclaracionNotas": "Las notas (✎) son mis propios pensamientos al leer.",
       "misSubrayados": "Mis subrayados y notas",
-      "exportado": "Exportado desde Broots el {fecha}."
+      "exportado": "Exportado desde Broots el {fecha}.",
+      "capitulo": "«{titulo}»"
     },
     "habito": {
       "columna": "Estado",
@@ -1060,6 +1123,24 @@
         "leido": "Leído",
         "abandonado": "Abandonado"
       }
+    },
+    "cuaderno": {
+      "comentario": "Lo arma Broots con tus subrayados y notas: lo de arriba de broots:fin se actualiza solo y lo de abajo es tuyo.",
+      "sinSubrayados": "Todavía no hay subrayados.",
+      "ultimoCambio": "último cambio: {fecha}",
+      "seccion": "Sección {n}",
+      "delKindle": "Del Kindle, sin capítulo",
+      "pistaPendiente": "Para ordenarlos por capítulo, abrí el libro en el lector de Broots: ahí los busco en el texto.",
+      "pistaNoEncontrados": "No los encontré en este EPUB (puede ser otra edición): van en el orden del Kindle.",
+      "enLaTraduccion": "en la traducción",
+      "colores": {
+        "amarillo": "Amarillo",
+        "verde": "Verde",
+        "celeste": "Celeste",
+        "rosa": "Rosa"
+      },
+      "tuyo": "De acá para abajo es tuyo: escribí lo que quieras, que Broots no lo toca.",
+      "antes": "antes"
     }
   }
 }

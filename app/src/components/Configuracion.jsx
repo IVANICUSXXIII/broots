@@ -226,6 +226,18 @@ function Lectura({ preferencias, onPreferencias }) {
 
       <HabitoDeLectura preferencias={preferencias} onPreferencias={onPreferencias} />
 
+      {/* 1.8: el .md de cada libro con sus subrayados y notas, en la carpeta «data» del libro */}
+      <Grupo titulo={t('configuracion.subrayadosLector.titulo')} nota={t('configuracion.subrayadosLector.nota')}>
+        <div className="-mx-2 py-1.5" data-archivo-md={preferencias?.archivoMd ?? true ? 'si' : 'no'}>
+          <Interruptor
+            activo={preferencias?.archivoMd ?? true}
+            onCambiar={(v) => onPreferencias({ archivoMd: v })}
+            etiqueta={t('configuracion.subrayadosLector.archivoMd')}
+          />
+          <p className="px-2 pb-1 text-[0.74rem] text-tinta-tenue">{t('configuracion.subrayadosLector.archivoMdDetalle')}</p>
+        </div>
+      </Grupo>
+
       <Grupo titulo={t('configuracion.traduccion')}>
         <Fila etiqueta={t('configuracion.claveGemini')}>
           {tieneClave != null && (

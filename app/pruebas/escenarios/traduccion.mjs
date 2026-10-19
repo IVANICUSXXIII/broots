@@ -30,7 +30,7 @@ export default {
     comprobar('al volver atrás sigue traducido', !enIngles().length, `${enIngles().length} párrafos sin traducir`);
     const parrafo = visibles()[0];
     parrafo.click();
-    await esperar(300);
+    await esperar(800); // desde la 1.8 el clic espera un instante, por si es un doble clic para elegir una palabra
     comprobar('tocar un párrafo muestra el original', !parrafo.innerText.startsWith('ES·'));
   },
 };

@@ -24,6 +24,17 @@
   --estrella: #b17036;
   --scroll: #c9c6ad;
   --sombra: 43 54 28;
+  /* 1.8: subrayados del lector (fondo) y su línea (cuando se subrayó en el otro idioma) */
+  --subrayado-amarillo: #f5df98;
+  --subrayado-verde: #d3e0b0;
+  --subrayado-celeste: #cde0ea;
+  --subrayado-rosa: #f1cfd4;
+  --subrayado-kindle: #e3dfcb;
+  --linea-amarillo: #d4ae3c;
+  --linea-verde: #8ea565;
+  --linea-celeste: #78a3bd;
+  --linea-rosa: #cf8593;
+  --linea-kindle: #a9a58e;
   color-scheme: light;
 }
 
@@ -45,6 +56,16 @@
     --estrella: #d4a369;
     --scroll: #5e5d57;
     --sombra: 0 0 0;
+    --subrayado-amarillo: #5b4e24;
+    --subrayado-verde: #3e4a2b;
+    --subrayado-celeste: #2d4250;
+    --subrayado-rosa: #553239;
+    --subrayado-kindle: #45443d;
+    --linea-amarillo: #c0a148;
+    --linea-verde: #8ea46b;
+    --linea-celeste: #6f99b3;
+    --linea-rosa: #c27d8a;
+    --linea-kindle: #8c8a7e;
     color-scheme: dark;
   }
 }
@@ -264,3 +285,38 @@ textarea,
   background-color: color-mix(in srgb, var(--seleccion) 70%, transparent);
   box-shadow: -6px 0 0 color-mix(in srgb, var(--seleccion) 70%, transparent), 6px 0 0 color-mix(in srgb, var(--seleccion) 70%, transparent);
 }
+
+/*
+  1.8: subrayados. Solo cambian el color de fondo (o agregan una línea abajo): ninguna letra se mueve, así las
+  páginas quedan iguales. Los que tienen nota llevan además una línea punteada.
+*/
+.texto-libro mark[data-subrayado] {
+  color: inherit;
+  background-color: var(--subrayado-amarillo);
+  border-radius: 2px;
+  cursor: pointer;
+}
+.texto-libro mark[data-subrayado].verde { background-color: var(--subrayado-verde); }
+.texto-libro mark[data-subrayado].celeste { background-color: var(--subrayado-celeste); }
+.texto-libro mark[data-subrayado].rosa { background-color: var(--subrayado-rosa); }
+.texto-libro mark[data-subrayado].kindle { background-color: var(--subrayado-kindle); }
+.texto-libro mark[data-subrayado].con-nota {
+  text-decoration: underline dotted var(--tinta-suave);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.22em;
+}
+/* Recién llegado desde la lista: un anillo por un momento, para encontrarlo en la página */
+.texto-libro mark[data-subrayado].destacado {
+  box-shadow: 0 0 0 2px var(--acento);
+}
+/* Subrayado en el otro idioma (por ejemplo, en la traducción y ahora se ve el original): una línea bajo el párrafo */
+.texto-libro .subrayado-otro {
+  text-decoration: underline var(--linea-amarillo);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.25em;
+  text-decoration-skip-ink: none;
+}
+.texto-libro .subrayado-otro[data-color-otro='verde'] { text-decoration-color: var(--linea-verde); }
+.texto-libro .subrayado-otro[data-color-otro='celeste'] { text-decoration-color: var(--linea-celeste); }
+.texto-libro .subrayado-otro[data-color-otro='rosa'] { text-decoration-color: var(--linea-rosa); }
+.texto-libro .subrayado-otro[data-color-otro='kindle'] { text-decoration-color: var(--linea-kindle); }

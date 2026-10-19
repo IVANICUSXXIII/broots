@@ -1,7 +1,7 @@
 // Club de lectura: arma el archivo .md de un libro para llevarlo a Claude (Project) o a NotebookLM.
 //
-// El archivo tiene SOLO material del libro (datos, descripción y tus subrayados y notas, en orden de
-// lectura). Las instrucciones de "compañero de club" viven en el Project de Claude y en la skill de
+// El archivo tiene SOLO material del libro (datos, descripción y tus subrayados y notas, del Kindle y del lector
+// de Broots, en orden de lectura). Las instrucciones de "compañero de club" viven en el Project de Claude y en la skill de
 // Gemini, así no se repiten en cada archivo.
 // Se guarda en <biblioteca>/.broots/club-de-lectura/ (en Drive, junto con los subrayados).
 // Se escribe en el idioma de Broots (el nombre de la carpeta no cambia).
@@ -33,9 +33,17 @@ function nombreArchivo(libro) {
   return `${base}.md`;
 }
 
-/** Cita de un subrayado en Markdown: el texto citado y debajo de dónde sale. */
+/**
+ * Cita de un subrayado en Markdown: el texto citado y debajo de dónde sale. Desde la 1.8 llegan juntos los del
+ * Kindle y los del lector de Broots (ver anotaciones.listaDelLibro), con el capítulo cuando se sabe.
+ */
 function bloqueSubrayado(s) {
-  const lugar = [s.pagina && t('club.pagina', { n: s.pagina[0] }), s.ubicacion && t('club.posicion', { n: s.ubicacion[0] }), fecha(s.fecha, { day: 'numeric', month: 'short', year: 'numeric' })]
+  const lugar = [
+    s.titulo && t('club.capitulo', { titulo: s.titulo }),
+    s.pagina && t('club.pagina', { n: s.pagina[0] }),
+    s.ubicacion && t('club.posicion', { n: s.ubicacion[0] }),
+    fecha(s.fecha, { day: 'numeric', month: 'short', year: 'numeric' }),
+  ]
     .filter(Boolean)
     .join(' · ');
   if (s.tipo === 'nota') {

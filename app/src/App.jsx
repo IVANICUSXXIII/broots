@@ -267,10 +267,20 @@ function Aplicacion() {
   const [resultadoImportacion, setResultadoImportacion] = useState(null);
   const [arrastrando, setArrastrando] = useState(false);
   const subrayadosPorUuid = subrayados?.libros ?? {};
-  const grupos = useMemo(
-    () => construirGrupos(columnas, (l) => subrayadosPorUuid[l.uuid]?.subrayados.length ?? 0),
-    [columnas, subrayados],
+  // 1.8: cuántos subrayados de Broots tiene cada libro (los del Kindle vienen en «subrayados») y una versión que sube
+  // cuando algo cambió, para que el panel del libro vuelva a pedir su lista.
+  const [propios, setPropios] = useState({});
+  const [versionSubrayados, setVersionSubrayados] = useState(0);
+  const cambiaronSubrayados = useCallback(() => {
+    window.subrayados.resumen().then(setPropios).catch(() => {});
+    setVersionSubrayados((v) => v + 1);
+  }, []);
+  const cantidadSubrayados = useCallback(
+    (l) => (subrayadosPorUuid[l.uuid]?.subrayados.length ?? 0) + (propios[l.uuid] ?? 0),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [subrayados, propios],
   );
+  const grupos = useMemo(() => construirGrupos(columnas, cantidadSubrayados), [columnas, cantidadSubrayados]);
 
   useEffect(() => {
     if (!datos) return;
@@ -287,17 +297,26 @@ function Aplicacion() {
           : await window.kindle.importarArchivo(origen);
     if (resultado.cancelado) return;
     setResultadoImportacion(resultado);
-    if (resultado.ok) setSubrayados(resultado.datos);
+    if (resultado.ok) {
+      setSubrayados(resultado.datos);
+      cambiaronSubrayados();
+    }
     setHojaKindle(true);
   };
-  const asignarSubrayados = async (clave, uuid) => setSubrayados(await window.kindle.asignar(clave, uuid));
+  const asignarSubrayados = async (clave, uuid) => {
+    setSubrayados(await window.kindle.asignar(clave, uuid));
+    cambiaronSubrayados();
+  };
   const ignorarSubrayados = async (clave) => setSubrayados(await window.kindle.ignorar(clave));
   const restaurarSubrayados = async (clave) => setSubrayados(await window.kindle.restaurar(clave));
   // Agrega a Calibre un libro del Kindle; al terminar se recarga la biblioteca (ya con el libro nuevo).
   const agregarLibro = async (clave) => {
     const resultado = await window.kindle.agregarLibro(clave);
     if (resultado.biblioteca?.status === 'ok') setCarga(resultado.biblioteca);
-    if (resultado.subrayados) setSubrayados(resultado.subrayados);
+    if (resultado.subrayados) {
+      setSubrayados(resultado.subrayados);
+      cambiaronSubrayados();
+    }
     return resultado;
   };
   const enviarAlKindle = async (id, integranteId) => {
@@ -335,6 +354,10 @@ function Aplicacion() {
   useEffect(() => {
     if (datos && !leyendo) recargarHabito();
   }, [datos?.loadedAt, leyendo, recargarHabito]);
+  // 1.8: al abrir la biblioteca y al cerrar el lector (donde se subraya), se releen los subrayados de Broots.
+  useEffect(() => {
+    if (datos && !leyendo) cambiaronSubrayados();
+  }, [datos?.loadedAt, leyendo, cambiaronSubrayados]);
   /** Al cambiar el estado desde el panel, la vuelta del libro acompaña: Leído o Abandonado la cierran, Leyendo la retoma. */
   const editarEstado = async (libro, cambios) => {
     const r = await editarRapido(libro.id, cambios);
@@ -681,7 +704,7 @@ function Aplicacion() {
               <Vista activa={vista === 'grilla'}>
                 <Grilla
                   todos={libros}
-                  subrayadosPorUuid={subrayadosPorUuid}
+                  cantidadSubrayados={cantidadSubrayados}
                   visibles={visibles}
                   disposicion={disposicion}
                   onAbrir={abrir}
@@ -753,7 +776,7 @@ function Aplicacion() {
             onCerrar={cerrar}
             onEtiqueta={(etiqueta) => setFiltros((f) => ({ ...f, etiqueta: new Set([etiqueta]) }))}
             onAmpliar={ampliar}
-            subrayados={subrayadosPorUuid[libroSeleccionado.uuid]?.subrayados ?? []}
+            versionSubrayados={versionSubrayados}
             envio={{
               listo: Boolean(estadoEnvio?.tieneClave && estadoEnvio?.destino),
               destino: estadoEnvio?.destino,
@@ -846,10 +869,11 @@ function Aplicacion() {
           <HojaDuplicados
             key="duplicados"
             libros={libros}
-            subrayadosPorUuid={subrayadosPorUuid}
+            cantidadSubrayados={cantidadSubrayados}
             onCambio={(biblioteca) => {
               actualizarBiblioteca(biblioteca);
               window.kindle.leerSubrayados().then(setSubrayados).catch(() => {});
+              cambiaronSubrayados();
             }}
             onCerrar={() => setHojaDuplicados(false)}
           />

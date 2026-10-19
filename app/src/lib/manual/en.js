@@ -89,6 +89,7 @@ export const MANUAL = [
           'You can also drag the Kindle’s My Clippings.txt file onto the window.',
           'Broots sorts the highlights by book and saves them in your library folder. If it doesn’t recognize a book, it asks you which one it is (and never forgets).',
           'If a book is on the Kindle but not in your library, you can add it from the same sheet.',
+          'They live alongside the ones you make in the Broots reader: one list per book and one .md (see Highlights and notes).',
         ],
       },
     ],
@@ -104,9 +105,45 @@ export const MANUAL = [
           'At the top you have the table of contents, the font size and the page number: type a number and press Enter to go there.',
           'To translate into Broots’ language, add your Gemini key in Settings → Reading & translation (see Frequently asked questions) and click the reader’s translate button.',
           'Click a translated paragraph to see the original, in case you want to compare.',
+          'Select some text with your mouse to highlight it and add a note (see Highlights and notes).',
           'Esc takes you back to the library.',
         ],
       },
+    ],
+  },
+  {
+    id: 'subrayados',
+    titulo: 'Highlights and notes',
+    bloques: [
+      { texto: 'In the Broots reader you can highlight just like on paper, minus the smudges and the dried-out highlighter.' },
+      {
+        pasos: [
+          'Select some text with your mouse. A small bar with four colors pops up above it.',
+          'Click a color and it’s highlighted. “Note” lets you jot down whatever came to mind; “Copy” copies it so you can paste it anywhere.',
+          'To change the color, edit the note or delete it, click the highlight. If you delete one by mistake, the little message at the top has “Undo”.',
+        ],
+      },
+      {
+        lista: [
+          'The highlighter button at the top of the reader opens the list of that book’s highlights, by chapter. Click one to jump straight to its page.',
+          'Highlights stick to the text, not to the page: they look the same with another font size, another window size or when you open the book again.',
+          'With translation too: what you highlight in one language is marked exactly in that language; in the other one, the paragraph gets a colored line underneath (the exact phrase doesn’t exist in the other language).',
+          'The book’s Kindle highlights show up in gray in the text, when Broots finds the phrase in the EPUB. If the EPUB is a different edition and it can’t find it, they still appear in the list.',
+          'Each book’s panel has the full list, with where each one came from (Broots or Kindle) and filters to see one kind or the other. The book club takes them all along too.',
+          'Notes: Ctrl+Enter, Esc or a click outside saves them; “Cancel” throws away what you wrote.',
+        ],
+      },
+      { subtitulo: 'Each book’s .md (for Obsidian or Notion)' },
+      {
+        lista: [
+          'Broots keeps a .md file for each book with its title, author and your highlights and notes, sorted by chapter. It updates itself whenever you highlight, take notes or import from your Kindle.',
+          'It lives in the book’s “data” folder, inside your library. That’s the folder Calibre sets aside for each book’s extra files: it shows it under “Data files” and takes it along if you change the title or the author.',
+          'At the end of the file there’s a line that says “From here down it’s all yours”: anything you write below it, Broots never touches. Everything above it gets rebuilt automatically, so write your notes in Broots or below that line.',
+          'In the book’s panel (and in the reader’s list) you have “Show the .md”, which opens its folder, and “Save a copy…”, which asks where to save it (your Obsidian vault, for example).',
+          'If you don’t want the .md in each book’s folder, turn it off in Settings → Reading & translation. Your highlights are still saved.',
+        ],
+      },
+      { texto: 'Highlights live in your library’s .broots folder, next to the Kindle ones. If you use Broots on two PCs with the library in Google Drive, each PC writes its own file: they never overwrite each other, and what you delete on one is deleted on the other too.' },
     ],
   },
   {
@@ -151,7 +188,7 @@ export const MANUAL = [
       { texto: 'To talk about a book with an artificial intelligence that has read your highlights. Like a book club, minus the scheduling.' },
       {
         pasos: [
-          'In the book’s panel, click “Take to book club”. Broots creates a .md file with the book’s details and your highlights, and opens the folder for you.',
+          'In the book’s panel, click “Take to book club”. Broots creates a .md file with the book’s details and your highlights and notes (from your Kindle and from the Broots reader, in reading order), and opens the folder for you.',
           'Drag that file into your Claude Project or into NotebookLM.',
           'The first time, the Book club sheet explains how to set up the Claude Project or the Gemini skill: you paste the instructions and fill in the “Who I am” part. You only do it once.',
         ],
@@ -215,6 +252,7 @@ export const MANUAL = [
           [['F1'], 'Open this help (yes, this one)'],
           [['←', '→'], 'In the reader: previous and next page'],
           [['F'], 'In the reader: focus mode (just the text, full screen)'],
+          [['Ctrl+Enter'], 'In the reader: save a highlight’s note'],
         ],
       },
     ],
@@ -244,6 +282,10 @@ export const MANUAL = [
           [
             'My library is in Google Drive. Do I need to be careful about anything?',
             'Broots works on the folder on your PC, and the Google Drive program uploads it on its own. Avoid changing the library from two PCs at the same time, and if a change doesn’t show up on the other PC, wait for Drive to finish syncing.',
+          ],
+          [
+            'I edited a book’s .md in Obsidian and Broots erased what I wrote. Why?',
+            'Broots rebuilds only the top part of the .md (the one with your highlights). Anything you write below the “From here down it’s all yours” line stays exactly as you left it. If you deleted that line, Broots saves the old file separately, with “(before)” in its name, and makes a new one: nothing gets lost.',
           ],
           [
             'Does Broots remove the protection (DRM) from my books?',

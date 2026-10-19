@@ -17,6 +17,7 @@ import { IconoAbrir, IconoCarpeta, IconoCerrar, IconoCheck, IconoCita, IconoEdit
 import { ElegirEstrellas } from './Editar.jsx';
 import { etiquetaDe } from './Compartir.jsx';
 import { Estrellas, EtiquetaEstado, Portada } from './Piezas.jsx';
+import { AccionesMd, colorDeLinea, lugarDe } from './SubrayadosLector.jsx';
 
 export const ANCHO_DETALLE = 420;
 export const RADIO_PORTADA_PANEL = 10;
@@ -271,36 +272,67 @@ function Convertir({ libro, onConvertir }) {
 }
 
 const SUBRAYADOS_VISIBLES = 4;
+const ORIGENES = ['todos', 'broots', 'kindle'];
 
-/** Tus subrayados del Kindle para este libro. */
-function ListaSubrayados({ subrayados }) {
+/**
+ * Tus subrayados y notas de este libro: los del Kindle y los del lector de Broots en una sola lista, en orden de
+ * lectura (1.8), con su origen. Abajo, el .md del libro: mostrarlo o guardar una copia donde quieras.
+ */
+function ListaSubrayados({ libro, lista }) {
   const [todos, setTodos] = useState(false);
-  const mostrados = todos ? subrayados : subrayados.slice(0, SUBRAYADOS_VISIBLES);
+  const [origen, setOrigen] = useState('todos');
+  const [resultado, setResultado] = useState(null);
+  useEffect(() => {
+    setTodos(false);
+    setOrigen('todos');
+    setResultado(null);
+  }, [libro.id]);
+  const { entradas } = lista;
+  const deAmbos = entradas.some((e) => e.origen === 'broots') && entradas.some((e) => e.origen === 'kindle');
+  const filtradas = origen === 'todos' || !deAmbos ? entradas : entradas.filter((e) => e.origen === origen);
+  const mostrados = todos ? filtradas : filtradas.slice(0, SUBRAYADOS_VISIBLES);
   return (
-    <motion.div variants={item} className="mt-7">
-      <p className="flex items-center gap-1.5 text-[0.68rem] font-semibold tracking-wide text-tinta-tenue">
-        <IconoCita className="size-3.5 text-acento" /> {t('detalle.misSubrayados', { n: subrayados.length })}
-      </p>
+    <motion.div variants={item} className="mt-7" data-subrayados-panel>
+      <div className="flex items-center gap-1">
+        <p className="flex min-w-0 flex-1 items-center gap-1.5 text-[0.68rem] font-semibold tracking-wide text-tinta-tenue">
+          <IconoCita className="size-3.5 shrink-0 text-acento" /> {t('detalle.misSubrayados', { n: entradas.length })}
+        </p>
+        {deAmbos &&
+          ORIGENES.map((o) => (
+            <button
+              type="button"
+              key={o}
+              data-filtro-origen={o}
+              onClick={() => {
+                setOrigen(o);
+                setTodos(false);
+              }}
+              className={`rounded-full px-2 py-0.5 text-[0.66rem] font-medium transition-colors ${origen === o ? 'bg-seleccion text-tinta' : 'text-tinta-tenue hover:text-tinta'}`}
+            >
+              {t(`subrayados.origen.${o}`)}
+            </button>
+          ))}
+      </div>
       <div className="mt-3 space-y-4">
         {mostrados.map((s) => (
-          <figure key={s.id} className="border-l-2 border-acento/50 pl-3">
+          <figure key={s.id} data-subrayado-panel={s.id} data-origen={s.origen} className="border-l-2 pl-3" style={{ borderColor: colorDeLinea(s) }}>
             {s.tipo === 'nota' ? (
               <p className="text-[0.84rem] italic text-tinta-suave">✎ {s.texto}</p>
             ) : (
-              <blockquote className="font-serif text-[0.9rem] leading-relaxed text-tinta/90">{s.texto}</blockquote>
+              <blockquote className="font-serif text-[0.9rem] leading-relaxed whitespace-pre-line text-tinta/90">{s.texto}</blockquote>
             )}
-            {s.nota && <p className="mt-1.5 rounded-lg bg-acento-suave/70 px-2.5 py-1.5 text-xs text-tinta-suave">✎ {s.nota}</p>}
-            <figcaption className="mt-1 text-[0.68rem] text-tinta-tenue">
-              {[s.pagina && t('detalle.pagina', { n: s.pagina[0] }), s.ubicacion && t('detalle.posicion', { n: s.ubicacion[0] }), s.fecha && fechaCorta(s.fecha)].filter(Boolean).join(' · ')}
-            </figcaption>
+            {s.nota && <p className="mt-1.5 rounded-lg bg-acento-suave/70 px-2.5 py-1.5 text-xs whitespace-pre-line text-tinta-suave">✎ {s.nota}</p>}
+            <figcaption className="mt-1 text-[0.68rem] text-tinta-tenue">{[s.titulo, lugarDe(s)].filter(Boolean).join(' · ')}</figcaption>
           </figure>
         ))}
       </div>
-      {subrayados.length > SUBRAYADOS_VISIBLES && (
+      {filtradas.length > SUBRAYADOS_VISIBLES && (
         <button type="button" onClick={() => setTodos(!todos)} className="mt-3 text-xs font-medium text-acento hover:underline">
-          {todos ? t('detalle.verMenos') : t('detalle.verTodos', { n: subrayados.length })}
+          {todos ? t('detalle.verMenos') : t('detalle.verTodos', { n: filtradas.length })}
         </button>
       )}
+      <AccionesMd libroId={libro.id} md={lista.md} alResultado={(texto, error) => setResultado({ texto, error })} className="mt-3 text-[0.72rem]" />
+      {resultado && <p className={`mt-1 text-[0.7rem] ${resultado.error ? 'text-[#bc4749]' : 'text-verde'}`}>{resultado.texto}</p>}
     </motion.div>
   );
 }
@@ -362,11 +394,25 @@ function TuLectura({ libro, habito, colEstado, onReleer }) {
 }
 
 export function PanelDetalle({
-  libro, columnas, colEstado, colValoracion, subrayados = [], envio, onEnviar, onConfigurarKindle, onConfigurarClub,
+  libro, columnas, colEstado, colValoracion, versionSubrayados = 0, envio, onEnviar, onConfigurarKindle, onConfigurarClub,
   onCerrar, onEtiqueta, onAmpliar, onEditar, onEditarRapido, onEditarEstado, onConvertir, onLeer,
   habito, onReleer, soloLectura = false, familia = [], onMarcarPara,
 }) {
   const { propia, importada } = valoraciones(libro, colValoracion);
+  // 1.8: la lista única del libro (Broots y Kindle). Se vuelve a pedir al cambiar de libro o cuando algo cambió
+  // (cerraste el lector, importaste del Kindle…); mientras llega la del libro nuevo no se muestra la del anterior.
+  const [lista, setLista] = useState(null); // { uuid, entradas, md }
+  useEffect(() => {
+    let vivo = true;
+    window.subrayados
+      .delLibro(libro.id)
+      .then((r) => vivo && r?.ok && setLista({ uuid: libro.uuid, entradas: r.entradas, md: r.md }))
+      .catch(() => {});
+    return () => {
+      vivo = false;
+    };
+  }, [libro.id, libro.uuid, versionSubrayados]);
+  const subrayados = lista?.uuid === libro.uuid ? lista : { entradas: [], md: false };
   // Cambios rápidos (estado, estrellas): se guardan al instante en Calibre.
   const [estadoRapido, setEstadoRapido] = useState(null);
   const guardando = estadoRapido?.guardando;
@@ -534,7 +580,7 @@ export function PanelDetalle({
               <>
                 <BotonEnviar libro={libro} envio={envio} onEnviar={onEnviar} onConfigurar={onConfigurarKindle} />
                 <EnviarAFamilia libro={libro} familia={familia} envio={envio} onEnviar={onEnviar} />
-                <BotonClub libro={libro} cantidad={subrayados.length} onConfigurar={onConfigurarClub} />
+                <BotonClub libro={libro} cantidad={subrayados.entradas.length} onConfigurar={onConfigurarClub} />
                 <CompartirCon libro={libro} familia={familia} onMarcarPara={onMarcarPara} />
               </>
             )}
@@ -577,7 +623,7 @@ export function PanelDetalle({
               </motion.div>
             )}
 
-            {subrayados.length > 0 && <ListaSubrayados subrayados={subrayados} />}
+            {subrayados.entradas.length > 0 && <ListaSubrayados libro={libro} lista={subrayados} />}
 
             <motion.dl variants={item} className="squircle mt-6 grid grid-cols-2 gap-x-4 gap-y-3.5 rounded-[18px] bg-superficie-2/60 p-4">
               <Dato titulo={t('detalle.publicado')}>{año(libro.pubdate)}</Dato>

@@ -89,6 +89,7 @@ export const MANUAL = [
           'Você também pode arrastar o arquivo My Clippings.txt do Kindle para a janela.',
           'O Broots separa os destaques por livro e os salva na pasta da sua biblioteca. Se não reconhecer um livro, ele pergunta qual é (e nunca mais esquece).',
           'Se um livro estiver no Kindle mas não na sua biblioteca, você pode adicioná-lo pela mesma tela.',
+          'Eles convivem com os que você faz no leitor do Broots: uma lista só por livro e um .md só (veja Destaques e notas).',
         ],
       },
     ],
@@ -104,9 +105,45 @@ export const MANUAL = [
           'Em cima ficam o sumário, o tamanho da letra e o número da página: digite um número e aperte Enter para ir até lá.',
           'Para traduzir para o idioma do Broots, cadastre sua chave do Gemini em Configurações → Leitura e tradução (veja Perguntas frequentes) e clique no botão de traduzir do leitor.',
           'Clique em um parágrafo traduzido para ver o original, caso queira comparar.',
+          'Selecione um trecho com o mouse para destacá-lo e anotar algo (veja Destaques e notas).',
           'Esc volta para a biblioteca.',
         ],
       },
+    ],
+  },
+  {
+    id: 'subrayados',
+    titulo: 'Destaques e notas',
+    bloques: [
+      { texto: 'No leitor do Broots você pode destacar como no papel, sem borrar o livro nem brigar com a caneta marca-texto.' },
+      {
+        pasos: [
+          'Selecione um trecho com o mouse. Aparece uma barrinha com quatro cores logo acima.',
+          'Clique numa cor e o trecho fica destacado. Em “Nota” você anota o que veio à cabeça; “Copiar” copia para colar onde quiser.',
+          'Para mudar a cor, editar a nota ou apagar, clique no destaque. Se apagar sem querer, o aviso lá em cima tem “Desfazer”.',
+        ],
+      },
+      {
+        lista: [
+          'O botão do marca-texto, em cima no leitor, abre a lista dos destaques daquele livro, por capítulo. Clique em um e vá direto para a página dele.',
+          'Os destaques ficam presos ao texto, não à página: aparecem iguais com outra letra, outro tamanho de janela ou quando você abre o livro de novo.',
+          'Com a tradução também: o que você destaca num idioma fica marcado exatamente naquele idioma; no outro, o parágrafo ganha uma linha colorida embaixo (a frase exata não existe no outro idioma).',
+          'Os destaques do Kindle daquele livro aparecem em cinza no texto, quando o Broots encontra a frase no EPUB. Se o EPUB for de outra edição e ele não encontrar, eles continuam na lista.',
+          'No painel de cada livro está a lista completa, com a origem de cada um (Broots ou Kindle) e filtros para ver só uns ou outros. O clube de leitura também leva todos.',
+          'As notas: Ctrl+Enter, Esc ou um clique fora salvam; “Cancelar” descarta o que você escreveu.',
+        ],
+      },
+      { subtitulo: 'O .md de cada livro (para Obsidian ou Notion)' },
+      {
+        lista: [
+          'O Broots monta sozinho um arquivo .md por livro com o título, o autor e seus destaques e notas, em ordem de capítulo. Ele se atualiza cada vez que você destaca, anota ou importa do Kindle.',
+          'Ele fica na pasta “data” do livro, dentro da sua biblioteca. É a pasta que o Calibre reserva para os arquivos extras de cada livro: aparece em “Arquivos de dados” e vai junto se você mudar o título ou o autor.',
+          'No final do arquivo há uma linha que diz “Daqui para baixo é seu”: o que você escrever abaixo dela, o Broots nunca mexe. O de cima ele remonta sozinho, então escreva suas notas no Broots ou abaixo dessa linha.',
+          'No painel do livro (e na lista do leitor) você tem “Mostrar o .md”, que abre a pasta dele, e “Salvar uma cópia…”, que pergunta onde salvar (no seu cofre do Obsidian, por exemplo).',
+          'Se não quiser o .md na pasta de cada livro, desligue em Configurações → Leitura e tradução. Seus destaques continuam salvos.',
+        ],
+      },
+      { texto: 'Os destaques ficam na pasta .broots da sua biblioteca, junto com os do Kindle. Se você usa o Broots em dois PCs com a biblioteca no Google Drive, cada PC escreve o seu próprio arquivo: um nunca sobrescreve o outro, e o que você apaga num é apagado no outro também.' },
     ],
   },
   {
@@ -151,7 +188,7 @@ export const MANUAL = [
       { texto: 'Para conversar sobre um livro com uma inteligência artificial que leu os seus destaques. Como um clube de leitura, mas sem precisar combinar horário.' },
       {
         pasos: [
-          'No painel do livro, clique em “Levar ao clube de leitura”. O Broots cria um arquivo .md com os dados do livro e seus destaques, e abre a pasta para você.',
+          'No painel do livro, clique em “Levar ao clube de leitura”. O Broots cria um arquivo .md com os dados do livro e seus destaques e notas (os do Kindle e os do leitor do Broots, em ordem de leitura), e abre a pasta para você.',
           'Arraste esse arquivo para o seu Projeto do Claude ou para o NotebookLM.',
           'Na primeira vez, a tela Clube de leitura explica como montar o Projeto do Claude ou a skill do Gemini: você cola as instruções e completa a parte “Quem sou eu”. Isso é feito uma vez só.',
         ],
@@ -215,6 +252,7 @@ export const MANUAL = [
           [['F1'], 'Abrir esta ajuda (sim, esta mesma)'],
           [['←', '→'], 'No leitor: página anterior e seguinte'],
           [['F'], 'No leitor: modo foco (só o texto, em tela cheia)'],
+          [['Ctrl+Enter'], 'No leitor: salvar a nota de um destaque'],
         ],
       },
     ],
@@ -244,6 +282,10 @@ export const MANUAL = [
           [
             'Minha biblioteca está no Google Drive. Preciso tomar algum cuidado?',
             'O Broots trabalha na pasta do seu PC, e o programa do Google Drive faz o upload sozinho. Evite mudar a biblioteca em dois PCs ao mesmo tempo e, se uma mudança não aparecer no outro PC, espere o Drive terminar de sincronizar.',
+          ],
+          [
+            'Editei o .md de um livro no Obsidian e o Broots apagou o que eu escrevi. Por quê?',
+            'O Broots remonta só a parte de cima do .md (a dos seus destaques). O que você escrever abaixo da linha “Daqui para baixo é seu” fica sempre do jeito que você deixou. Se você apagou essa linha, o Broots guarda o arquivo antigo à parte, com “(antes)” no nome, e monta um novo: nada se perde.',
           ],
           [
             'O Broots remove a proteção (DRM) dos meus livros?',

@@ -3,7 +3,7 @@
 // protocolo libro://epub/<id>/<ruta dentro del EPUB>. Nada se modifica: el EPUB solo se lee.
 const fs = require('node:fs');
 const path = require('node:path');
-const { unzipSync, strFromU8 } = require('fflate');
+const { unzip, unzipSync, strFromU8 } = require('fflate');
 const { t } = require('./idioma.cjs');
 
 const abiertos = new Map(); // ruta del EPUB -> { mtime, archivos, estructura }
@@ -83,6 +83,14 @@ function abrir(ruta) {
   if (previo && previo.mtime === mtime) return previo;
 
   const archivos = unzipSync(fs.readFileSync(ruta));
+  const abierto = { mtime, archivos, estructura: leerEstructura(archivos) };
+  abiertos.clear(); // un libro abierto a la vez: libera la memoria del anterior
+  abiertos.set(ruta, abierto);
+  return abierto;
+}
+
+/** Capítulos, índice e idioma de un EPUB ya descomprimido. */
+function leerEstructura(archivos) {
   const contenedor = archivos['META-INF/container.xml'];
   if (!contenedor) throw new Error(t('lector.noEsEpub'));
   const opfRuta = atributo(/<rootfile\b[^>]*>/i.exec(strFromU8(contenedor))?.[0] ?? '', 'full-path');
@@ -103,15 +111,47 @@ function abrir(ruta) {
     .map((m) => ({ href: m.ruta, largo: archivos[m.ruta].length }));
   if (!capitulos.length) throw new Error(t('lector.sinCapitulos'));
 
-  const estructura = {
+  return {
     capitulos,
     indice: leerIndice(archivos, manifiesto, opfRuta, opf),
     idioma: /<dc:language[^>]*>([^<]*)</i.exec(opf)?.[1]?.trim().toLowerCase() ?? '',
   };
-  const abierto = { mtime, archivos, estructura };
-  abiertos.clear(); // un libro abierto a la vez: libera la memoria del anterior
-  abiertos.set(ruta, abierto);
-  return abierto;
+}
+
+// 1.8: el texto de cada capítulo, para ubicar los subrayados del Kindle (ver anotaciones.cjs). Si el libro es el que
+// está abierto en el lector se usa ese; si no, se descomprimen solo los textos (sin las imágenes) y no se guarda en
+// «abiertos», así no se desaloja el libro que estás leyendo.
+const ETIQUETAS_DE_BLOQUE = /<\/?(p|div|h[1-6]|li|dt|dd|td|th|tr|br|hr|blockquote|section|article|figure|figcaption|pre|table|caption|ul|ol|dl|aside|header|footer|nav|main)\b[^>]*>/gi;
+let ultimosTextos = null; // { ruta, mtime, resultado }
+const descomprimir = (datos, opciones) => new Promise((listo, fallo) => unzip(datos, opciones, (error, r) => (error ? fallo(error) : listo(r))));
+
+/** HTML de un capítulo -> texto (los bloques quedan separados por un espacio). */
+function textoPlano(html) {
+  const cuerpo = /<body\b[^>]*>([\s\S]*)<\/body>/i.exec(html)?.[1] ?? html;
+  return decodificar(
+    cuerpo
+      .replace(/<(script|style|head|title)\b[\s\S]*?<\/\1\s*>/gi, ' ')
+      .replace(ETIQUETAS_DE_BLOQUE, ' ')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&(?!(lt|gt|quot|apos|amp|#\d+|#x[0-9a-f]+);)[a-z]+;/gi, ' '),
+  );
+}
+
+/**
+ * { estructura, textos: [texto de cada capítulo] } de un EPUB, sin tocar el libro abierto en el lector. Si hay que
+ * descomprimir, se hace en segundo plano (fflate usa otro hilo), así el resto de Broots no espera.
+ */
+async function textos(ruta) {
+  const mtime = fs.statSync(ruta).mtimeMs;
+  if (ultimosTextos?.ruta === ruta && ultimosTextos.mtime === mtime) return ultimosTextos.resultado;
+  const abierto = abiertos.get(ruta)?.mtime === mtime ? abiertos.get(ruta) : null;
+  const filtro = (f) => /\.(x?html?|xml|opf|ncx)$/i.test(f.name) || f.name.startsWith('META-INF/');
+  const archivos = abierto?.archivos ?? (await descomprimir(await fs.promises.readFile(ruta), { filter: filtro }));
+  const estructura = abierto?.estructura ?? leerEstructura(archivos); // con DRM, avisa y no sigue
+  const resultado = { estructura, textos: estructura.capitulos.map((c) => textoPlano(strFromU8(archivos[c.href]))) };
+  ultimosTextos = { ruta, mtime, resultado };
+  return resultado;
 }
 
 function capitulo(ruta, href) {
@@ -128,4 +168,4 @@ function recurso(ruta, interna) {
   return new Response(datos, { headers: { 'content-type': tipo } });
 }
 
-module.exports = { abrir, capitulo, recurso, resolver };
+module.exports = { abrir, capitulo, recurso, resolver, textos };

@@ -154,7 +154,7 @@ const Tarjeta = memo(function Tarjeta({ libro, indice, disposicion, animar, onAb
   );
 }, mismaTarjeta);
 
-export function Grilla({ todos, visibles, disposicion, onAbrir, colEstado, colValoracion, subrayadosPorUuid = {} }) {
+export function Grilla({ todos, visibles, disposicion, onAbrir, colEstado, colValoracion, cantidadSubrayados = () => 0 }) {
   const animar = todos.length <= LIMITE_ANIMACION;
   const orden = usarOrdenCompleto(todos, visibles);
   return (
@@ -165,7 +165,7 @@ export function Grilla({ todos, visibles, disposicion, onAbrir, colEstado, colVa
           libro={libro}
           indice={indice}
           disposicion={disposicion}
-          cantidadSubrayados={subrayadosPorUuid[libro.uuid]?.subrayados.length ?? 0}
+          cantidadSubrayados={cantidadSubrayados(libro)}
           animar={animar}
           onAbrir={onAbrir}
           colEstado={colEstado}
