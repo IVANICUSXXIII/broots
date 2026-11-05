@@ -4,7 +4,9 @@
 // leíste de verdad, cuántas páginas y de qué porcentaje a qué porcentaje del libro. El reloj cuenta solo
 // mientras leés: si pasan 5 minutos sin pasar de página (o la ventana está minimizada), se frena.
 //
-// El temporizador es opcional: libre (sin reloj a la vista), por minutos o «hasta el fin del capítulo».
+// El temporizador es opcional: libre (sin reloj a la vista), por minutos o «hasta el fin del capítulo». Cada libro
+// abre en libre: elegir un temporizador vale para esa sesión y no queda prendido para el próximo libro.
+// En libre, cada tanto y al terminar un capítulo, se sugiere una pausa que se va sola (1.10).
 // Los avisos (meta cumplida, fin del capítulo, descanso para la vista) nunca cortan a mitad de un párrafo:
 // esperan a que pases de página, que es la pausa natural de la lectura.
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -18,6 +20,9 @@ const TICK = MINUTO / 4;
 const INACTIVO = 5; // minutos sin pasar de página: el reloj se frena
 const CADA_DESCANSO = 20; // regla 20-20-20: cada 20 minutos, 20 segundos mirando a 6 metros
 const DURA_DESCANSO = 20000;
+const CADA_PAUSA = 30; // en libre: minutos leídos entre una sugerencia de pausa y la siguiente
+const DURA_PAUSA = 10000;
+const SE_VAN_AL_PASAR = ['meta', 'capitulo', 'pausa']; // estos avisos no esperan respuesta: al pasar de página, se van
 const PARA_LEYENDO = 5; // minutos leídos para pasar un libro «Por leer» a «Leyendo»
 const GUARDAR_CADA = 30000;
 export const METAS = [15, 20, 30, 45, 60];
@@ -42,11 +47,11 @@ const nuevoId = () => `${Date.now().toString(36)}-${Math.random().toString(36).s
  * le cuenta por dónde vas (datos.current = { progreso, totalPaginas, estimado }).
  */
 export function useSesionLectura({ libro, abierto, colEstado, soloLectura, onEditarRapido }) {
-  const [modo, setModoEstado] = useState(() => preferencia('broots-sesion-modo', 'libre'));
+  const [modo, setModoEstado] = useState('libre');
   const [meta, setMetaEstado] = useState(() => preferencia('broots-sesion-meta', 30));
   const [minutos, setMinutos] = useState(0);
-  const [aviso, setAviso] = useState(null); // { tipo: 'meta' | 'capitulo' | 'descanso' | 'leyendo' | 'terminado' | 'marcado', clave }
-  const [preferencias, setPreferencias] = useState({ anotarSesiones: true, descansoVista: true });
+  const [aviso, setAviso] = useState(null); // { tipo: 'meta' | 'capitulo' | 'pausa' | 'descanso' | 'leyendo' | 'terminado' | 'marcado', clave }
+  const [preferencias, setPreferencias] = useState({ anotarSesiones: true, descansoVista: false, sugerirPausa: true });
   const [panelAbierto, setPanelAbierto] = useState(false); // el panel del botón «Sesión»
   const [ritmos, setRitmos] = useState(null); // de las sesiones anteriores (habito.cjs → alAbrir)
   const datos = useRef({ progreso: 0, totalPaginas: 0, estimado: true });
@@ -54,7 +59,7 @@ export function useSesionLectura({ libro, abierto, colEstado, soloLectura, onEdi
   refLibro.current = libro;
   const s = useRef({
     id: nuevoId(), inicio: new Date().toISOString(), lectura: 1, minutos: 0, paginas: 0, desde: null, hasta: 0, paginasLibro: 0,
-    actividad: Date.now(), guardado: 0, descanso: 0, metaAvisada: false, descansoPendiente: false, leyendoHecho: false,
+    actividad: Date.now(), guardado: 0, descanso: 0, pausa: 0, metaAvisada: false, descansoPendiente: false, leyendoHecho: false,
     terminadoAvisado: false, temporizador: null,
   }).current;
   const refModo = useRef(modo);
@@ -66,7 +71,6 @@ export function useSesionLectura({ libro, abierto, colEstado, soloLectura, onEdi
 
   const setModo = (m) => {
     setModoEstado(m);
-    recordar('broots-sesion-modo', m);
     s.metaAvisada = false;
   };
   const setMeta = (n) => {
@@ -74,9 +78,9 @@ export function useSesionLectura({ libro, abierto, colEstado, soloLectura, onEdi
     recordar('broots-sesion-meta', n);
     s.metaAvisada = s.minutos >= n; // si ya la pasaste, no avisa de golpe
   };
-  const cambiarDescanso = async (activo) => {
-    setPreferencias((p) => ({ ...p, descansoVista: activo }));
-    const guardadas = await window.preferencias.guardar({ descansoVista: activo });
+  const cambiarPreferencia = async (cambio) => {
+    setPreferencias((p) => ({ ...p, ...cambio }));
+    const guardadas = await window.preferencias.guardar(cambio);
     setPreferencias((p) => ({ ...p, ...guardadas }));
   };
 
@@ -84,7 +88,7 @@ export function useSesionLectura({ libro, abierto, colEstado, soloLectura, onEdi
     (tipo, extra = {}) => {
       clearTimeout(s.temporizador);
       setAviso({ tipo, clave: Date.now(), ...extra });
-      const dura = tipo === 'descanso' ? DURA_DESCANSO : tipo === 'leyendo' || tipo === 'marcado' ? 6000 : 0;
+      const dura = tipo === 'descanso' ? DURA_DESCANSO : tipo === 'pausa' ? DURA_PAUSA : tipo === 'leyendo' || tipo === 'marcado' ? 6000 : 0;
       if (dura) s.temporizador = setTimeout(() => setAviso((a) => (a?.tipo === tipo ? null : a)), dura);
     },
     [s],
@@ -135,7 +139,7 @@ export function useSesionLectura({ libro, abierto, colEstado, soloLectura, onEdi
       s.lectura = r.lectura;
       setRitmos(r.ritmos);
     }).catch(() => {});
-    window.preferencias.leer().then((p) => vivo && setPreferencias({ anotarSesiones: p.anotarSesiones !== false, descansoVista: p.descansoVista !== false })).catch(() => {});
+    window.preferencias.leer().then((p) => vivo && setPreferencias({ anotarSesiones: p.anotarSesiones !== false, descansoVista: p.descansoVista === true, sugerirPausa: p.sugerirPausa !== false })).catch(() => {});
     return () => {
       vivo = false;
     };
@@ -184,11 +188,15 @@ export function useSesionLectura({ libro, abierto, colEstado, soloLectura, onEdi
         s.hasta = progreso;
       }
       if (adelante) s.paginas += paginas;
+      setAviso((a) => (SE_VAN_AL_PASAR.includes(a?.tipo) ? null : a));
       if (refModo.current === 'minutos' && !s.metaAvisada && s.minutos >= refMeta.current) {
         s.metaAvisada = true;
         mostrar('meta', { n: refMeta.current });
       } else if (refModo.current === 'capitulo' && capitulo && adelante) {
         mostrar('capitulo');
+      } else if (refModo.current === 'libre' && capitulo && adelante && refPreferencias.current.sugerirPausa && s.minutos - s.pausa >= CADA_PAUSA) {
+        s.pausa = s.minutos;
+        mostrar('pausa');
       } else if (s.descansoPendiente && refPreferencias.current.descansoVista) {
         s.descansoPendiente = false;
         s.descanso = s.minutos;
@@ -226,7 +234,7 @@ export function useSesionLectura({ libro, abierto, colEstado, soloLectura, onEdi
   };
 
   return {
-    datos, modo, setModo, meta, setMeta, minutos, aviso, cerrarAviso, preferencias, cambiarDescanso, panelAbierto, setPanelAbierto,
+    datos, modo, setModo, meta, setMeta, minutos, aviso, cerrarAviso, preferencias, cambiarPreferencia, panelAbierto, setPanelAbierto,
     actividad, alPasarPagina, alLlegarAlFinal, marcarLeido, ritmos: ritmosConEsta, paginas: s.paginas,
   };
 }
@@ -302,7 +310,9 @@ export function BotonSesion({ sesion, restanteCapitulo }) {
             )}
             <p className="mt-2 text-[0.7rem] leading-relaxed text-tinta-tenue">{t(`habito.lector.explica.${modo}`)}</p>
             <div className="-mx-2 mt-2 border-t border-borde pt-1.5">
-              <Interruptor activo={sesion.preferencias.descansoVista} onCambiar={sesion.cambiarDescanso} etiqueta={t('habito.lector.descansoVista')} />
+              <Interruptor activo={sesion.preferencias.sugerirPausa} onCambiar={(v) => sesion.cambiarPreferencia({ sugerirPausa: v })} etiqueta={t('habito.lector.sugerirPausa')} />
+              <p className="px-2 pb-1 text-[0.7rem] leading-relaxed text-tinta-tenue">{t('habito.lector.sugerirPausaExplica')}</p>
+              <Interruptor activo={sesion.preferencias.descansoVista} onCambiar={(v) => sesion.cambiarPreferencia({ descansoVista: v })} etiqueta={t('habito.lector.descansoVista')} />
               <p className="px-2 text-[0.7rem] leading-relaxed text-tinta-tenue">{t('habito.lector.descansoExplica')}</p>
             </div>
           </motion.div>
@@ -337,12 +347,13 @@ export function AvisoSesion({ sesion, onCerrarLibro, enfoque = false }) {
           initial={{ opacity: 0, transform: 'translate(-50%, 10px)' }}
           animate={{ opacity: 1, transform: 'translate(-50%, 0px)' }}
           exit={{ opacity: 0, transform: 'translate(-50%, 6px)', transition: { duration: 0.2 } }}
-          transition={resorte}
+          transition={aviso.tipo === 'pausa' ? { duration: 0.9, ease: 'easeOut' } : resorte} // la pausa aparece despacito: es una sugerencia
           className={`squircle absolute ${enfoque ? 'bottom-16' : 'bottom-3'} left-1/2 z-40 flex max-w-[min(36rem,86%)] items-center gap-3 overflow-hidden rounded-full bg-superficie-2 py-1.5 pr-1.5 pl-4 text-[0.76rem] shadow-[0_8px_22px_-10px_rgb(var(--sombra)/0.55),inset_0_0_0_1px_var(--borde)]`}
         >
           <span className={`min-w-0 ${aviso.tipo === 'error' ? 'text-[#bc4749]' : ''}`}>
             {aviso.tipo === 'meta' && t('habito.lector.metaCumplida', { n: aviso.n })}
             {aviso.tipo === 'capitulo' && t('habito.lector.finCapitulo')}
+            {aviso.tipo === 'pausa' && t('habito.lector.pausa')}
             {aviso.tipo === 'descanso' && t('habito.lector.descanso')}
             {aviso.tipo === 'leyendo' && t('habito.lector.pasoALeyendo', { estado: aviso.valor })}
             {aviso.tipo === 'terminado' && t('habito.lector.terminaste')}
@@ -355,6 +366,12 @@ export function AvisoSesion({ sesion, onCerrarLibro, enfoque = false }) {
               <BotonAviso principal onClick={onCerrarLibro}>{t('habito.lector.cerrarLibro')}</BotonAviso>
             </>
           )}
+          {aviso.tipo === 'pausa' && (
+            <>
+              <BotonAviso onClick={cerrarAviso}>{t('habito.lector.sigoLeyendo')}</BotonAviso>
+              <BotonAviso onClick={onCerrarLibro}>{t('habito.lector.porHoy')}</BotonAviso>
+            </>
+          )}
           {aviso.tipo === 'descanso' && <BotonAviso onClick={cerrarAviso}>{t('habito.lector.listo')}</BotonAviso>}
           {aviso.tipo === 'terminado' && (
             <>
@@ -363,14 +380,14 @@ export function AvisoSesion({ sesion, onCerrarLibro, enfoque = false }) {
             </>
           )}
           {['leyendo', 'marcado', 'error'].includes(aviso.tipo) && <span className="w-1" />}
-          {/* El descanso dura 20 segundos: la barrita se vacía sola (solo transform) */}
-          {aviso.tipo === 'descanso' && (
+          {/* El descanso y la pausa se van solos: la barrita se vacía (solo transform) */}
+          {(aviso.tipo === 'descanso' || aviso.tipo === 'pausa') && (
             <motion.span
               aria-hidden="true"
               className="absolute inset-x-0 bottom-0 h-[3px] origin-left bg-verde/60"
               initial={{ transform: 'scaleX(1)' }}
               animate={{ transform: 'scaleX(0)' }}
-              transition={{ duration: DURA_DESCANSO / 1000, ease: 'linear' }}
+              transition={{ duration: (aviso.tipo === 'pausa' ? DURA_PAUSA : DURA_DESCANSO) / 1000, ease: 'linear' }}
             />
           )}
         </motion.div>

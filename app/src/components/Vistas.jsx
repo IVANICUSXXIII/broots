@@ -93,7 +93,7 @@ const entrada = {
  */
 // disposicion: cambia cuando cambia el ancho disponible (panel o barra lateral); obliga a las
 // tarjetas a redibujarse para deslizarse a su nueva posición en vez de saltar.
-const Tarjeta = memo(function Tarjeta({ libro, indice, disposicion, animar, onAbrir, colEstado, colValoracion, cantidadSubrayados }) {
+const Tarjeta = memo(function Tarjeta({ libro, indice, disposicion, animar, onAbrir, onLeer, colEstado, colValoracion, cantidadSubrayados }) {
   useIdioma(); // memorizada: se redibuja sola al cambiar el idioma
   const visible = indice >= 0;
   const reaparece = usarReaparece(visible);
@@ -114,7 +114,9 @@ const Tarjeta = memo(function Tarjeta({ libro, indice, disposicion, animar, onAb
     >
       <button
         type="button"
-        onClick={(e) => onAbrir(libro.id, e.currentTarget.querySelector('.portada'))}
+        // 1.10: un clic abre el panel; doble clic, directo a leer (el segundo clic del doble no vuelve a tocar el panel).
+        onClick={(e) => e.detail < 2 && onAbrir(libro.id, e.currentTarget.querySelector('.portada'))}
+        onDoubleClick={() => onLeer(libro.id)}
         className="tarjeta group flex w-full flex-col text-left outline-none"
       >
         <div className="elevacion relative aspect-[2/3] w-full">
@@ -154,7 +156,7 @@ const Tarjeta = memo(function Tarjeta({ libro, indice, disposicion, animar, onAb
   );
 }, mismaTarjeta);
 
-export function Grilla({ todos, visibles, disposicion, onAbrir, colEstado, colValoracion, cantidadSubrayados = () => 0 }) {
+export function Grilla({ todos, visibles, disposicion, onAbrir, onLeer, colEstado, colValoracion, cantidadSubrayados = () => 0 }) {
   const animar = todos.length <= LIMITE_ANIMACION;
   const orden = usarOrdenCompleto(todos, visibles);
   return (
@@ -168,6 +170,7 @@ export function Grilla({ todos, visibles, disposicion, onAbrir, colEstado, colVa
           cantidadSubrayados={cantidadSubrayados(libro)}
           animar={animar}
           onAbrir={onAbrir}
+          onLeer={onLeer}
           colEstado={colEstado}
           colValoracion={colValoracion}
         />
@@ -177,25 +180,36 @@ export function Grilla({ todos, visibles, disposicion, onAbrir, colEstado, colVa
 }
 
 // El título de cada columna es vistas.columnas.<id> en los textos de cada idioma.
+// 1.10: a partir de qué ancho de la lista se ve cada columna (la lista mide distinto con la barra lateral y el panel abiertos).
+const SE_ESCONDE = {
+  idioma: '@max-[1300px]:hidden',
+  publicado: '@max-[1220px]:hidden',
+  serie: '@max-[1130px]:hidden',
+  agregado: '@max-[1000px]:hidden',
+  formatos: '@max-[860px]:hidden',
+  valoracion: '@max-[740px]:hidden',
+  estado: '@max-[620px]:hidden',
+};
 const COLUMNAS_LISTA = [
-  { id: 'titulo', orden: 'titulo', clase: 'min-w-64' },
-  { id: 'autor', orden: 'autor', clase: 'min-w-40' },
-  { id: 'serie', orden: 'serie', clase: 'min-w-36' },
-  { id: 'estado', clase: 'w-28' },
-  { id: 'valoracion', orden: 'valoracion', clase: 'w-28' },
-  { id: 'idioma', clase: 'w-24' },
-  { id: 'formatos', clase: 'w-32' },
-  { id: 'publicado', orden: 'publicado', clase: 'w-16' },
-  { id: 'agregado', orden: 'agregado', clase: 'w-36' },
+  { id: 'titulo', orden: 'titulo', clase: 'min-w-56' },
+  { id: 'autor', orden: 'autor', clase: 'min-w-36' },
+  { id: 'serie', orden: 'serie', clase: 'min-w-32', oculta: SE_ESCONDE.serie },
+  { id: 'estado', clase: 'w-24', oculta: SE_ESCONDE.estado },
+  { id: 'valoracion', orden: 'valoracion', clase: 'w-24', oculta: SE_ESCONDE.valoracion },
+  { id: 'idioma', clase: 'w-20', oculta: SE_ESCONDE.idioma },
+  { id: 'formatos', clase: 'w-28', oculta: SE_ESCONDE.formatos },
+  { id: 'publicado', orden: 'publicado', clase: 'w-14', oculta: SE_ESCONDE.publicado },
+  { id: 'agregado', orden: 'agregado', clase: 'w-28', oculta: SE_ESCONDE.agregado },
 ];
 
-const Fila = memo(function Fila({ libro, indice, activo, onAbrir, colEstado, colValoracion }) {
+const Fila = memo(function Fila({ libro, indice, activo, onAbrir, onLeer, colEstado, colValoracion }) {
   useIdioma(); // memorizada: se redibuja sola al cambiar el idioma (fechas e idiomas)
   const visible = indice >= 0;
   const celda = `py-1.5 px-3 first:rounded-l-lg last:rounded-r-lg ${activo ? '' : indice % 2 ? 'bg-superficie-2/45' : ''}`;
   return (
     <tr
-      onClick={(e) => onAbrir(libro.id, e.currentTarget.querySelector('[data-portada-lista]'))}
+      onClick={(e) => e.detail < 2 && onAbrir(libro.id, e.currentTarget.querySelector('[data-portada-lista]'))}
+      onDoubleClick={() => onLeer(libro.id)}
       style={{ display: visible ? undefined : 'none' }}
       className={`cursor-default transition-colors ${activo ? 'bg-seleccion' : 'hover:bg-superficie-2'}`}
     >
@@ -210,29 +224,29 @@ const Fila = memo(function Fila({ libro, indice, activo, onAbrir, colEstado, col
       </td>
       <td className={`${celda} font-medium`}>{libro.title}</td>
       <td className={`${celda} text-tinta-suave`}>{libro.authors.join(', ')}</td>
-      <td className={`${celda} text-tinta-suave`}>{libro.series && `${libro.series} ${libro.seriesIndex != null ? `#${libro.seriesIndex}` : ''}`}</td>
-      <td className={celda}>{colEstado && <EtiquetaEstado estado={libro.custom[colEstado.label]} />}</td>
-      <td className={celda}>
+      <td className={`${celda} ${SE_ESCONDE.serie} text-tinta-suave`}>{libro.series && `${libro.series} ${libro.seriesIndex != null ? `#${libro.seriesIndex}` : ''}`}</td>
+      <td className={`${celda} ${SE_ESCONDE.estado}`}>{colEstado && <EtiquetaEstado estado={libro.custom[colEstado.label]} />}</td>
+      <td className={`${celda} ${SE_ESCONDE.valoracion}`}>
         <EstrellasDelLibro libro={libro} colValoracion={colValoracion} className="size-3" />
       </td>
-      <td className={`${celda} text-tinta-suave`}>{libro.languages.map(nombreIdioma).join(', ')}</td>
-      <td className={`${celda} text-xs text-tinta-suave`}>{libro.formats.map((f) => f.format).join(' · ')}</td>
-      <td className={`${celda} text-tinta-suave tabular-nums`}>{año(libro.pubdate)}</td>
-      <td className={`${celda} whitespace-nowrap text-tinta-suave tabular-nums`}>{fechaCorta(libro.added)}</td>
+      <td className={`${celda} ${SE_ESCONDE.idioma} text-tinta-suave`}>{libro.languages.map(nombreIdioma).join(', ')}</td>
+      <td className={`${celda} ${SE_ESCONDE.formatos} text-xs text-tinta-suave`}>{libro.formats.map((f) => f.format).join(' · ')}</td>
+      <td className={`${celda} ${SE_ESCONDE.publicado} text-tinta-suave tabular-nums`}>{año(libro.pubdate)}</td>
+      <td className={`${celda} ${SE_ESCONDE.agregado} whitespace-nowrap text-tinta-suave tabular-nums`}>{fechaCorta(libro.added)}</td>
     </tr>
   );
 });
 
-export function Lista({ todos, visibles, abierto, onAbrir, orden, onOrden, colEstado, colValoracion }) {
+export function Lista({ todos, visibles, abierto, onAbrir, onLeer, orden, onOrden, colEstado, colValoracion }) {
   const filas = usarOrdenCompleto(todos, visibles);
   return (
-    <div className="px-3 pb-6">
+    <div className="@container px-3 pb-6">
       <table className="w-full border-separate border-spacing-0 text-[0.82rem]">
         <thead className="sticky top-0 z-10 bg-superficie">
           <tr>
             <th className="w-14 border-b border-borde" />
             {COLUMNAS_LISTA.map((c) => (
-              <th key={c.id} className={`border-b border-borde px-3 py-2.5 text-left text-[0.72rem] font-semibold text-tinta-tenue ${c.clase}`}>
+              <th key={c.id} className={`border-b border-borde px-3 py-2.5 text-left text-[0.72rem] font-semibold text-tinta-tenue ${c.clase} ${c.oculta ?? ''}`}>
                 {c.orden ? (
                   <button type="button" onClick={() => onOrden(c.orden)} className={`hover:text-tinta ${orden === c.orden ? 'text-acento' : ''}`}>
                     {t(`vistas.columnas.${c.id}`)}
@@ -253,6 +267,7 @@ export function Lista({ todos, visibles, abierto, onAbrir, orden, onOrden, colEs
               indice={indice}
               activo={libro.id === abierto}
               onAbrir={onAbrir}
+              onLeer={onLeer}
               colEstado={colEstado}
               colValoracion={colValoracion}
             />

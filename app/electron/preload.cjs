@@ -66,6 +66,16 @@ contextBridge.exposeInMainWorld('lector', {
   colorBarra: (colores) => ipcRenderer.invoke('lector:colorBarra', colores),
   // 1.9: «Explicar»: qué quiere decir lo seleccionado, en su contexto (Gemini, al idioma de Broots).
   explicar: (id, pedido) => ipcRenderer.invoke('traduccion:explicar', id, pedido),
+  // 1.10: con un libro abierto, la cruz de la ventana cierra el libro (main.cjs le avisa al lector).
+  abierto: (si) => ipcRenderer.invoke('lector:abierto', si),
+  pruebaCruz: () => ipcRenderer.invoke('pruebas:cruz'),
+  alPedirCierre: (avisar) => {
+    const alRecibir = () => avisar();
+    ipcRenderer.on('lector:cerrar', alRecibir);
+    return () => ipcRenderer.removeListener('lector:cerrar', alRecibir);
+  },
+  // 1.10: «Buscar»: abre el navegador con lo seleccionado en Google, YouTube o el servicio de música elegido.
+  buscarEn: (servicio, texto) => ipcRenderer.invoke('lector:buscarEn', servicio, texto),
 });
 
 // 1.7: hábito de lectura (sesiones, estadísticas, relecturas y la columna «Estado»).

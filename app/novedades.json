@@ -1,4 +1,36 @@
 {
+  "1.10.0": {
+    "es": [
+      "Doble clic en una portada y ya estás leyendo. El clic simple sigue abriendo el panel del libro.",
+      "La cruz de la ventana ya no te saca de Broots en plena lectura: con un libro abierto, te lleva a la biblioteca, y otro clic cierra Broots.",
+      "Etiquetas en árbol: «Sagas.Harry Potter» se pliega dentro de «Sagas», cada rama dice cuántos libros tiene y marcarla incluye sus subetiquetas.",
+      "El panel del libro te muestra por dónde vas con un perfil de páginas y un señalador metido en tu lugar.",
+      "En el lector: pellizcá el trackpad para cambiar el tamaño de letra, tocá una imagen para verla en grande (y acercarla y recorrerla) y seleccioná texto para buscarlo en Google, YouTube o tu música (elegís cuál en Configuración).",
+      "Menos carteles: cada libro abre en modo libre, el descanso para la vista viene apagado y, cada tanto, al terminar un capítulo, Broots te sugiere una pausa que se va sola.",
+      "Tour de bienvenida para los que recién llegan. Si ya sos de la casa, lo encontrás en Configuración → Ayuda.",
+      "Pulido general: la barra de arriba y la lista entran mejor en una notebook, los textos se leen mejor y la portada va centrada en el lector."
+    ],
+    "en": [
+      "Double-click a cover and you’re reading. A single click still opens the book’s panel.",
+      "The window’s X no longer throws you out of Broots mid-read: with a book open, it takes you back to the library, and another click closes Broots.",
+      "Tags as a tree: “Sagas.Harry Potter” folds inside “Sagas”, each branch shows how many books it has, and ticking it includes its sub-tags.",
+      "The book panel shows how far you’ve got with a row of pages and a bookmark tucked in at your spot.",
+      "In the reader: pinch the trackpad to change the text size, click an image to see it full size (and zoom and move around it), and select text to search for it on Google, YouTube or your music app (pick which in Settings).",
+      "Fewer pop-ups: every book opens in free mode, the eye break starts off, and every so often at the end of a chapter Broots suggests a pause that fades away on its own.",
+      "A welcome tour for newcomers. Already one of the family? You’ll find it in Settings → Help.",
+      "General polish: the top bar and list view fit better on a laptop, text is easier to read, and the cover sits centered in the reader."
+    ],
+    "pt": [
+      "Dois cliques numa capa e você já está lendo. Um clique continua abrindo o painel do livro.",
+      "O X da janela não tira mais você do Broots no meio da leitura: com um livro aberto, ele leva à biblioteca, e outro clique fecha o Broots.",
+      "Etiquetas em árvore: «Sagas.Harry Potter» fica dobrada dentro de «Sagas», cada ramo mostra quantos livros tem e marcá-lo inclui as subetiquetas.",
+      "O painel do livro mostra até onde você leu com um perfil de páginas e um marcador no seu lugar.",
+      "No leitor: faça o gesto de pinça no trackpad para mudar o tamanho da letra, clique numa imagem para vê-la grande (e aproximar e percorrer) e selecione texto para buscar no Google, no YouTube ou na sua música (você escolhe qual em Configurações).",
+      "Menos avisos: todo livro abre no modo livre, o descanso para os olhos vem desligado e, de vez em quando, ao fim de um capítulo, o Broots sugere uma pausa que some sozinha.",
+      "Tour de boas-vindas para quem está chegando. Se você já é de casa, ele está em Configurações → Ajuda.",
+      "Polimento geral: a barra superior e a lista cabem melhor num notebook, os textos ficaram mais legíveis e a capa fica centralizada no leitor."
+    ]
+  },
   "1.9.0": {
     "es": [
       "Lectura a medida: el botón «Aa» del lector elige el tema (claro, sepia, oscuro o negro puro), el tamaño de letra, la fuente, el interlineado y los márgenes. Todo se ve en el momento y no perdés el párrafo donde estabas.",

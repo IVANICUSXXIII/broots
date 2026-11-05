@@ -26,7 +26,7 @@ export default {
       minutos: 25, paginas: 20, paginasLibro: 300, desde: 0, hasta: 0.07,
     }));
     fs.writeFileSync(path.join(carpeta, 'sesiones-2000-01-otrapc.json'), JSON.stringify({ sesiones }));
-    return {};
+    return { descansoVista: true }; // desde la 1.10 viene apagado
   },
   async prueba({ PRUEBA, hasta, comprobar, boton, tecla, esperar }) {
     const id = PRUEBA.libros.epub[0].id;

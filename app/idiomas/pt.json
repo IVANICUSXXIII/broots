@@ -63,7 +63,7 @@
       "subtitulo": "Configure uma vez só; depois, cada livro chega ao clube como um arquivo .md",
       "claude": "CLAUDE · PROJETO “CLUBE DE LEITURA”",
       "gemini": "GEMINI · SKILL + NOTEBOOKLM",
-      "archivos": "O arquivo de cada livro é salvo na sua biblioteca do Drive, na pasta .broots/club-de-lectura. Se um livro voltar ao clube, o arquivo dele é atualizado com seus novos destaques."
+      "archivos": "O arquivo de cada livro é salvo na pasta da sua biblioteca, em .broots/club-de-lectura. Se um livro voltar ao clube, o arquivo dele é atualizado com seus novos destaques."
     },
     "duplicados": {
       "elegi": "ESCOLHA QUAL MANTER",
@@ -137,7 +137,9 @@
       "soloMias": "Só as minhas avaliações",
       "bibliotecas": "Bibliotecas",
       "filtros": "Filtros",
-      "limpiar": "Limpar tudo"
+      "limpiar": "Limpar tudo",
+      "plegar": "Recolher",
+      "desplegar": "Expandir"
     },
     "vistas": {
       "subrayados": {
@@ -279,7 +281,7 @@
         "other": "{n} destaques salvos"
       },
       "ultimaImportacion": "última importação: {fecha}",
-      "dondeSeGuardan": "ficam salvos na sua biblioteca do Drive (pasta .broots)",
+      "dondeSeGuardan": "ficam salvos na pasta da sua biblioteca (.broots)",
       "noReconoci": {
         "one": "Esse aqui eu não reconheci:",
         "other": "Esses {n} livros eu não reconheci:"
@@ -418,7 +420,7 @@
         "drive": {
           "que": "Biblioteca e Família",
           "donde": "Google Drive",
-          "detalle": "Sua biblioteca e as cópias da Família ficam em pastas do Drive: quem faz o upload é o programa do Google Drive do seu PC, não o Broots."
+          "detalle": "Se a sua biblioteca ou as cópias da Família estiverem em pastas do Drive, quem faz o upload é o programa do Google Drive do seu PC, não o Broots."
         },
         "calibre": {
           "que": "Ferramentas do Calibre",
@@ -499,6 +501,13 @@
         "nota": "O que você destaca no leitor do Broots fica salvo na pasta da sua biblioteca, junto com os destaques do Kindle.",
         "archivoMd": "Manter um .md de cada livro na pasta dele",
         "archivoMdDetalle": "Com seus destaques e notas por capítulo, sempre em dia. Fica na pasta “data” do livro (o Calibre mostra em “Arquivos de dados”): perfeito para Obsidian ou Notion. O que você escrever no final do arquivo, o Broots não mexe."
+      },
+      "buscar": {
+        "titulo": "Buscar pelo leitor",
+        "nota": "Ao selecionar texto, «Buscar» abre o navegador com a busca pronta. O Broots não envia nada até você tocar no botão.",
+        "musica": "Sua música",
+        "musicaDetalle": "Se o app estiver instalado, o navegador costuma oferecer abri-lo.",
+        "ninguna": "Sem música"
       }
     },
     "editar": {
@@ -645,8 +654,6 @@
       "pistaOriginal": "Curiosidade? Clique em um parágrafo traduzido para ver o original.",
       "contando": "Contando as páginas nos dedos para chegar à página {pagina}…",
       "pistaPaginas": "Passe as páginas com as setas ← →, a roda do mouse ou um clique nas laterais. Sem precisar molhar o dedo.",
-      "volverEsc": "Voltar para a biblioteca (Esc)",
-      "biblioteca": "Biblioteca",
       "indice": "Sumário",
       "verOriginal": "Ver o livro no idioma original",
       "traducirAl": "Traduzir para o português com o Gemini",
@@ -658,7 +665,9 @@
       "volver": "Voltar para a biblioteca",
       "reintentar": "Tentar de novo",
       "configurar": "Configurar",
-      "barraExplicacion": "Clique na barra para pular para essa parte do livro"
+      "barraExplicacion": "Clique na barra para pular para essa parte do livro",
+      "cerrarImagen": "Fechar a imagem (Esc)",
+      "imagenPista": "Clique para aproximar · arraste para percorrer · Esc para fechar"
     },
     "actualizacion": {
       "etiqueta": "Nova versão do Broots",
@@ -837,7 +846,7 @@
         "descansoVista": "Descanso para os olhos",
         "descansoExplica": "Regra 20-20-20: a cada 20 minutos, 20 segundos olhando algo a uns 6 metros. O aviso aparece ao passar a página e some sozinho.",
         "metaCumplida": "{n} minutos! Boa hora para parar… ou para mais uma página. 😏",
-        "finCapitulo": "Fim do capítulo. Paramos aqui?",
+        "finCapitulo": "Fim do capítulo. Paramos aqui ou vai mais um?",
         "descanso": "👀 Olhe para algo longe por uns 20 segundos. Seus olhos agradecem.",
         "pasoALeyendo": "Passei para \"{estado}\". Boa leitura!",
         "terminaste": "Você chegou ao fim! 🎉 Marco como lido?",
@@ -852,7 +861,12 @@
         "salirEnfoque": "Sair do modo foco (F ou Esc)",
         "quedanCapitulo": "~{tiempo} para o fim do capítulo",
         "quedanLibro": "~{tiempo} para o livro",
-        "quedanExplica": "Calculado com o seu ritmo real neste livro (ou o seu ritmo geral, enquanto o livro é novo)."
+        "quedanExplica": "Calculado com o seu ritmo real neste livro (ou o seu ritmo geral, enquanto o livro é novo).",
+        "pausa": "Bom fim de capítulo. Se quiser um cafezinho, a hora é essa. Sem pressa.",
+        "sigoLeyendo": "Continuar lendo",
+        "porHoy": "Por hoje é só",
+        "sugerirPausa": "Sugerir uma pausa",
+        "sugerirPausaExplica": "No modo livre, de vez em quando ao fim de um capítulo, o Broots sugere um respiro. Se não der bola, ele some sozinho."
       },
       "libro": {
         "titulo": "Sua leitura",
@@ -868,9 +882,13 @@
           "other": "{tiempo} em {n} sessões"
         },
         "abandonado": "abandonado",
-        "queda": "Você está em {porcentaje}%: faltam ~{tiempo}",
+        "queda": "Faltam ~{tiempo}",
         "releer": "Reler",
-        "releerExplica": "Começa uma leitura nova do início. O que você leu antes fica guardado à parte."
+        "releerExplica": "Começa uma leitura nova do início. O que você leu antes fica guardado à parte.",
+        "porcentaje": "{n}%",
+        "pagina": "Você está na página {n} de {total}",
+        "porDondeVas": "Até onde você leu",
+        "deCorrido": "Lido de capa a capa"
       }
     },
     "subrayados": {
@@ -920,7 +938,11 @@
         "borradoConNota": "Destaque apagado, junto com a nota.",
         "deshacer": "Desfazer",
         "copiado": "✓ Copiado. É só colar onde quiser.",
-        "pista": "Novidade: selecione um trecho com o mouse para destacar e anotar o que vier à cabeça."
+        "pista": "Novidade: selecione um trecho com o mouse para destacar e anotar o que vier à cabeça.",
+        "buscar": "Buscar",
+        "buscarExplica": "Buscar isto no Google, no YouTube ou na sua música",
+        "buscarEn": "Buscar no",
+        "volver": "Voltar"
       }
     },
     "lectura": {
@@ -941,8 +963,8 @@
         "oscuro": "Cinza-escuro, para ler à noite",
         "negro": "Preto puro: para ler no escuro sem ofuscar (e em telas OLED gasta menos bateria)"
       },
-      "letra": "Letra",
-      "px": "{n} px",
+      "letra": "Tamanho da letra",
+      "px": "{n}",
       "fuente": "Fonte",
       "fuentes": {
         "literata": "A de sempre: feita para ler livros na tela",
@@ -964,7 +986,8 @@
         "grandes": "Grandes"
       },
       "justificar": "Justificar o texto",
-      "justificarDetalle": "Alinhado dos dois lados, como no papel. Às vezes deixa um vão entre as palavras."
+      "justificarDetalle": "Alinhado dos dois lados, como no papel. Às vezes deixa um vão entre as palavras.",
+      "letraActual": "Tamanho da letra: {n}"
     },
     "explicar": {
       "boton": "Explicar",
@@ -978,6 +1001,86 @@
       "cuantoDura": "O Broots guarda a explicação por 30 dias, assim perguntar de novo não gasta sua cota. Para guardar de vez, salve como nota.",
       "faltaClave": "Para explicar, falta a sua chave do Gemini (é grátis e você coloca uma vez só).",
       "noPude": "Não consegui pedir a explicação. Tente de novo."
+    },
+    "tour": {
+      "paso": "{n} de {total}",
+      "saltear": "Pular",
+      "anterior": "Voltar",
+      "siguiente": "Próximo",
+      "listo": "Pronto!",
+      "verOtraVez": "Ver o tour de novo",
+      "biblioteca": {
+        "inicio": {
+          "titulo": "Boas-vindas ao Broots!",
+          "texto": "Seu bibliotecário de bolso. Mostro o principal em um minuto e deixo você lendo. Prefere explorar sozinho? Toque em «Pular»."
+        },
+        "lateral": {
+          "titulo": "Suas estantes e filtros",
+          "texto": "Aqui ficam suas bibliotecas e os filtros: estado, idioma, formato, séries, autores e etiquetas, que se dobram em árvore. Marque o que quiser e a grade se ajeita."
+        },
+        "buscador": {
+          "titulo": "Ache qualquer livro",
+          "texto": "Digite parte do título, do autor ou de uma etiqueta. Ele também entende as buscas do Calibre. Atalho: a tecla /."
+        },
+        "libro": {
+          "titulo": "Um clique ou dois",
+          "texto": "Um clique abre o painel com os dados, até onde você leu e tudo o que dá para fazer com o livro. Dois cliques levam direto à leitura."
+        },
+        "agregar": {
+          "titulo": "Adicionar livros",
+          "texto": "Com o + você escolhe arquivos, ou arrasta para a janela. Pode mandar pilhas inteiras."
+        },
+        "kindle": {
+          "titulo": "Kindle",
+          "texto": "Envie livros ao Kindle por e-mail e importe seus destaques, que ficam junto com os que você faz no Broots."
+        },
+        "familia": {
+          "titulo": "Família",
+          "texto": "Monte a estante de cada pessoa e compartilhe uma cópia só com os livros dela."
+        },
+        "miLectura": {
+          "titulo": "Minha leitura",
+          "texto": "Sua sequência, suas horas, seu ritmo e o mapa do ano. Ninguém julga, nem às 3 da manhã."
+        },
+        "ayuda": {
+          "titulo": "Se você se perder",
+          "texto": "Aqui está a Ajuda (F1), com tudo explicado e este tour, se quiser repetir. Na primeira vez que abrir um livro, mostro o leitor. Boa leitura!"
+        }
+      },
+      "lector": {
+        "pasar": {
+          "titulo": "Virar a página",
+          "texto": "Com as setas, a roda do mouse, dois dedos no trackpad ou um clique nas laterais. Faça o gesto de pinça no trackpad para aumentar ou diminuir a letra. Clique numa imagem para vê-la em tamanho grande."
+        },
+        "medida": {
+          "titulo": "Leitura sob medida",
+          "texto": "O botão «Aa» deixa o livro do seu jeito: tema (claro, sépia, escuro ou preto), tamanho da letra, fonte (tem uma ótima para vista cansada e outra para dislexia), entrelinha, margens e texto justificado."
+        },
+        "seleccionar": {
+          "titulo": "Selecione um texto",
+          "texto": "Aparece uma barrinha para destacar em quatro cores, anotar e copiar. Com uma palavra ou frase, você também pode pedir «Explicar» ou «Buscar» no Google, no YouTube ou na sua música."
+        },
+        "indice": {
+          "titulo": "Índice e destaques",
+          "texto": "O índice leva a qualquer capítulo. Ao lado, o marca-texto reúne todos os seus destaques deste livro."
+        },
+        "traducir": {
+          "titulo": "Traduzir",
+          "texto": "Traduz o livro para o seu idioma enquanto você lê, parágrafo por parágrafo. Precisa de uma chave gratuita do Gemini: a chavinha ao lado explica como conseguir."
+        },
+        "sesion": {
+          "titulo": "Sua sessão",
+          "texto": "Por padrão, modo livre: sem relógio à vista. Se quiser uma meta de minutos ou ler até o fim do capítulo, escolha aqui."
+        },
+        "enfoque": {
+          "titulo": "Modo foco",
+          "texto": "Só o texto, em tela cheia. Liga e desliga com a tecla F."
+        },
+        "cerrar": {
+          "titulo": "Fechar o livro",
+          "texto": "Com o X da janela, no alto à direita, ou com Esc: com um livro aberto, o X leva à biblioteca e não fecha o Broots. Outro clique no X, aí sim. Sua página fica salva."
+        }
+      }
     }
   },
   "electron": {

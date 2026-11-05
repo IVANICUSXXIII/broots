@@ -34,6 +34,15 @@ export const MARGENES = {
 };
 export const LETRA = { defecto: 19, min: 14, max: 30 };
 
+// 1.10: los servicios de música que se pueden elegir para «Buscar» (son marcas: no se traducen).
+export const SERVICIOS_MUSICA = [
+  { id: 'spotify', nombre: 'Spotify' },
+  { id: 'youtubeMusic', nombre: 'YouTube Music' },
+  { id: 'appleMusic', nombre: 'Apple Music' },
+  { id: 'deezer', nombre: 'Deezer' },
+  { id: 'tidal', nombre: 'Tidal' },
+];
+
 const DEFECTO = { tema: 'auto', fuente: 'literata', interlineado: 'normal', margenes: 'normales', justificar: false };
 const CLAVE = 'broots-lector-medida';
 const CLAVE_LETRA = 'broots-lector-letra';

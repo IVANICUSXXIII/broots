@@ -530,6 +530,45 @@ ipcMain.handle('lector:colorBarra', (_e, colores) => {
   pintarBarraTitulo();
 });
 
+// 1.10: con un libro abierto, la cruz de la ventana cierra el libro en vez de cerrar Broots: era el error más común.
+// Si el lector no responde (se colgó), el segundo clic en la cruz cierra igual. Salir de verdad (app.quit, apagar la PC)
+// no pasa por acá: lo marca «saliendo».
+let lectorAbierto = false;
+let cierrePedido = false;
+let saliendo = false;
+app.on('before-quit', () => {
+  saliendo = true;
+});
+// Solo en pruebas: lo mismo que tocar la cruz (window.close() desde la página no pasa por el evento «close»).
+ipcMain.handle('pruebas:cruz', () => {
+  if (process.env.BROOTS_DATOS) ventana?.close();
+});
+ipcMain.handle('lector:abierto', (_e, si) => {
+  lectorAbierto = Boolean(si);
+  cierrePedido = false;
+});
+
+// 1.10: «Buscar» en el lector. Direcciones fijas: la interfaz solo elige el servicio y manda el texto.
+const BUSCADORES = {
+  google: (q) => `https://www.google.com/search?q=${q}`,
+  youtube: (q) => `https://www.youtube.com/results?search_query=${q}`,
+  spotify: (q) => `https://open.spotify.com/search/${q}`,
+  youtubeMusic: (q) => `https://music.youtube.com/search?q=${q}`,
+  appleMusic: (q) => `https://music.apple.com/search?term=${q}`,
+  deezer: (q) => `https://www.deezer.com/search/${q}`,
+  tidal: (q) => `https://listen.tidal.com/search?q=${q}`,
+};
+const MUSICA = new Set(['spotify', 'youtubeMusic', 'appleMusic', 'deezer', 'tidal', 'ninguna']);
+ipcMain.handle('lector:buscarEn', (_e, servicio, texto) => {
+  const consulta = String(texto ?? '').trim().slice(0, 300);
+  if (!Object.hasOwn(BUSCADORES, servicio) || !consulta) return { ok: false };
+  const direccion = BUSCADORES[servicio](encodeURIComponent(consulta));
+  // En pruebas no se abre el navegador: se anota adónde iría.
+  if (process.env.BROOTS_DATOS) fs.appendFileSync(path.join(process.env.BROOTS_DATOS, 'busquedas.log'), `${direccion}\n`);
+  else shell.openExternal(direccion);
+  return { ok: true };
+});
+
 function crearVentana() {
   const colores = coloresVentana();
   const tamaño = tamañoGuardado();
@@ -561,7 +600,19 @@ function crearVentana() {
     if (tamaño.maximizada) ventana.maximize();
     ventana.show();
   });
-  ventana.on('close', () => recordarTamaño(ventana));
+  ventana.on('session-end', () => {
+    saliendo = true;
+  });
+  ventana.on('close', (evento) => {
+    recordarTamaño(ventana);
+    if (!lectorAbierto || saliendo || cierrePedido) return;
+    evento.preventDefault();
+    cierrePedido = true;
+    setTimeout(() => {
+      cierrePedido = false;
+    }, 3000);
+    ventana.webContents.send('lector:cerrar');
+  });
   nativeTheme.on('updated', pintarBarraTitulo);
   ventana.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   ventana.webContents.on('will-navigate', (evento, url) => {
@@ -966,7 +1017,15 @@ const PREFERENCIAS = {
   festejarConSonido: { defecto: true, valida: (v) => typeof v === 'boolean' },
   // 1.7: anotar las sesiones de lectura (en .broots/habito) y el aviso de descanso para la vista (regla 20-20-20).
   anotarSesiones: { defecto: true, valida: (v) => typeof v === 'boolean' },
-  descansoVista: { defecto: true, valida: (v) => typeof v === 'boolean' },
+  // Desde la 1.10 el descanso viene apagado: sin plan, se lee sin avisos. La sugerencia de pausa, en cambio, es suave y se va sola.
+  descansoVista: { defecto: false, valida: (v) => typeof v === 'boolean' },
+  sugerirPausa: { defecto: true, valida: (v) => typeof v === 'boolean' },
+  // 1.10: los tours de bienvenida. De fábrica, ya vistos: quien actualiza no los ve de golpe (están en la Ayuda).
+  // Una instalación nueva los marca sin ver al arrancar (ver app.whenReady).
+  tourVisto: { defecto: true, valida: (v) => typeof v === 'boolean' },
+  tourLectorVisto: { defecto: true, valida: (v) => typeof v === 'boolean' },
+  // 1.10: el servicio de música del botón «Buscar» del lector ('ninguna' lo esconde).
+  musica: { defecto: 'spotify', valida: (v) => MUSICA.has(v) },
   // 1.8: el .md con los subrayados y notas de cada libro, en su carpeta «data» (para Obsidian, Notion…).
   archivoMd: { defecto: true, valida: (v) => typeof v === 'boolean' },
 };
@@ -1143,6 +1202,8 @@ app.whenReady().then(() => {
   } catch (error) {
     console.error('No pude pasar config.json al formato nuevo:', error.message);
   }
+  // 1.10: sin biblioteca guardada es la primera vez: tocan los tours de bienvenida.
+  if (!leerConfig().libraryPath && !process.env.BROOTS_DATOS) guardarConfig({ ...leerConfig(), tourVisto: false, tourLectorVisto: false });
   idioma.poner(leerConfig().idioma);
   // Solo para desarrollo: CAPTURE_THEME=light|dark fuerza un tema (para revisar ambos).
   const temaGuardado = leerConfig().tema;

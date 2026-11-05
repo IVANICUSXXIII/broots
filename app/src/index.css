@@ -21,13 +21,13 @@
   --borde: #dedbc4;
   --tinta: #2b361c;
   --tinta-suave: #5c6447;
-  --tinta-tenue: #8d9178;
+  --tinta-tenue: #676c54;
   --verde: #636b3f;
   --seleccion: #dfe3c6;
-  --acento: #b17036;
+  --acento: #9c5e29;
   --acento-suave: #f4e3cd;
   --sobre-acento: #ffffff; /* texto sobre botones color acento */
-  --estrella: #b17036;
+  --estrella: #9c5e29;
   --scroll: #c9c6ad;
   --sombra: 43 54 28;
   /* 1.8: subrayados del lector (fondo) y su línea (cuando se subrayó en el otro idioma) */
@@ -53,7 +53,7 @@
     --borde: #42423d;
     --tinta: #efece4;
     --tinta-suave: #bcb9af;
-    --tinta-tenue: #8c8a82;
+    --tinta-tenue: #a09e95;
     --verde: #a3b18a;
     --seleccion: #38412f;
     --acento: #d4a369;
@@ -89,13 +89,13 @@
   --borde: #dedbc4;
   --tinta: #2b361c;
   --tinta-suave: #5c6447;
-  --tinta-tenue: #8d9178;
+  --tinta-tenue: #676c54;
   --verde: #636b3f;
   --seleccion: #dfe3c6;
-  --acento: #b17036;
+  --acento: #9c5e29;
   --acento-suave: #f4e3cd;
   --sobre-acento: #ffffff;
-  --estrella: #b17036;
+  --estrella: #9c5e29;
   --scroll: #c9c6ad;
   --sombra: 43 54 28;
   --subrayado-amarillo: #f5df98;
@@ -117,7 +117,7 @@
   --borde: #dccaa6;
   --tinta: #4b3a2a;
   --tinta-suave: #6e5640;
-  --tinta-tenue: #977d62;
+  --tinta-tenue: #725d47;
   --verde: #6b6a3a;
   --seleccion: #e5d6b3;
   --acento: #9a5b25;
@@ -145,7 +145,7 @@
   --borde: #42423d;
   --tinta: #efece4;
   --tinta-suave: #bcb9af;
-  --tinta-tenue: #8c8a82;
+  --tinta-tenue: #a09e95;
   --verde: #a3b18a;
   --seleccion: #38412f;
   --acento: #d4a369;
@@ -174,7 +174,7 @@
   --borde: #2b2b29;
   --tinta: #c9c6bc;
   --tinta-suave: #9c998f;
-  --tinta-tenue: #75736c;
+  --tinta-tenue: #85837b;
   --verde: #8f9c78;
   --seleccion: #262c20;
   --acento: #c99a5f;
@@ -355,6 +355,38 @@ textarea,
   margin: 0.6em auto;
   object-fit: contain;
   break-inside: avoid;
+  cursor: default; /* la lupa la pone el lector, solo si se puede ampliar */
+}
+/* 1.10: el perfil de un libro: las hojas (rayitas que nunca se animan) entre las dos tapas, con sombra arriba y abajo */
+.perfil-libro {
+  background:
+    linear-gradient(180deg, rgb(var(--sombra) / 0.2), transparent 22%, transparent 78%, rgb(var(--sombra) / 0.2)),
+    repeating-linear-gradient(
+      90deg,
+      var(--superficie) 0 2px,
+      color-mix(in srgb, var(--tinta-tenue) 45%, var(--superficie)) 2px 3px,
+      var(--superficie-2) 3px 5px,
+      color-mix(in srgb, var(--tinta-tenue) 30%, var(--superficie)) 5px 6px
+    );
+  box-shadow: inset 5px 0 0 var(--verde), inset -5px 0 0 var(--verde), inset 0 0 0 1px rgb(var(--sombra) / 0.18);
+}
+/* La punta del señalador, en V, metida entre las hojas */
+.senalador-punta {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+}
+/* Un capítulo que es solo una imagen (la portada): sin márgenes entra en la primera columna; y si es una sola, va al centro de las dos */
+.texto-libro.solo-imagenes * {
+  margin: 0;
+  padding: 0;
+}
+.texto-libro.solo-imagenes :not(img, [data-fin], :has(img)) {
+  display: none;
+}
+.texto-libro.solo-imagenes img {
+  margin-inline: auto;
+}
+.texto-libro.una-imagen img {
+  transform: translateX(var(--mitad-columna, 0px));
 }
 .texto-libro blockquote {
   margin: 0.8em 0 0.8em 1.2em;

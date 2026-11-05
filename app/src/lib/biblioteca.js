@@ -38,6 +38,52 @@ export function etiquetaDañada(etiqueta) {
   return /<\/?[a-z][^>]*>/i.test(etiqueta) || !/[\p{L}\p{N}]/u.test(etiqueta);
 }
 
+/**
+ * 1.10: etiquetas en árbol. Calibre usa el punto para las jerarquías: «Sagas.Harry Potter» cuelga de «Sagas».
+ * Devuelve la etiqueta y todas sus ramas: ['Sagas', 'Sagas.Harry Potter']. Así, contar y filtrar por una rama
+ * incluye sus subetiquetas sin hacer nada más. Lo que no es una jerarquía de verdad no se parte: un punto al final
+ * («Borra del Café.»), iniciales («J.K. Rowling», «U.S.A»), números («Web 2.0») y direcciones web.
+ */
+const DIRECCION_WEB = /^(https?:\/\/|www\.)|\.(com|net|org|edu|gov|io)(\.[a-z]{2})?$/i;
+export function ramasDeEtiqueta(etiqueta) {
+  const partes = etiqueta.split('.');
+  const noEsJerarquia = partes.length < 2 || DIRECCION_WEB.test(etiqueta) || partes.some((p) => p.trim().length < 2 || p !== p.trim() || /^\d+$/.test(p));
+  if (noEsJerarquia) return [etiqueta];
+  return partes.map((_, i) => partes.slice(0, i + 1).join('.'));
+}
+
+/** Cómo se muestra una etiqueta entera, fuera del árbol: «Sagas › Harry Potter». */
+export function nombreEtiqueta(etiqueta) {
+  const ramas = ramasDeEtiqueta(etiqueta);
+  return ramas.length > 1 ? etiqueta.split('.').join(' › ') : etiqueta;
+}
+
+/**
+ * Arma el árbol de la barra lateral a partir de los conteos (que ya traen las ramas).
+ * Cada nodo: { valor, nombre, cantidad, nivel, hijos }. Conserva el orden de los conteos.
+ */
+export function arbolDeEtiquetas(conteos) {
+  const nodos = new Map(conteos.map(({ valor, cantidad }) => [valor, { valor, cantidad, nombre: valor, nivel: 0, hijos: [] }]));
+  const raices = [];
+  for (const { valor } of conteos) {
+    const nodo = nodos.get(valor);
+    const ramas = ramasDeEtiqueta(valor);
+    const padre = ramas.length > 1 ? nodos.get(ramas.at(-2)) : null;
+    if (!padre) {
+      raices.push(nodo);
+      continue;
+    }
+    nodo.nombre = valor.slice(padre.valor.length + 1);
+    padre.hijos.push(nodo);
+  }
+  const nivelar = (lista, nivel) => lista.forEach((n) => {
+    n.nivel = nivel;
+    nivelar(n.hijos, nivel + 1);
+  });
+  nivelar(raices, 0);
+  return raices;
+}
+
 export function etiquetasValidas(libro) {
   return libro.tags.filter((t) => !etiquetaDañada(t));
 }
@@ -99,7 +145,7 @@ export function construirGrupos(customColumns, cantidadSubrayados = () => 0) {
     },
     { id: 'idioma', get titulo() { return t('filtros.idioma'); }, valores: (l) => (l.languages.length ? l.languages : [SIN_VALOR]), etiqueta: (v) => (v === SIN_VALOR ? t('filtros.sinIdioma') : nombreIdioma(v)) },
     { id: 'formato', get titulo() { return t('filtros.formato'); }, valores: (l) => l.formats.map((f) => f.format), etiqueta: (v) => v },
-    { id: 'etiqueta', get titulo() { return t('filtros.etiquetas'); }, valores: (l) => etiquetasValidas(l), etiqueta: (v) => v, buscable: true, plegado: false },
+    { id: 'etiqueta', get titulo() { return t('filtros.etiquetas'); }, valores: (l) => etiquetasValidas(l).flatMap(ramasDeEtiqueta), etiqueta: nombreEtiqueta, buscable: true, plegado: false, arbol: true },
     { id: 'serie', get titulo() { return t('filtros.series'); }, valores: (l) => (l.series ? [l.series] : []), etiqueta: (v) => v, buscable: true },
     { id: 'autor', get titulo() { return t('filtros.autores'); }, valores: (l) => l.authors, etiqueta: (v) => v, buscable: true, plegado: true },
   );

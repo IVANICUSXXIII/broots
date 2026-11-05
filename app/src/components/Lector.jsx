@@ -24,6 +24,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { limpiarCapitulo, limpiarFragmento, parrafosDe } from '../lib/epub.js';
+import { ImagenGrande } from './ImagenGrande.jsx';
+import { Tour } from './Tour.jsx';
 import { COLORES_BARRA, MARGENES, cargarFuente, estimacion, idiomaActual, resorte, resortePresion, resorteRapido, ritmoParaEstimar, t, useAjustesLectura, variablesTexto } from '../lib/index.js';
 import { FormularioGemini } from './Gemini.jsx';
 import { IconoAnterior, IconoCerrar, IconoEnfoque, IconoIndice, IconoLlave, IconoMedida, IconoSiguiente, IconoSubrayar, IconoTraducir } from './Iconos.jsx';
@@ -36,6 +38,9 @@ const ESPACIO = 64; // separación entre columnas (y entre páginas), en px
 const MARGEN_VERTICAL = 26; // el ancho de página y el margen de los costados dependen de los márgenes elegidos (1.9)
 const PAGINAS_ADELANTE = 5; // cuántas páginas se traducen por adelantado
 const TANDA = 2800; // caracteres por pedido de traducción adelantada
+const PELLIZCO_POR_PUNTO = 12; // cuánto hay que pellizcar el trackpad para cambiar un punto de letra
+const PELLIZCO_ESPERA = 90; // ms entre un cambio y el siguiente
+const IMAGEN_MINIMA = 80; // px: las imágenes más chicas son adornitos y no se abren en grande
 const DURACION_PASO = 450; // ms aproximados del resorte al pasar de página
 
 const preferencia = (clave, defecto) => {
@@ -55,6 +60,7 @@ const recordar = (clave, valor) => {
 const CODIGOS = { es: /^(es|spa)\b/i, en: /^(en|eng)\b/i, pt: /^(pt|por)\b/i };
 const esDelIdioma = (idiomaLibro, idioma) => CODIGOS[idioma]?.test(idiomaLibro ?? '') ?? false;
 const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
+const seAmplia = (img) => img.naturalWidth >= IMAGEN_MINIMA && img.naturalHeight >= IMAGEN_MINIMA;
 const esperarImagen = (img, ms = 2500) => Promise.race([img.decode().catch(() => {}), dormir(ms)]);
 function nuevaMarcaDeFin() {
   const fin = document.createElement('span');
@@ -146,6 +152,10 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
   const [ajustes, cambiarAjustes] = useAjustesLectura(); // 1.9: tema, letra, fuente, interlineado, márgenes, justificar
   const { letra } = ajustes;
   const [panelMedida, setPanelMedida] = useState(false);
+  const [imagenGrande, setImagenGrande] = useState(null); // 1.10: la imagen del libro a pantalla completa
+  const [tourLector, setTourLector] = useState(false); // 1.10: la primera vez que se abre un libro
+  const cerrarImagen = useCallback(() => setImagenGrande(null), []);
+  const [letraVisible, setLetraVisible] = useState(false); // 1.10: el tamaño, un instante, al pellizcar el trackpad
   const [traducir, setTraducir] = useState(false);
   const [aviso, setAviso] = useState(null); // { tipo: 'traduciendo' | 'error' | 'sinClave' | 'pista', texto }
   const [indiceAbierto, setIndiceAbierto] = useState(false);
@@ -196,6 +206,7 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
     Object.assign(recorte.current.style, { width: `${anchoTotal}px`, height: `${alto}px` });
     Object.assign(texto.current.style, { width: `${anchoTotal}px`, height: `${alto}px`, columnCount: cols, columnGap: `${ESPACIO}px` });
     texto.current.style.setProperty('--alto-pagina', `${alto - 24}px`);
+    texto.current.style.setProperty('--mitad-columna', cols === 2 ? `${(ancho + ESPACIO) / 2}px` : '0px'); // para centrar una portada entre las dos columnas
   }, [r]);
 
   /** En qué columna (página) y en qué vista cae un rectángulo de la pantalla. */
@@ -354,7 +365,8 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
   // ---------- Capítulos y navegación ----------
 
   const guardarPosicion = useCallback(
-    (progreso) => window.lector.guardarPosicion(libro.id, { capitulo: r.cap, parrafo: anclaActual(), progreso }),
+    // pagina y paginas (1.10): para el avance del panel del libro, solo cuando ya están contadas todas.
+    (progreso, pagina, paginas) => window.lector.guardarPosicion(libro.id, { capitulo: r.cap, parrafo: anclaActual(), progreso, pagina, paginas }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [libro.id, r],
   );
@@ -389,6 +401,7 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
       r.href = datos.capitulos[i].href;
       el.replaceChildren(limpiarCapitulo(html, r.href, libro.id), nuevaMarcaDeFin());
       el.classList.toggle('solo-imagenes', !parrafosDe(el).length);
+      el.classList.toggle('una-imagen', !parrafosDe(el).length && el.querySelectorAll('img').length === 1);
       r.parrafos = parrafosDe(el);
       r.parrafos.forEach((p, k) => (p.dataset.p = k));
       r.originales = r.parrafos.map((p) => p.innerHTML);
@@ -541,11 +554,11 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
 
   // Guarda por dónde vas cada vez que cambia la página (y la barrita de subrayar, si quedó abierta, se va).
   useEffect(() => {
-    if (capitulos.length) guardarPosicion(Math.round(progreso * 1000) / 1000);
+    if (capitulos.length) guardarPosicion(Math.round(progreso * 1000) / 1000, aproximado ? null : ultimaVisible, aproximado ? null : totalPaginas);
     sub.cerrarBarra();
     explicar.cerrar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [info.cap, info.vista]);
+  }, [info.cap, info.vista, aproximado]);
 
   // Última página del libro: la sesión ofrece marcarlo como Leído.
   useEffect(() => {
@@ -681,12 +694,33 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reacomodar]);
 
+  // 1.10: el tamaño de letra con el gesto de pellizcar del trackpad (llega como rueda con Ctrl, igual que Ctrl + rueda
+  // del mouse) o con Ctrl + y Ctrl -. Reacomodar las páginas cuesta: se cambia de a un punto y no en cada evento.
+  const cambiarLetra = (sentido) => {
+    cambiarAjustes({ letra: r.ajustes.letra + sentido });
+    setLetraVisible(true);
+    clearTimeout(r.finLetra);
+    r.finLetra = setTimeout(() => setLetraVisible(false), 1100);
+  };
+  const alPellizcar = (delta) => {
+    r.pellizco = (r.pellizco ?? 0) + delta;
+    if (Math.abs(r.pellizco) < PELLIZCO_POR_PUNTO || Date.now() - (r.ultimoPellizco ?? 0) < PELLIZCO_ESPERA) return;
+    const sentido = r.pellizco < 0 ? 1 : -1;
+    r.pellizco = 0;
+    r.ultimoPellizco = Date.now();
+    cambiarLetra(sentido);
+  };
+
   // Teclado: flechas, Av Pág/Re Pág, espacio; F, modo enfoque; Esc cierra paneles (clave, índice, sesión), sale del
   // enfoque o, si no queda nada abierto, cierra el lector.
   useEffect(() => {
     const alPresionar = (e) => {
       if (e.target.closest?.('input, textarea')) return;
       actividad();
+      if (imagenGrande) {
+        if (e.key === 'Escape') setImagenGrande(null);
+        return;
+      }
       if (e.key === 'Escape') {
         if (explicar.tarjeta) return explicar.cerrar(); // 1.9: la tarjetita de «Explicar»
         if (sub.cerrarAlgo()) return; // la nota, la barrita de subrayar o la lista de subrayados
@@ -701,6 +735,9 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
       } else if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.altKey && !e.metaKey) {
         e.preventDefault();
         setEnfoque((v) => !v);
+      } else if (e.ctrlKey && ['+', '=', '-'].includes(e.key)) {
+        e.preventDefault();
+        cambiarLetra(e.key === '-' ? -1 : 1);
       } else if (['ArrowRight', 'PageDown', ' '].includes(e.key)) {
         e.preventDefault();
         siguiente();
@@ -711,17 +748,65 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
     };
     window.addEventListener('keydown', alPresionar);
     return () => window.removeEventListener('keydown', alPresionar);
-  }, [siguiente, anterior, onCerrar, explicar.tarjeta, claveAbierta, panelMedida, indiceAbierto, enfoque, actividad, sesion.panelAbierto, sesion.setPanelAbierto]);
+  }, [siguiente, anterior, onCerrar, explicar.tarjeta, claveAbierta, panelMedida, indiceAbierto, enfoque, imagenGrande, actividad, sesion.panelAbierto, sesion.setPanelAbierto]);
 
   // Rueda del mouse o del touchpad: una página por gesto.
   const ultimaRueda = useRef(0);
   const alRodar = (e) => {
-    if (sub.nota || sub.panelAbierto || panelMedida || explicar.tarjeta) return; // escribiendo una nota o con un panel abierto, la rueda no pasa de página
+    if (e.ctrlKey) {
+      e.preventDefault(); // que no intente hacer zoom de la ventana
+      if (!sub.nota && !imagenGrande) alPellizcar(e.deltaY);
+      return;
+    }
+    if (sub.nota || sub.panelAbierto || panelMedida || explicar.tarjeta || indiceAbierto || imagenGrande) return; // escribiendo una nota o con un panel abierto, la rueda no pasa de página
     const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
     if (Math.abs(delta) < 12 || Date.now() - ultimaRueda.current < 380) return;
     ultimaRueda.current = Date.now();
     delta > 0 ? siguiente() : anterior();
   };
+  // Se escucha a mano: en onWheel de React no se puede cancelar el zoom del pellizco.
+  const refRodar = useRef(alRodar);
+  refRodar.current = alRodar;
+  useEffect(() => {
+    const el = marco.current;
+    const alEvento = (e) => refRodar.current(e);
+    el.addEventListener('wheel', alEvento, { passive: false });
+    return () => el.removeEventListener('wheel', alEvento);
+  }, []);
+
+  // 1.10: la primera vez que se abre un libro, el tour del lector (cuando el libro ya se ve).
+  const libroListo = Boolean(datos);
+  useEffect(() => {
+    if (!libroListo) return;
+    let vivo = true;
+    window.preferencias.leer().then((p) => vivo && p.tourLectorVisto === false && setTourLector(true)).catch(() => {});
+    return () => {
+      vivo = false;
+    };
+  }, [libroListo]);
+  const terminarTourLector = () => {
+    setTourLector(false);
+    window.preferencias.guardar({ tourLectorVisto: true }).catch(() => {});
+  };
+
+  // 1.10: con un libro abierto, la cruz de la ventana vuelve a la biblioteca (ver main.cjs).
+  const refCerrar = useRef(onCerrar);
+  refCerrar.current = onCerrar;
+  const refImagen = useRef(imagenGrande);
+  refImagen.current = imagenGrande;
+  useEffect(() => {
+    window.lector.abierto(true);
+    const quitar = window.lector.alPedirCierre(() => {
+      if (!refImagen.current) return refCerrar.current();
+      // Con una imagen abierta, la cruz cierra la imagen. Se le avisa a main.cjs que el libro sigue abierto: si no, otro clic cerraría Broots.
+      setImagenGrande(null);
+      window.lector.abierto(true);
+    });
+    return () => {
+      quitar();
+      window.lector.abierto(false);
+    };
+  }, []);
 
   const cambiarTraducir = () => (!tieneClave ? setClaveAbierta(true) : cambiarTraducirA(!traducir));
 
@@ -734,6 +819,9 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
     if (window.getSelection()?.toString()) return;
     const enlace = e.target.closest('a[data-destino]');
     if (enlace) return irA(enlace.dataset.destino);
+    // 1.10: una imagen del libro se abre en grande (los adornitos, no).
+    const imagen = e.target.closest('img');
+    if (imagen && seAmplia(imagen)) return setImagenGrande({ src: imagen.src, ancho: imagen.naturalWidth, alto: imagen.naturalHeight });
     if (sub.alTocar(e)) return;
     // 1.8: el clic espera un instante antes de hacer algo. Si llega un segundo clic (doble clic para elegir una
     // palabra y subrayarla), no se pasa de página ni se cambia de idioma.
@@ -831,10 +919,7 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
         onMouseLeave={() => setSobreBarra(false)}
         className={`flex h-11 shrink-0 items-center gap-1.5 pr-[150px] pl-3 ${enfoque ? flotante('arriba') : 'arrastrable'}`}
       >
-        <BotonBarra onClick={onCerrar} title={t('lector.volverEsc')}>
-          <IconoAnterior className="size-4" /> {t('lector.biblioteca')}
-        </BotonBarra>
-        <BotonBarra activo={indiceAbierto} onClick={() => setIndiceAbierto((v) => !v)} disabled={!datos?.indice.length} title={t('lector.indice')}>
+        <BotonBarra activo={indiceAbierto} onClick={() => setIndiceAbierto((v) => !v)} disabled={!datos?.indice.length} title={t('lector.indice')} data-tour="indice">
           <IconoIndice className="size-4" /> {t('lector.indice')}
         </BotonBarra>
         <BotonBarra activo={sub.panelAbierto} onClick={() => {
@@ -856,7 +941,7 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
           }} title={t('lectura.boton')} data-boton-medida>
           <IconoMedida className="size-4" />
         </BotonBarra>
-        <BotonBarra activo={traducir && tieneClave} onClick={cambiarTraducir} disabled={!datos} title={traducir ? t('lector.verOriginal') : t('lector.traducirAl')}>
+        <BotonBarra activo={traducir && tieneClave} onClick={cambiarTraducir} disabled={!datos} title={traducir ? t('lector.verOriginal') : t('lector.traducirAl')} data-tour="traducir">
           <IconoTraducir className="size-4" /> {traducir && tieneClave ? t('lector.traducido') : t('lector.traducir')}
         </BotonBarra>
         <BotonBarra onClick={() => setClaveAbierta(true)} title={t('configuracion.claveGemini')}>
@@ -868,12 +953,16 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
         </BotonBarra>
       </header>
 
-      <div ref={marco} className="relative min-h-0 flex-1" onWheel={alRodar}>
+      <div ref={marco} className="relative min-h-0 flex-1">
         <div ref={recorte} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 overflow-hidden">
           <div
             ref={texto}
             lang={traducir ? idiomaActual() : datos?.idioma || undefined}
             onClick={alTocarPagina}
+            onMouseOver={(e) => {
+              // La lupa, solo en las imágenes que se pueden abrir en grande.
+              if (e.target.tagName === 'IMG') e.target.style.cursor = seAmplia(e.target) ? 'zoom-in' : '';
+            }}
             onMouseUp={sub.alSoltar}
             className="texto-libro seleccionable"
             style={{ opacity: 0 }}
@@ -1006,8 +1095,33 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
 
         <AvisoSesion sesion={sesion} onCerrarLibro={onCerrar} enfoque={enfoque} />
 
+        {/* 1.10: el tamaño de letra mientras se pellizca el trackpad */}
+        <AnimatePresence>
+          {letraVisible && (
+            <motion.div
+              key="letra"
+              data-letra-al-pellizcar
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="pointer-events-none absolute top-3 left-1/2 z-40 -translate-x-1/2 rounded-full bg-superficie-2 px-3 py-1 text-[0.76rem] tabular-nums shadow-[inset_0_0_0_1px_var(--borde)]"
+            >
+              {t('lectura.letraActual', { n: letra })}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <AnimatePresence>{claveAbierta && <ClaveGemini key="clave" tieneClave={tieneClave} onListo={claveLista} onCerrar={() => setClaveAbierta(false)} />}</AnimatePresence>
       </div>
+
+      <AnimatePresence>{tourLector && <Tour key="tour-lector" recorrido="lector" onTerminar={terminarTourLector} />}</AnimatePresence>
+
+      {/* 1.10: la imagen del libro a pantalla completa */}
+      <AnimatePresence>
+        {imagenGrande && (
+          <ImagenGrande key="imagen" imagen={imagenGrande} onCerrar={cerrarImagen} />
+        )}
+      </AnimatePresence>
 
       <footer className={`flex h-10 shrink-0 items-center gap-4 px-6 text-[0.7rem] text-tinta-tenue ${flotante('abajo')}`}>
         {capitulos.length > 0 && (

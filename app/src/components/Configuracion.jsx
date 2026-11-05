@@ -4,7 +4,7 @@
 // Las preferencias nuevas (p. ej. Amazon o el idioma) se guardan en config.json de esta PC (window.preferencias).
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { IDIOMAS, MARGENES, ponerIdioma, region, resorte, resorteRapido, t, useAjustesLectura, useIdioma, variablesTexto } from '../lib/index.js';
+import { IDIOMAS, MARGENES, SERVICIOS_MUSICA, ponerIdioma, region, resorte, resorteRapido, t, useAjustesLectura, useIdioma, variablesTexto } from '../lib/index.js';
 import {
   IconoAyuda, IconoCafe, IconoCarpeta, IconoCerrar, IconoCheck, IconoCompartir, IconoCorazon, IconoEngranaje, IconoEscudo, IconoInfo, IconoKindle, IconoLibros,
   IconoRecargar, IconoTraducir, LogoBroots,
@@ -160,7 +160,8 @@ function General({ tema, onTema, libraryPath, soloLectura, compartidaPara, onCam
 function HabitoDeLectura({ preferencias, onPreferencias }) {
   const [borrado, setBorrado] = useState(null); // null | 'ok' | mensaje de error
   const anotar = preferencias?.anotarSesiones ?? true;
-  const descanso = preferencias?.descansoVista ?? true;
+  const descanso = preferencias?.descansoVista ?? false;
+  const pausa = preferencias?.sugerirPausa ?? true;
   const borrar = async () => {
     if (!window.confirm(t('configuracion.habito.borrarConfirmar'))) return;
     const r = await window.habito.archivar().catch((e) => ({ ok: false, mensaje: e.message }));
@@ -171,6 +172,10 @@ function HabitoDeLectura({ preferencias, onPreferencias }) {
       <div className="-mx-2 py-1.5" data-anotar={anotar ? 'si' : 'no'}>
         <Interruptor activo={anotar} onCambiar={(v) => onPreferencias({ anotarSesiones: v })} etiqueta={t('configuracion.habito.anotar')} />
         <p className="px-2 pb-1 text-[0.74rem] text-tinta-tenue">{t('configuracion.habito.anotarDetalle')}</p>
+      </div>
+      <div className="-mx-2 py-1.5" data-sugerir-pausa={pausa ? 'si' : 'no'}>
+        <Interruptor activo={pausa} onCambiar={(v) => onPreferencias({ sugerirPausa: v })} etiqueta={t('habito.lector.sugerirPausa')} />
+        <p className="px-2 pb-1 text-[0.74rem] text-tinta-tenue">{t('habito.lector.sugerirPausaExplica')}</p>
       </div>
       <div className="-mx-2 py-1.5" data-descanso={descanso ? 'si' : 'no'}>
         <Interruptor activo={descanso} onCambiar={(v) => onPreferencias({ descansoVista: v })} etiqueta={t('configuracion.habito.descanso')} />
@@ -223,6 +228,25 @@ function Lectura({ preferencias, onPreferencias }) {
           />
           <p className="px-2 pb-1 text-[0.74rem] text-tinta-tenue">{t('configuracion.subrayadosLector.archivoMdDetalle')}</p>
         </div>
+      </Grupo>
+
+      {/* 1.10: el botón «Buscar» de la barrita del lector */}
+      <Grupo titulo={t('configuracion.buscar.titulo')} nota={t('configuracion.buscar.nota')}>
+        <Fila etiqueta={t('configuracion.buscar.musica')} detalle={t('configuracion.buscar.musicaDetalle')}>
+          <select
+            value={preferencias?.musica ?? 'spotify'}
+            onChange={(e) => onPreferencias({ musica: e.target.value })}
+            data-musica
+            className="h-8 rounded-lg bg-superficie px-2 text-[0.8rem] text-tinta shadow-[inset_0_0_0_1px_var(--borde)] outline-none"
+          >
+            {SERVICIOS_MUSICA.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.nombre}
+              </option>
+            ))}
+            <option value="ninguna">{t('configuracion.buscar.ninguna')}</option>
+          </select>
+        </Fila>
       </Grupo>
 
       <Grupo titulo={t('configuracion.traduccion')}>
@@ -545,7 +569,7 @@ export function Configuracion({ seccionInicial = 'general', onCerrar, ...props }
     calibre: () => <Calibre />,
     actualizaciones: () => <Actualizaciones preferencias={preferencias} onPreferencias={guardarPreferencias} />,
     privacidad: () => <Privacidad preferencias={preferencias} onPreferencias={guardarPreferencias} />,
-    ayuda: () => <ContenidoAyuda onCerrar={onCerrar} />,
+    ayuda: () => <ContenidoAyuda onCerrar={onCerrar} onVerTour={props.onVerTour} />,
     acerca: () => <Acerca preferencias={preferencias} />,
   };
 

@@ -4,6 +4,8 @@
 //   palabras sueltas            -> busca en título, autores, etiquetas, serie y editorial
 //   campo:valor                 -> "contiene"   (tags:ventas)
 //   campo:"=valor exacto"       -> igualdad     (tags:"=Ventas")
+//   campo:"=.rama"              -> la rama y lo que cuelga de ella (tags:"=.Sagas" incluye Sagas.Harry Potter)
+//   campo:"=..nombre"           -> un nivel de la jerarquía, en cualquier lugar (tags:"=..Harry Potter")
 //   campo:~expresión            -> expresión regular
 //   campo:true / false          -> tiene valor / está vacío (en columnas sí/no: es sí / es no)
 //   rating:>3, #cant_pag:<200   -> comparaciones numéricas (las valoraciones van en estrellas)
@@ -157,6 +159,18 @@ function coincideTexto(textos, valor) {
   const v = valor.trim();
   if (SI.has(v.toLowerCase())) return textos.length > 0;
   if (NO.has(v.toLowerCase())) return textos.length === 0;
+  // Antes que el igual común: la sintaxis de jerarquías de Calibre.
+  if (v.startsWith('=..')) {
+    const buscado = normalizar(v.slice(3));
+    return textos.some((t) => normalizar(t).split('.').includes(buscado));
+  }
+  if (v.startsWith('=.')) {
+    const buscado = normalizar(v.slice(2));
+    return textos.some((t) => {
+      const n = normalizar(t);
+      return n === buscado || n.startsWith(`${buscado}.`);
+    });
+  }
   if (v.startsWith('=')) {
     const buscado = normalizar(v.slice(1));
     return textos.some((t) => normalizar(t) === buscado);

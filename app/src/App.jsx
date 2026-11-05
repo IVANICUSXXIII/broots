@@ -36,6 +36,7 @@ import { MiLectura } from './components/MiLectura.jsx';
 import { useFondoDesenfocado } from './lib/fondoDesenfocado.js';
 import { Bienvenida, Cargando } from './components/Bienvenida.jsx';
 import { AvisoLista, Festejo } from './components/Actualizacion.jsx';
+import { Tour } from './components/Tour.jsx';
 import { IconoCandado, IconoCerrar } from './components/Iconos.jsx';
 
 // Preferencias de pantalla que se recuerdan entre sesiones (solo en esta PC).
@@ -225,6 +226,7 @@ function Aplicacion() {
   // Actualizaciones de Broots: estado de la búsqueda o descarga (main.cjs) y el festejo de una versión recién instalada.
   const [actualizacion, setActualizacion] = useState(null);
   const [festejo, setFestejo] = useState(null);
+  const [tour, setTour] = useState(false); // 1.10: el tour de bienvenida de la biblioteca
   const refActualizacion = useUltimo(actualizacion);
   useEffect(() => {
     window.actualizaciones.estado().then(setActualizacion).catch(() => {});
@@ -506,6 +508,34 @@ function Aplicacion() {
     despegar(tipo, id, rectDe(elementoPortada));
   }, [cerrar]);
 
+  // 1.10: el tour, la primera vez que se abre Broots (con la biblioteca ya cargada). Se puede volver a ver desde la Ayuda.
+  const hayBiblioteca = carga.status === 'ok';
+  useEffect(() => {
+    if (!hayBiblioteca) return;
+    let vivo = true;
+    window.preferencias.leer().then((p) => vivo && p.tourVisto === false && setTour(true)).catch(() => {});
+    return () => {
+      vivo = false;
+    };
+  }, [hayBiblioteca]);
+  const terminarTour = () => {
+    setTour(false);
+    window.preferencias.guardar({ tourVisto: true }).catch(() => {});
+  };
+  const verTourOtraVez = () => {
+    setConfiguracion(null);
+    window.preferencias.guardar({ tourLectorVisto: false }).catch(() => {}); // el del lector, la próxima vez que abras un libro
+    setTour(true);
+  };
+
+  // 1.10: doble clic en un libro: directo al lector, sin panel. Sin EPUB no hay lector: queda el panel.
+  const refLibros = useUltimo(libros);
+  const leerDirecto = useCallback((id) => {
+    if (!refLibros.current.find((l) => l.id === id)?.formats.some((f) => f.format === 'EPUB')) return;
+    cerrar();
+    setLeyendo(id);
+  }, [cerrar]);
+
   const ampliar = (elementoPortada) => {
     setAmpliada(true);
     despegar('ampliar', refSeleccionado.current, rectDe(elementoPortada));
@@ -669,6 +699,7 @@ function Aplicacion() {
                   tituloValoracion={colValoracion?.name ?? t('vistas.columnas.valoracion')}
                   hayFiltros={hayFiltros}
                   onLimpiar={limpiarFiltros}
+                  total={encontrados.length}
                 />
               </motion.div>
             )}
@@ -708,6 +739,7 @@ function Aplicacion() {
                   visibles={visibles}
                   disposicion={disposicion}
                   onAbrir={abrir}
+                  onLeer={leerDirecto}
                   colEstado={colEstado}
                   colValoracion={colValoracion}
                 />
@@ -719,6 +751,7 @@ function Aplicacion() {
                     visibles={visibles}
                     abierto={seleccionado}
                     onAbrir={abrir}
+                    onLeer={leerDirecto}
                     orden={orden}
                     onOrden={setOrden}
                     colEstado={colEstado}
@@ -922,6 +955,7 @@ function Aplicacion() {
           <Configuracion
             key="configuracion"
             seccionInicial={configuracion}
+            onVerTour={verTourOtraVez}
             tema={tema}
             onTema={cambiarTema}
             libraryPath={datos.libraryPath}
@@ -961,6 +995,8 @@ function Aplicacion() {
           <AvisoLista key={`lista-${actualizacion.version}`} estado={actualizacion} onCerrar={cerrarAvisoLista} />
         )}
       </AnimatePresence>
+
+      <AnimatePresence>{tour && !festejo && !leyendo && !configuracion && <Tour key="tour" recorrido="biblioteca" onTerminar={terminarTour} />}</AnimatePresence>
 
       {/* Aviso al arrastrar un archivo sobre la ventana */}
       <AnimatePresence>

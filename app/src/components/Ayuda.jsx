@@ -135,7 +135,7 @@ function Bloque({ bloque, palabras }) {
 }
 
 /** onCerrar: Esc con el buscador vacío cierra Configuración (con texto, primero lo borra). */
-export function ContenidoAyuda({ onCerrar }) {
+export function ContenidoAyuda({ onCerrar, onVerTour }) {
   const idioma = useIdioma();
   const [busqueda, setBusqueda] = useState('');
   const campo = useRef(null);
@@ -195,6 +195,17 @@ export function ContenidoAyuda({ onCerrar }) {
           )}
         </div>
         <nav aria-label={t('ayuda.indice')} className="flex flex-wrap gap-1.5">
+          {onVerTour && !busqueda && (
+            <motion.button
+              type="button"
+              data-ver-tour
+              onClick={onVerTour}
+              whileTap={{ scale: 0.95, transition: resortePresion }}
+              className="rounded-full bg-verde px-2.5 py-1 text-[0.74rem] font-medium text-superficie"
+            >
+              {t('tour.verOtraVez')}
+            </motion.button>
+          )}
           {temas.map((tema) => (
             <motion.button
               type="button"

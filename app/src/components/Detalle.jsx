@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useMotionValue, useTransform, animate } from 'motion/react';
 import {
   año, fechaCorta, nombreIdioma, numero, tamaño, valoraciones, etiquetasValidas,
-  resorte, resorteRapido, resortePresion, resorteVuelo, t,
+  nombreEtiqueta, resorte, resorteRapido, resortePresion, resorteSuave, resorteVuelo, t,
   duracion, estimacion, lecturaDelLibro, region, ritmoTexto, tipoEstado,
 } from '../lib/index.js';
 import { IconoAbrir, IconoCarpeta, IconoCerrar, IconoCheck, IconoCita, IconoEditar, IconoEnviar, IconoLeer, IconoReleer } from './Iconos.jsx';
@@ -341,6 +341,49 @@ function ListaSubrayados({ libro, lista }) {
  * 1.7: «Tu lectura»: cuánto leíste este libro con Broots, separado por vuelta (las relecturas no pisan las
  * anteriores), cuánto te falta según tu ritmo y el botón «Releer» cuando ya lo terminaste.
  */
+/**
+ * 1.10: por dónde vas, como el perfil de un libro visto de costado: las páginas entre las dos tapas y un señalador
+ * metido donde vas, con el porcentaje en la punta que sobresale. Solo se animan transform y opacity.
+ */
+function AvanceLibro({ libro, habito, colEstado }) {
+  const posicion = habito?.posiciones?.[libro.uuid];
+  const leido = colEstado && tipoEstado(libro.custom[colEstado.label]) === 'leido';
+  const progreso = leido ? 1 : posicion?.progreso;
+  if (progreso == null) return null;
+  const porcentaje = Math.round(progreso * 100);
+  // El señalador no se sale de los bordes del libro: en las puntas se queda en su borde.
+  const lugar = Math.min(92, Math.max(8, porcentaje));
+  return (
+    <motion.div variants={item} data-avance-libro={porcentaje} className="mt-5">
+      <div className="relative overflow-hidden pt-6">
+        <div className="perfil-libro relative h-11 overflow-hidden rounded-[4px]">
+          <motion.span
+            aria-hidden="true"
+            className="absolute inset-y-0 right-[5px] left-[5px] origin-left bg-verde/25"
+            initial={{ transform: 'scaleX(0)' }}
+            animate={{ transform: `scaleX(${progreso})` }}
+            transition={resorteSuave}
+          />
+        </div>
+        <motion.div
+          className="pointer-events-none absolute inset-0"
+          initial={{ transform: 'translateX(0%)' }}
+          animate={{ transform: `translateX(${lugar}%)` }}
+          transition={resorteSuave}
+        >
+          <div className="absolute top-0 left-0 flex -translate-x-1/2 flex-col items-center">
+            <span className="rounded-t-[5px] rounded-b-[2px] bg-acento px-1.5 py-0.5 text-[0.72rem] leading-tight font-semibold text-sobre-acento tabular-nums">{t('habito.libro.porcentaje', { n: porcentaje })}</span>
+            <span className="senalador-punta h-8 w-3 bg-acento" />
+          </div>
+        </motion.div>
+      </div>
+      <p className="mt-1.5 text-center text-[0.72rem] text-tinta-tenue">
+        {leido ? t('habito.libro.deCorrido') : posicion?.paginas ? t('habito.libro.pagina', { n: posicion.pagina, total: posicion.paginas }) : t('habito.libro.porDondeVas')}
+      </p>
+    </motion.div>
+  );
+}
+
 function TuLectura({ libro, habito, colEstado, onReleer }) {
   if (!habito) return null;
   const vueltas = lecturaDelLibro(libro.uuid, habito.sesiones, habito.lecturas);
@@ -377,7 +420,7 @@ function TuLectura({ libro, habito, colEstado, onReleer }) {
           {v.resultado === 'abandonado' ? ` · ${t('habito.libro.abandonado')}` : ''}
         </p>
       ))}
-      {queda && <p className="mt-1 text-verde">{t('habito.libro.queda', { porcentaje: Math.round(progreso * 100), tiempo: queda })}</p>}
+      {queda && <p className="mt-1 text-verde">{t('habito.libro.queda', { tiempo: queda })}</p>}
       {terminada && libro.formats.some((f) => f.format === 'EPUB') && (
         <motion.button
           type="button"
@@ -575,6 +618,7 @@ export function PanelDetalle({
                 </motion.button>
               </motion.div>
             )}
+            <AvanceLibro libro={libro} habito={habito} colEstado={colEstado} />
             <TuLectura libro={libro} habito={habito} colEstado={colEstado} onReleer={onReleer} />
             {!soloLectura && (
               <>
@@ -617,7 +661,7 @@ export function PanelDetalle({
                     whileTap={{ scale: 0.94, transition: resortePresion }}
                     className="rounded-full bg-seleccion/70 px-2.5 py-1 text-xs text-tinta-suave transition-colors hover:bg-acento-suave hover:text-acento"
                   >
-                    {etiqueta}
+                    {nombreEtiqueta(etiqueta)}
                   </motion.button>
                 ))}
               </motion.div>
@@ -645,7 +689,7 @@ export function PanelDetalle({
             {libro.comments && (
               <motion.div variants={item} className="mt-7">
                 <p className="text-[0.68rem] font-semibold tracking-wide text-tinta-tenue">{t('detalle.descripcion')}</p>
-                <p className="mt-2 font-serif text-[0.9rem] leading-relaxed whitespace-pre-line text-tinta/90">{libro.comments}</p>
+                <p className="mt-2 text-justify font-serif text-[0.9rem] leading-relaxed whitespace-pre-line text-tinta/90">{libro.comments}</p>
               </motion.div>
             )}
 

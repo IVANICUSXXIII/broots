@@ -1,6 +1,6 @@
 // Barra superior unificada con la barra de título (como las apps de macOS).
 // Toda la franja sirve para arrastrar la ventana; a la derecha quedan los botones de Windows.
-// En una ventana angosta se achican primero el título y el buscador; después se esconden el nombre «Broots»
+// En una ventana angosta se achican primero el buscador y el orden, y recién después el título; se esconden el nombre «Broots»
 // y el tema (que también está en Configuración). Ayuda y Configuración quedan siempre a la vista.
 import { forwardRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -53,7 +53,7 @@ export const BarraHerramientas = forwardRef(function BarraHerramientas(
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -6 }}
           transition={resorte}
-          className="min-w-0 truncate pl-1 whitespace-nowrap"
+          className="min-w-0 shrink-[4] truncate pl-1 whitespace-nowrap min-[1300px]:shrink-[0.2]"
         >
           <span className="text-[0.95rem] font-semibold">{titulo}</span>
           <span className="ml-2 text-xs text-tinta-tenue tabular-nums">{t('barra.libros', { n: cantidad })}</span>
@@ -61,7 +61,7 @@ export const BarraHerramientas = forwardRef(function BarraHerramientas(
       </AnimatePresence>
 
       <div className="ml-auto flex min-w-0 items-center gap-2">
-        <div className="relative w-72 min-w-24 shrink-[2]">
+        <div className="relative w-64 min-w-24 shrink-[2]" data-tour="buscador">
           <IconoBuscar className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-tinta-tenue" />
           <input
             ref={refBusqueda}
@@ -97,7 +97,7 @@ export const BarraHerramientas = forwardRef(function BarraHerramientas(
           value={orden}
           onChange={(e) => onOrden(e.target.value)}
           title={t('barra.ordenar')}
-          className="h-8 w-44 min-w-20 shrink rounded-lg bg-superficie-2 px-2 text-[0.8rem] text-tinta shadow-[inset_0_0_0_1px_var(--borde)] outline-none"
+          className="h-8 w-36 min-w-20 shrink rounded-lg bg-superficie-2 px-2 text-[0.8rem] text-tinta shadow-[inset_0_0_0_1px_var(--borde)] outline-none"
         >
           {ORDENES.map((o) => (
             <option key={o.id} value={o.id}>
@@ -118,7 +118,7 @@ export const BarraHerramientas = forwardRef(function BarraHerramientas(
           />
         </div>
 
-        <div className="shrink-0 max-[1360px]:hidden">
+        <div className="shrink-0 max-[1640px]:hidden">
           <ControlSegmentado
             grupo="tema"
             valor={tema}
@@ -134,16 +134,16 @@ export const BarraHerramientas = forwardRef(function BarraHerramientas(
         {/* En una biblioteca compartida (solo lectura) no se agrega ni se cambia nada */}
         {!soloLectura && (
           <>
-            <BotonBarra onClick={onAgregarLibros} title={t('barra.agregar')}>
+            <BotonBarra onClick={onAgregarLibros} title={t('barra.agregar')} data-tour="agregar">
               <IconoMas />
             </BotonBarra>
             <BotonBarra onClick={onDuplicados} title={t('barra.duplicados')}>
               <IconoDuplicados />
             </BotonBarra>
-            <BotonBarra onClick={onCompartir} title={t('barra.familia')}>
+            <BotonBarra onClick={onCompartir} title={t('barra.familia')} data-tour="familia">
               <IconoCompartir />
             </BotonBarra>
-            <BotonBarra onClick={onKindle} title={t('barra.kindle')}>
+            <BotonBarra onClick={onKindle} title={t('barra.kindle')} data-tour="kindle">
               <IconoKindle />
             </BotonBarra>
           </>
@@ -154,7 +154,7 @@ export const BarraHerramientas = forwardRef(function BarraHerramientas(
         <BotonBarra onClick={onRecargar} title={t('barra.recargar')}>
           <IconoRecargar className={`size-4 ${cargando ? 'animate-spin' : ''}`} />
         </BotonBarra>
-        <BotonBarra onClick={onAyuda} title={t('barra.ayuda')}>
+        <BotonBarra onClick={onAyuda} title={t('barra.ayuda')} data-tour="ayuda">
           <IconoAyuda />
         </BotonBarra>
         <BotonBarra onClick={onConfiguracion} title={t('comun.configuracion')}>

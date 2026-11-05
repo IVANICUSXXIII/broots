@@ -63,7 +63,7 @@
       "subtitulo": "Set it up once; after that, every book shows up to the club as a .md file",
       "claude": "CLAUDE · “BOOK CLUB” PROJECT",
       "gemini": "GEMINI · SKILL + NOTEBOOKLM",
-      "archivos": "Each book’s file is saved in your Drive library, in the .broots/club-de-lectura folder. If a book comes back to the club, its file catches up with your new highlights."
+      "archivos": "Each book’s file is saved in your library folder, under .broots/club-de-lectura. If a book comes back to the club, its file catches up with your new highlights."
     },
     "duplicados": {
       "elegi": "CHOOSE WHICH ONE TO KEEP",
@@ -137,7 +137,9 @@
       "soloMias": "Only my ratings",
       "bibliotecas": "Libraries",
       "filtros": "Filters",
-      "limpiar": "Clear all"
+      "limpiar": "Clear all",
+      "plegar": "Collapse",
+      "desplegar": "Expand"
     },
     "vistas": {
       "subrayados": {
@@ -279,7 +281,7 @@
         "other": "{n} highlights saved"
       },
       "ultimaImportacion": "last import: {fecha}",
-      "dondeSeGuardan": "saved in your Drive library (.broots folder)",
+      "dondeSeGuardan": "saved in your library folder (.broots)",
       "noReconoci": {
         "one": "I can’t quite place this book:",
         "other": "I can’t quite place these {n} books:"
@@ -418,7 +420,7 @@
         "drive": {
           "que": "Library and Family",
           "donde": "Google Drive",
-          "detalle": "Your library and the Family copies are in Drive folders: they are uploaded by the Google Drive program on your PC, not by Broots."
+          "detalle": "If your library or the Family copies are in Drive folders, they are uploaded by the Google Drive program on your PC, not by Broots."
         },
         "calibre": {
           "que": "Calibre tools",
@@ -499,6 +501,13 @@
         "nota": "What you highlight in Broots’ reader is saved in your library folder, right next to your Kindle highlights.",
         "archivoMd": "Keep a .md for each book in its folder",
         "archivoMdDetalle": "With your highlights and notes by chapter, always up to date. It lives in the book’s “data” folder (Calibre shows it under “Data files”): perfect for Obsidian or Notion. Anything you write at the bottom of the file, Broots leaves alone."
+      },
+      "buscar": {
+        "titulo": "Search from the reader",
+        "nota": "When you select text, «Search» opens your browser with the search ready. Broots sends nothing until you press the button.",
+        "musica": "Your music",
+        "musicaDetalle": "If you have the app installed, your browser will usually offer to open it.",
+        "ninguna": "No music"
       }
     },
     "editar": {
@@ -645,8 +654,6 @@
       "pistaOriginal": "Curious? Click a translated paragraph to see the original.",
       "contando": "Counting pages on my fingers to get to page {pagina}…",
       "pistaPaginas": "Turn the page with the ← → arrows, the mouse wheel or a click on either side. No finger-licking required.",
-      "volverEsc": "Back to the library (Esc)",
-      "biblioteca": "Library",
       "indice": "Contents",
       "verOriginal": "See the book in its original language",
       "traducirAl": "Translate into English with Gemini",
@@ -658,7 +665,9 @@
       "volver": "Back to the library",
       "reintentar": "Try again",
       "configurar": "Set up",
-      "barraExplicacion": "Click the bar to jump to that part of the book"
+      "barraExplicacion": "Click the bar to jump to that part of the book",
+      "cerrarImagen": "Close the image (Esc)",
+      "imagenPista": "Click to zoom · drag to move around · Esc to close"
     },
     "actualizacion": {
       "etiqueta": "New Broots version",
@@ -837,7 +846,7 @@
         "descansoVista": "Eye break",
         "descansoExplica": "20-20-20 rule: every 20 minutes, look at something about 20 feet away for 20 seconds. The reminder shows up as you turn the page and goes away on its own.",
         "metaCumplida": "{n} minutes! A good place to stop… or for one more page. 😏",
-        "finCapitulo": "End of chapter. Stop here?",
+        "finCapitulo": "End of chapter. Stop here, or one more?",
         "descanso": "👀 Look at something far away for about 20 seconds. Your eyes will thank you.",
         "pasoALeyendo": "Moved it to \"{estado}\". Enjoy!",
         "terminaste": "You made it to the end! 🎉 Mark it as read?",
@@ -852,7 +861,12 @@
         "salirEnfoque": "Leave focus mode (F or Esc)",
         "quedanCapitulo": "~{tiempo} left in the chapter",
         "quedanLibro": "~{tiempo} left in the book",
-        "quedanExplica": "Based on your actual pace with this book (or your overall pace while the book is new)."
+        "quedanExplica": "Based on your actual pace with this book (or your overall pace while the book is new).",
+        "pausa": "Nice place to pause, if you fancy a cuppa. No rush at all.",
+        "sigoLeyendo": "Keep reading",
+        "porHoy": "Done for today",
+        "sugerirPausa": "Suggest a break",
+        "sugerirPausaExplica": "In free mode, every so often at the end of a chapter, Broots suggests a breather. Ignore it and it fades away."
       },
       "libro": {
         "titulo": "Your reading",
@@ -868,9 +882,13 @@
           "other": "{tiempo} in {n} sessions"
         },
         "abandonado": "abandoned",
-        "queda": "You’re at {porcentaje}%: ~{tiempo} to go",
+        "queda": "~{tiempo} left",
         "releer": "Reread",
-        "releerExplica": "Starts a new read from the beginning. Your previous reading stays saved separately."
+        "releerExplica": "Starts a new read from the beginning. Your previous reading stays saved separately.",
+        "porcentaje": "{n}%",
+        "pagina": "You're on page {n} of {total}",
+        "porDondeVas": "How far you've read",
+        "deCorrido": "Read cover to cover"
       }
     },
     "subrayados": {
@@ -920,7 +938,11 @@
         "borradoConNota": "Highlight deleted, note and all.",
         "deshacer": "Undo",
         "copiado": "✓ Copied. Paste away.",
-        "pista": "New: select some text with your mouse to highlight it and jot down whatever comes to mind."
+        "pista": "New: select some text with your mouse to highlight it and jot down whatever comes to mind.",
+        "buscar": "Search",
+        "buscarExplica": "Search for this on Google, YouTube or your music app",
+        "buscarEn": "Search on",
+        "volver": "Back"
       }
     },
     "lectura": {
@@ -941,8 +963,8 @@
         "oscuro": "Dark gray, for reading at night",
         "negro": "Pure black: read in the dark without the glare (and it saves battery on OLED screens)"
       },
-      "letra": "Size",
-      "px": "{n} px",
+      "letra": "Text size",
+      "px": "{n}",
       "fuente": "Font",
       "fuentes": {
         "literata": "The usual one: designed for reading books on screen",
@@ -964,7 +986,8 @@
         "grandes": "Wide"
       },
       "justificar": "Justify text",
-      "justificarDetalle": "Even on both sides, like a printed book. Now and then it leaves a gap between words."
+      "justificarDetalle": "Even on both sides, like a printed book. Now and then it leaves a gap between words.",
+      "letraActual": "Text size: {n}"
     },
     "explicar": {
       "boton": "Explain",
@@ -978,6 +1001,86 @@
       "cuantoDura": "Broots keeps the explanation for 30 days, so asking again doesn’t eat into your quota. To keep it for good, save it as a note.",
       "faltaClave": "To explain things, Broots needs your Gemini key (it’s free and you only add it once).",
       "noPude": "Couldn’t get the explanation. Try again."
+    },
+    "tour": {
+      "paso": "{n} of {total}",
+      "saltear": "Skip",
+      "anterior": "Back",
+      "siguiente": "Next",
+      "listo": "Done!",
+      "verOtraVez": "Take the tour again",
+      "biblioteca": {
+        "inicio": {
+          "titulo": "Welcome to Broots!",
+          "texto": "Your pocket librarian. I'll show you the essentials in a minute and leave you to your reading. Rather explore on your own? Hit Skip."
+        },
+        "lateral": {
+          "titulo": "Your shelves and filters",
+          "texto": "Here are your libraries and filters: status, language, format, series, authors, and tags, which fold into a tree. Tick what you like and the grid rearranges itself."
+        },
+        "buscador": {
+          "titulo": "Find any book",
+          "texto": "Type part of a title, author or tag. It also understands Calibre searches. Shortcut: the / key."
+        },
+        "libro": {
+          "titulo": "One click or two",
+          "texto": "One click opens the panel with the details, how far you are and everything you can do with the book. A double click takes you straight to reading."
+        },
+        "agregar": {
+          "titulo": "Add books",
+          "texto": "Use the + to pick files, or drag them onto the window. Whole stacks are welcome."
+        },
+        "kindle": {
+          "titulo": "Kindle",
+          "texto": "Email books to your Kindle and import your highlights, which sit right alongside the ones you make in Broots."
+        },
+        "familia": {
+          "titulo": "Family",
+          "texto": "Give each family member their own shelf and share a copy with just their books."
+        },
+        "miLectura": {
+          "titulo": "My reading",
+          "texto": "Your streak, hours, pace and year map. No judgement, not even at 3 a.m."
+        },
+        "ayuda": {
+          "titulo": "If you get lost",
+          "texto": "Help lives here (F1), with everything explained and this tour in case you want it again. I'll show you the reader the first time you open a book. Happy reading!"
+        }
+      },
+      "lector": {
+        "pasar": {
+          "titulo": "Turning pages",
+          "texto": "Use the arrow keys, mouse wheel, two fingers on the trackpad, or a click on the sides. Pinch the trackpad to make the text bigger or smaller. Click an image to see it full size."
+        },
+        "medida": {
+          "titulo": "Made to measure",
+          "texto": "The «Aa» button sets up the book your way: theme (light, sepia, dark or black), text size, font (including one that’s easy on tired eyes and one for dyslexia), line spacing, margins and justified text."
+        },
+        "seleccionar": {
+          "titulo": "Select some text",
+          "texto": "A little bar appears so you can highlight in four colors, take notes and copy. For a word or phrase you can also ask Broots to «Explain» it, or «Search» on Google, YouTube or your music app."
+        },
+        "indice": {
+          "titulo": "Contents and highlights",
+          "texto": "The contents take you to any chapter. Next to them, the highlighter gathers all your highlights from this book."
+        },
+        "traducir": {
+          "titulo": "Translate",
+          "texto": "Translates the book into your language as you read, paragraph by paragraph. It needs a free Gemini key: the little key next to it explains how to get one."
+        },
+        "sesion": {
+          "titulo": "Your session",
+          "texto": "Free mode by default: no clock in sight. If you want a minutes goal or to read to the end of the chapter, pick it here."
+        },
+        "enfoque": {
+          "titulo": "Focus mode",
+          "texto": "Just the text, full screen. Toggle it with the F key."
+        },
+        "cerrar": {
+          "titulo": "Closing the book",
+          "texto": "Use the window’s X, top right, or Esc: with a book open, the X takes you back to the library instead of closing Broots. Click it again and Broots closes. Your page is saved."
+        }
+      }
     }
   },
   "electron": {

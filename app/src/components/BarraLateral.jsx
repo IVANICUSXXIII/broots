@@ -1,7 +1,7 @@
 // Barra lateral estilo macOS: bibliotecas arriba y filtros abajo.
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { normalizar, resorte, resorteRapido, resorteSuave, t } from '../lib/index.js';
+import { arbolDeEtiquetas, normalizar, ramasDeEtiqueta, resorte, resorteRapido, resorteSuave, t } from '../lib/index.js';
 import { IconoColeccion, IconoFlecha, IconoLibros } from './Iconos.jsx';
 import { Interruptor } from './Piezas.jsx';
 
@@ -73,15 +73,105 @@ function Bibliotecas({ opciones, activa, onElegir }) {
   );
 }
 
-function Grupo({ grupo, conteos, seleccion, onAlternar }) {
+function FilaValor({ valor, nombre, cantidad, marcado, onAlternar }) {
+  return (
+    <motion.button
+      type="button"
+      data-filtro={valor}
+      onClick={onAlternar}
+      whileTap={{ scale: 0.98 }}
+      transition={resorteRapido}
+      className={`flex min-w-0 flex-1 items-center gap-2 rounded-lg px-2 py-[5px] text-left text-[0.8rem] transition-colors ${
+        marcado ? 'bg-acento-suave font-medium text-acento' : 'text-tinta hover:bg-superficie-2/70'
+      }`}
+    >
+      <span
+        className={`grid size-[14px] shrink-0 place-items-center rounded-[4px] text-[0.55rem] text-sobre-acento transition-colors ${
+          marcado ? 'bg-acento' : 'shadow-[inset_0_0_0_1.5px_var(--tinta-tenue)]'
+        }`}
+      >
+        {marcado ? '✓' : ''}
+      </span>
+      <span className="min-w-0 flex-1 truncate" title={nombre}>{nombre}</span>
+      <span className="text-[0.7rem] text-tinta-tenue tabular-nums">{cantidad}</span>
+    </motion.button>
+  );
+}
+
+/**
+ * 1.10: una etiqueta con sus subetiquetas. El triangulito pliega la rama; marcarla incluye todo lo que cuelga de ella.
+ * Con un filtro escrito se ve abierta entera.
+ */
+function NodoArbol({ nodo, grupo, seleccion, onAlternar, abiertos, onPlegar, forzarAbierto, conTriangulos }) {
+  const abierto = forzarAbierto || abiertos.has(nodo.valor);
+  return (
+    <div data-rama={nodo.valor}>
+      <div className="flex items-center" style={{ paddingLeft: `${nodo.nivel * 12}px` }}>
+        {nodo.hijos.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => onPlegar(nodo.valor)}
+            aria-expanded={abierto}
+            title={t(abierto ? 'lateral.plegar' : 'lateral.desplegar')}
+            data-plegar={nodo.valor}
+            className="grid size-5 shrink-0 place-items-center rounded text-tinta-tenue hover:text-tinta"
+          >
+            <motion.span animate={{ rotate: abierto ? 0 : -90 }} transition={resorteRapido} className="grid place-items-center">
+              <IconoFlecha className="size-3.5" />
+            </motion.span>
+          </button>
+        ) : (
+          conTriangulos && <span className="w-5 shrink-0" />
+        )}
+        <FilaValor valor={nodo.valor} nombre={nodo.nombre} cantidad={nodo.cantidad} marcado={seleccion?.has(nodo.valor)} onAlternar={() => onAlternar(grupo.id, nodo.valor)} />
+      </div>
+      {nodo.hijos.length > 0 && (
+        <Desplegable abierto={abierto}>
+          {nodo.hijos.map((h) => (
+            <NodoArbol key={h.valor} nodo={h} grupo={grupo} seleccion={seleccion} onAlternar={onAlternar} abiertos={abiertos} onPlegar={onPlegar} forzarAbierto={forzarAbierto} conTriangulos={conTriangulos} />
+          ))}
+        </Desplegable>
+      )}
+    </div>
+  );
+}
+
+function Grupo({ grupo, conteos, seleccion, onAlternar, total }) {
   const [abierto, setAbierto] = useState(!grupo.plegado);
   const [verTodos, setVerTodos] = useState(false);
   const [filtro, setFiltro] = useState('');
 
+  const [abiertos, setAbiertos] = useState(() => new Set());
+
   const disponibles = conteos.filter((c) => c.cantidad > 0 || seleccion?.has(c.valor));
-  const items = filtro ? disponibles.filter((c) => normalizar(grupo.etiqueta(c.valor)).includes(normalizar(filtro))) : disponibles;
-  if (!disponibles.length) return null;
+  const coincide = (c) => normalizar(grupo.etiqueta(c.valor)).includes(normalizar(filtro));
+  // En el árbol, una etiqueta encontrada se muestra con las ramas de las que cuelga.
+  const conRamas = useMemo(() => {
+    if (!grupo.arbol) return null;
+    const lista = filtro ? disponibles.filter(coincide) : disponibles;
+    const quedan = new Set(lista.flatMap((c) => ramasDeEtiqueta(c.valor)));
+    return arbolDeEtiquetas(disponibles.filter((c) => quedan.has(c.valor)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conteos, seleccion, filtro, grupo.arbol]);
+  const items = conRamas ?? (filtro ? disponibles.filter(coincide) : disponibles);
   const mostrados = verTodos || filtro ? items : items.slice(0, VISIBLES);
+  const conTriangulos = conRamas?.some((n) => n.hijos.length > 0);
+
+  // Una subetiqueta elegida (por ejemplo, desde el panel de un libro) no queda escondida en una rama plegada.
+  useEffect(() => {
+    if (!grupo.arbol || !seleccion?.size) return;
+    setAbiertos((a) => new Set([...a, ...[...seleccion].flatMap((v) => ramasDeEtiqueta(v).slice(0, -1))]));
+  }, [seleccion, grupo.arbol]);
+  const plegar = (valor) =>
+    setAbiertos((a) => {
+      const nuevo = new Set(a);
+      if (!nuevo.delete(valor)) nuevo.add(valor);
+      return nuevo;
+    });
+
+  if (!disponibles.length) return null;
+  // 1.10: si todos los libros caen en la misma opción, el grupo no sirve para filtrar: no se muestra.
+  if (disponibles.length === 1 && disponibles[0].cantidad >= total && !seleccion?.size) return null;
 
   return (
     <section className="pt-3">
@@ -102,31 +192,15 @@ function Grupo({ grupo, conteos, seleccion, onAlternar }) {
               className="mb-1 h-7 w-full rounded-md bg-superficie-2 px-2.5 text-xs outline-none placeholder:text-tinta-tenue focus:ring-2 focus:ring-acento/40"
             />
           )}
-          {mostrados.map(({ valor, cantidad }) => {
-            const marcado = seleccion?.has(valor);
-            return (
-              <motion.button
-                type="button"
-                key={valor}
-                onClick={() => onAlternar(grupo.id, valor)}
-                whileTap={{ scale: 0.98 }}
-                transition={resorteRapido}
-                className={`flex w-full items-center gap-2 rounded-lg px-2 py-[5px] text-left text-[0.8rem] transition-colors ${
-                  marcado ? 'bg-acento-suave font-medium text-acento' : 'text-tinta hover:bg-superficie-2/70'
-                }`}
-              >
-                <span
-                  className={`grid size-[14px] shrink-0 place-items-center rounded-[4px] text-[0.55rem] text-sobre-acento transition-colors ${
-                    marcado ? 'bg-acento' : 'shadow-[inset_0_0_0_1.5px_var(--tinta-tenue)]'
-                  }`}
-                >
-                  {marcado ? '✓' : ''}
-                </span>
-                <span className="min-w-0 flex-1 truncate">{grupo.etiqueta(valor)}</span>
-                <span className="text-[0.7rem] text-tinta-tenue tabular-nums">{cantidad}</span>
-              </motion.button>
-            );
-          })}
+          {conRamas
+            ? mostrados.map((nodo) => (
+                <NodoArbol key={nodo.valor} nodo={nodo} grupo={grupo} seleccion={seleccion} onAlternar={onAlternar} abiertos={abiertos} onPlegar={plegar} forzarAbierto={Boolean(filtro)} conTriangulos={conTriangulos} />
+              ))
+            : mostrados.map(({ valor, cantidad }) => (
+                <div key={valor} className="flex">
+                  <FilaValor valor={valor} nombre={grupo.etiqueta(valor)} cantidad={cantidad} marcado={seleccion?.has(valor)} onAlternar={() => onAlternar(grupo.id, valor)} />
+                </div>
+              ))}
           {!filtro && items.length > VISIBLES && (
             <button type="button" onClick={() => setVerTodos(!verTodos)} className="px-2 pt-1 text-xs font-medium text-acento hover:underline">
               {verTodos ? t('lateral.verMenos') : t('lateral.verTodos', { n: items.length })}
@@ -168,10 +242,10 @@ export function BarraLateral({
   bibliotecas, bibliotecaActiva, onBiblioteca,
   grupos, conteos, filtros, onAlternar,
   minEstrellas, onMinEstrellas, soloPropias, onSoloPropias, tituloValoracion,
-  hayFiltros, onLimpiar,
+  hayFiltros, onLimpiar, total,
 }) {
   return (
-    <aside className="flex w-60 shrink-0 flex-col overflow-y-auto px-2 pb-4">
+    <aside data-tour="lateral" className="flex w-60 shrink-0 flex-col overflow-y-auto px-2 pb-4">
       <TituloSeccion>{t('lateral.bibliotecas')}</TituloSeccion>
       <Bibliotecas opciones={bibliotecas} activa={bibliotecaActiva} onElegir={onBiblioteca} />
 
@@ -195,7 +269,7 @@ export function BarraLateral({
       </div>
       <FiltroValoracion minimo={minEstrellas} onMinimo={onMinEstrellas} soloPropias={soloPropias} onSoloPropias={onSoloPropias} titulo={tituloValoracion} />
       {grupos.map((g) => (
-        <Grupo key={g.id} grupo={g} conteos={conteos[g.id] ?? []} seleccion={filtros[g.id]} onAlternar={onAlternar} />
+        <Grupo key={g.id} grupo={g} conteos={conteos[g.id] ?? []} seleccion={filtros[g.id]} onAlternar={onAlternar} total={total} />
       ))}
     </aside>
   );

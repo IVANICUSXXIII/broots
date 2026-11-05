@@ -10,9 +10,9 @@
 // (la lista de la derecha, para saltar a cada uno). Se cierran con Esc o con un clic afuera, sin pasar de página.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { fechaCorta, idiomaActual, resorte, resortePresion, resorteRapido, t } from '../lib/index.js';
+import { SERVICIOS_MUSICA, fechaCorta, idiomaActual, resorte, resortePresion, resorteRapido, t } from '../lib/index.js';
 import { COLORES, anclaDeSeleccion, buscarEnParrafos, despintar, envolver, indiceNormalizado, normalizar, ordenar, textoDeAncla } from '../lib/subrayados.js';
-import { IconoBorrar, IconoCerrar, IconoCopiar, IconoEditar, IconoExplicar, IconoSubrayar } from './Iconos.jsx';
+import { IconoAnterior, IconoBorrar, IconoBuscar, IconoCerrar, IconoCopiar, IconoEditar, IconoExplicar, IconoSubrayar } from './Iconos.jsx';
 import { explicable } from './Explicar.jsx';
 
 const LARGO_MAXIMO = 8000; // caracteres: más que eso ya no es un subrayado, es medio capítulo
@@ -387,7 +387,7 @@ export function useSubrayados({ libro, r, texto, marco, abierto, avisar }) {
 
 // ---------- La barrita ----------
 
-const ANCHO_BARRA = 380; // con «Explicar» (1.9)
+const ANCHO_BARRA = 440; // con «Explicar» (1.9) y «Buscar» (1.10)
 
 function BotonBarrita({ children, ...props }) {
   return (
@@ -410,6 +410,17 @@ function posicion(caja) {
 
 export function BarraSubrayado({ sub, onExplicar }) {
   const { barra } = sub;
+  const [buscando, setBuscando] = useState(false); // 1.10: la barrita muestra adónde buscar
+  const [musica, setMusica] = useState(null);
+  useEffect(() => {
+    window.preferencias.leer().then((p) => setMusica(p.musica)).catch(() => {});
+  }, []);
+  useEffect(() => setBuscando(false), [barra]);
+  const buscarEn = (servicio) => {
+    window.lector.buscarEn(servicio, sub.paraExplicar()?.texto);
+    sub.cerrarBarra();
+  };
+  const servicioMusica = SERVICIOS_MUSICA.find((m) => m.id === musica);
   const entrada = barra?.id ? sub.entradas.find((e) => e.id === barra.id) : null;
   const seExplica = barra && explicable(barra.modo === 'nuevo' ? barra.ancla?.texto : entrada?.texto); // 1.9
   return (
@@ -427,6 +438,20 @@ export function BarraSubrayado({ sub, onExplicar }) {
           onMouseDown={(e) => e.preventDefault()}
           className="squircle absolute z-30 flex h-10 items-center gap-0.5 rounded-[13px] bg-superficie px-1.5 text-[0.74rem] whitespace-nowrap shadow-flotante"
         >
+          {buscando ? (
+            <>
+              <BotonBarrita onClick={() => setBuscando(false)} title={t('subrayados.lector.volver')} data-buscar-volver>
+                <IconoAnterior className="size-3.5" />
+              </BotonBarrita>
+              <span className="px-1.5 text-tinta-tenue">{t('subrayados.lector.buscarEn')}</span>
+              <BotonBarrita onClick={() => buscarEn('google')} data-buscar="google">Google</BotonBarrita>
+              <BotonBarrita onClick={() => buscarEn('youtube')} data-buscar="youtube">YouTube</BotonBarrita>
+              {servicioMusica && (
+                <BotonBarrita onClick={() => buscarEn(servicioMusica.id)} data-buscar={servicioMusica.id}>{servicioMusica.nombre}</BotonBarrita>
+              )}
+            </>
+          ) : (
+          <>
           {barra.modo === 'kindle' ? (
             <span className="px-2 text-tinta-tenue">{t('subrayados.lector.delKindle')}</span>
           ) : (
@@ -461,10 +486,17 @@ export function BarraSubrayado({ sub, onExplicar }) {
               <IconoExplicar className="size-3.5 text-acento" /> {t('explicar.boton')}
             </BotonBarrita>
           )}
+          {seExplica && (
+            <BotonBarrita data-accion="buscar" onClick={() => setBuscando(true)} title={t('subrayados.lector.buscarExplica')}>
+              <IconoBuscar className="size-3.5" /> {t('subrayados.lector.buscar')}
+            </BotonBarrita>
+          )}
           {barra.modo === 'editar' && (
             <BotonBarrita data-accion="borrar" onClick={() => sub.borrar(barra.id)} title={t('subrayados.lector.borrar')}>
               <IconoBorrar className="size-3.5" />
             </BotonBarrita>
+          )}
+          </>
           )}
         </motion.div>
       )}
