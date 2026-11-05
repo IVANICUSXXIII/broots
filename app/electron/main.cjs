@@ -14,6 +14,7 @@ const calibre = require('./calibre.cjs');
 const metadatos = require('./metadatos.cjs');
 const duplicados = require('./duplicados.cjs');
 const lector = require('./lector.cjs');
+const paginas = require('./paginas.cjs');
 const habito = require('./habito.cjs');
 const anotaciones = require('./anotaciones.cjs');
 const cuaderno = require('./cuaderno.cjs');
@@ -35,7 +36,7 @@ const ANCHOS = { thumb: 360, media: 820 };
 // Portadas: cover://thumb/<id>, cover://media/<id> y cover://full/<id> (tamaño original).
 protocol.registerSchemesAsPrivileged([
   { scheme: 'cover', privileges: { standard: true, secure: true, supportFetchAPI: true } },
-  // Imágenes de un EPUB abierto en el lector: libro://epub/<id>/<ruta dentro del EPUB>.
+  // Imágenes de un EPUB abierto en el lector: libro://epub/<id>/<ruta dentro del EPUB>. Páginas de un cómic: libro://comic/<id>/<n>.
   { scheme: 'libro', privileges: { standard: true, secure: true, supportFetchAPI: true } },
 ]);
 
@@ -375,8 +376,12 @@ ipcMain.handle('biblioteca:agregarArchivos', async (_e, rutas) => {
   const algunoOk = resultados.some((r) => r.ok);
   return { ok: true, resultados, biblioteca: algunoOk ? cargar(bibliotecaCargada().libraryPath) : undefined };
 });
+// Solo en pruebas (BROOTS_AGREGAR, con BROOTS_DATOS): los archivos de cada vez que se toca «+», sin diálogo.
+// «;» separa una vez de la otra y «|», los archivos.
+const agregadosDePrueba = process.env.BROOTS_DATOS && process.env.BROOTS_AGREGAR ? process.env.BROOTS_AGREGAR.split(';') : [];
 ipcMain.handle('biblioteca:elegirArchivos', async () => {
-  const { canceled, filePaths } = await dialog.showOpenDialog(ventana, {
+  const deLaPrueba = agregadosDePrueba.shift();
+  const { canceled, filePaths } = deLaPrueba ? { canceled: false, filePaths: deLaPrueba.split('|') } : await dialog.showOpenDialog(ventana, {
     title: t('main.dialogoAgregar'),
     filters: [{ name: t('main.filtroLibros'), extensions: edicion.EXTENSIONES_AGREGABLES.map((e) => e.slice(1)) }],
     properties: ['openFile', 'multiSelections'],
@@ -632,9 +637,25 @@ function rutaEpub(id) {
   return ruta && fs.existsSync(ruta) ? ruta : null;
 }
 
+// 1.11: el archivo de un PDF o un cómic. Solo estos formatos y siempre a partir del id: la interfaz nunca manda rutas.
+function rutaDePaginas(id, formato) {
+  if (!['PDF', 'CBZ', 'CBR'].includes(formato)) return null;
+  const ruta = archivos.get(id)?.formatos?.[formato];
+  return ruta && fs.existsSync(ruta) ? ruta : null;
+}
+let comicAbierto = null; // { id, ruta }: el cómic que la interfaz está leyendo
+
 function servirRecursoDeLibro(request) {
   // libro://epub/<id>/<ruta>: el id va en la ruta porque un número como "host" se tomaría como IP.
-  const [, id, ...partes] = new URL(request.url).pathname.split('/');
+  const url = new URL(request.url);
+  const [, id, ...partes] = url.pathname.split('/');
+  if (url.host === 'comic') {
+    try {
+      return comicAbierto?.id === Number(id) ? paginas.imagen(comicAbierto.ruta, Number(partes[0])) : new Response(null, { status: 404 });
+    } catch {
+      return new Response(null, { status: 404 });
+    }
+  }
   const ruta = rutaEpub(Number(id));
   if (!ruta) return new Response(null, { status: 404 });
   try {
@@ -685,22 +706,62 @@ ipcMain.handle('lector:capitulo', (_e, id, href) => {
   return lector.capitulo(ruta, href);
 });
 
+// 1.11: PDF y cómics (ver paginas.cjs). Cada formato de un libro guarda su propia posición.
+ipcMain.handle('paginas:abrir', async (_e, id, formato) => {
+  const libro = libroPorId(id);
+  if (!libro) return { ok: false, mensaje: t('main.sinLibro') };
+  const ruta = rutaDePaginas(id, formato);
+  if (!ruta) return { ok: false, mensaje: t('main.lectorSinArchivo') };
+  const posicion = leerLectura()[libro.uuid]?.formatos?.[formato] ?? null;
+  try {
+    if (formato === 'PDF') return { ok: true, tipo: 'pdf', largo: fs.statSync(ruta).size, posicion };
+    const estructura = await paginas.abrirComic(ruta, carpetaComics());
+    comicAbierto = { id, ruta };
+    return { ok: true, tipo: 'comic', ...estructura, posicion };
+  } catch (error) {
+    return { ok: false, mensaje: error.message };
+  }
+});
+ipcMain.handle('paginas:rangoPdf', (_e, id, inicio, fin) => {
+  const ruta = rutaDePaginas(id, 'PDF');
+  if (!ruta) throw new Error(t('main.lectorSinArchivo'));
+  return paginas.rangoPdf(ruta, inicio, fin);
+});
+ipcMain.handle('paginas:recursoPdf', (_e, tipo, nombre) => paginas.recursoPdf(tipo, nombre));
+
+// Las extracciones temporales de los CBR: fuera de la biblioteca, y se borran al cerrar Broots.
+const carpetaComics = () => path.join(rutas.cache(), 'comics');
+
 let guardadoLectura = null;
+const posicionesPendientes = new Map(); // clave: libro y formato. Así, cerrar un libro y abrir otro enseguida no pierde la página.
+function escribirPosiciones() {
+  clearTimeout(guardadoLectura);
+  if (!posicionesPendientes.size) return;
+  try {
+    const lectura = leerLectura();
+    const fecha = new Date().toISOString();
+    for (const { uuid, posicion } of posicionesPendientes.values()) {
+      const previa = lectura[uuid] ?? {};
+      if (posicion.formato) {
+        // PDF o cómic: lo de afuera es lo que muestra el panel del libro; capítulo y párrafo son del EPUB y quedan como estaban.
+        const { formato, ...resto } = posicion;
+        lectura[uuid] = { ...previa, progreso: resto.progreso, pagina: resto.pagina, paginas: resto.paginas, fecha, formatos: { ...previa.formatos, [formato]: { ...resto, fecha } } };
+      } else lectura[uuid] = { ...posicion, fecha, ...(previa.formatos ? { formatos: previa.formatos } : {}) };
+    }
+    posicionesPendientes.clear();
+    fs.mkdirSync(path.dirname(rutaLectura()), { recursive: true });
+    fs.writeFileSync(rutaLectura(), JSON.stringify(lectura, null, 1));
+  } catch (error) {
+    console.error('[lector] no pude guardar por dónde vas:', error.message);
+  }
+}
 ipcMain.handle('lector:posicion', (_e, id, posicion) => {
   const libro = libroPorId(id);
   if (!libro) return;
+  posicionesPendientes.set(`${libro.uuid}|${posicion?.formato ?? ''}`, { uuid: libro.uuid, posicion });
   // Se escribe un momento después del último cambio de página (Drive no necesita una escritura por página).
   clearTimeout(guardadoLectura);
-  guardadoLectura = setTimeout(() => {
-    try {
-      const lectura = leerLectura();
-      lectura[libro.uuid] = { ...posicion, fecha: new Date().toISOString() };
-      fs.mkdirSync(path.dirname(rutaLectura()), { recursive: true });
-      fs.writeFileSync(rutaLectura(), JSON.stringify(lectura, null, 1));
-    } catch (error) {
-      console.error('[lector] no pude guardar por dónde vas:', error.message);
-    }
-  }, 1500);
+  guardadoLectura = setTimeout(escribirPosiciones, 1500);
 });
 
 // ---------- 1.7: hábito de lectura ----------
@@ -730,6 +791,7 @@ ipcMain.handle('habito:releer', (_e, uuid, leidoAntes) => {
   const lecturas = habito.releer(carpetaDatos(), String(uuid), Boolean(leidoAntes));
   // La vuelta nueva arranca desde el principio del libro.
   clearTimeout(guardadoLectura);
+  posicionesPendientes.clear();
   const posiciones = leerLectura();
   delete posiciones[uuid];
   fs.mkdirSync(path.dirname(rutaLectura()), { recursive: true });
@@ -1150,7 +1212,11 @@ function programarActualizaciones() {
 }
 
 // Al cerrar Broots, si hay una versión nueva bajada, se instala (el instalador sigue solo, sin ventanas).
-app.on('will-quit', () => actualizaciones.instalar());
+app.on('will-quit', () => {
+  escribirPosiciones(); // la última página, si cerraste apenas la pasaste
+  paginas.limpiarTemporales(carpetaComics());
+  actualizaciones.instalar();
+});
 
 // Solo para desarrollo: `--capture=archivo.png` guarda una captura de la ventana y cierra.
 // - CAPTURE_PREP: JS que se ejecuta antes (p. ej. volver a la vista grilla) y se espera.

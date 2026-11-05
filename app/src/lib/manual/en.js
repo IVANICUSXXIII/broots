@@ -52,6 +52,7 @@ export const MANUAL = [
       {
         lista: [
           'Click the “+” in the top bar, or drag the files (EPUB, PDF, MOBI…) onto the Broots window. Whole stacks welcome.',
+          'When it’s done, Broots takes you to the new book and opens its panel. If you added several, it shows you the first and marks them all for a moment. If a search or filter was hiding it, Broots clears them and tells you.',
           'If a book has no EPUB or PDF, its panel shows “Convert to EPUB” or “Convert to PDF”. It may take a little while: perfect time to put the kettle on.',
           'Protected books (DRM) are copied as they are: Broots doesn’t remove their protection or convert them.',
         ],
@@ -102,7 +103,7 @@ export const MANUAL = [
     id: 'lector',
     titulo: 'Reading and translating',
     bloques: [
-      { texto: 'In the panel of an EPUB book, click “Read” to open it in the Broots reader. Comfy armchair not included.' },
+      { texto: 'In a book’s panel, click “Read” to open it in the Broots reader (or double-click the cover). Comfy armchair not included. This part is about EPUB; PDFs and comics have their own section.' },
       {
         lista: [
           'Turn the page with the ← → arrows, the mouse wheel or a click on either side (no finger-licking required).',
@@ -112,6 +113,25 @@ export const MANUAL = [
           'Select some text with your mouse to highlight it and add a note (see Highlights and notes).',
           'Click an image in the book to see it full size. A click zooms in, so does pinching the trackpad, and once zoomed you can drag to move around. Esc or the window’s X closes it.',
           'To return to the library: the window’s X or Esc. With a book open, the X closes the book, not Broots; press it again to close Broots. Your page is saved.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'paginas',
+    titulo: "PDFs and comics",
+    bloques: [
+      { texto: "Broots also reads PDFs and comics (CBZ and CBR). They open just like an EPUB, from “Read” or with a double-click, remember your page and count in “My reading”. The difference: here each page is like a photo, so you can’t change the text size, but you can get closer." },
+      {
+        lista: [
+          "To zoom in: pinch the trackpad, use Ctrl + wheel or Ctrl + and Ctrl -, or double-click where you want to look. Ctrl 0 goes back to the whole page. Broots remembers the zoom for each book.",
+          "Zoomed in, move around the page by dragging, with the wheel or with the ↑ ↓ keys. Once you reach the edge, another turn of the wheel goes to the next page.",
+          "One or two pages: in a wide window you see two at a time, with the cover on its own and landscape pages too. The button with the little pages, up top, changes it for that book.",
+          "Manga: the “Manga” button switches reading to right to left (the arrow keys, the sides and the bottom bar flip too). It turns on by itself if the comic says so inside or if the book has the “Manga” tag. Whatever you choose sticks for that book.",
+          "If the book has a table of contents, it’s under “Contents”. In a comic it comes from its bookmarks or folders.",
+          "If a book has both EPUB and PDF, “Read” opens the EPUB (that’s where highlights and translation live) and “Read the PDF” appears below. Each format remembers its own page.",
+          "Highlighting and translating PDFs come in a later stage: they’re not here yet, in PDFs or comics.",
+          "What doesn’t open: a PDF with a store’s DRM can only be read in that store’s app or device, and Broots doesn’t touch it. PDFs and comics with a password don’t open for now either. PDFs that only carry a “no copying” or “no printing” mark read normally.",
         ],
       },
     ],
@@ -302,7 +322,8 @@ export const MANUAL = [
           [['F1'], 'Open this help (yes, this one)'],
           [['←', '→'], 'In the reader: previous and next page'],
           [['Space', 'PgDn', 'PgUp'], 'In the reader: these turn the page too'],
-          [['Ctrl +', 'Ctrl -'], 'In the reader: make the text bigger or smaller (or pinch the trackpad, or Ctrl + wheel)'],
+          [['Ctrl +', 'Ctrl -'], 'In the reader: make the text bigger or smaller (or pinch the trackpad, or Ctrl + wheel). In a PDF or comic, zoom in or out'],
+          [['Ctrl 0'], 'In a PDF or comic: back to the whole page'],
           [['F'], 'In the reader: focus mode (just the text, full screen)'],
           [['Ctrl+Enter'], 'In the reader: save a highlight’s note'],
         ],

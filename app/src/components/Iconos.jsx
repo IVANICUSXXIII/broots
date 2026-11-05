@@ -84,6 +84,15 @@ export const IconoCompartir = (p) => (
 export const IconoLeer = (p) => (
   <Icono {...p}><path d="M12 6.5C10 5 7.5 4.5 3 4.5v14c4.5 0 7 .5 9 2 2-1.5 4.5-2 9-2v-14c-4.5 0-7 .5-9 2z" /><path d="M12 6.5v14" /></Icono>
 );
+export const IconoManga = (p) => (
+  <Icono {...p}><path d="M20 12H5M11 6l-6 6 6 6" /></Icono>
+);
+export const IconoUnaPagina = (p) => (
+  <Icono {...p}><rect x="6.5" y="3.5" width="11" height="17" rx="1.5" /></Icono>
+);
+export const IconoDosPaginas = (p) => (
+  <Icono {...p}><rect x="2.5" y="4.5" width="9" height="15" rx="1.5" /><rect x="12.5" y="4.5" width="9" height="15" rx="1.5" /></Icono>
+);
 export const IconoIndice = (p) => (
   <Icono {...p}><path d="M9 6h11M9 12h11M9 18h11" /><path d="M4 6h1M4 12h1M4 18h1" /></Icono>
 );

@@ -52,6 +52,7 @@ export const MANUAL = [
       {
         lista: [
           'Clique no “+” da barra de cima ou arraste os arquivos (EPUB, PDF, MOBI…) para a janela do Broots. Pode mandar a pilha toda.',
+          'Ao terminar, o Broots leva você ao livro novo e abre o painel dele. Se você adicionou vários, ele mostra o primeiro e marca todos por um momento. Se uma busca ou um filtro estava escondendo o livro, ele tira e avisa você.',
           'Se um livro não tiver EPUB ou PDF, o painel dele mostra “Converter para EPUB” ou “Converter para PDF”. Pode demorar um pouco: bom momento para um cafezinho.',
           'Os livros protegidos (DRM) são copiados do jeito que estão: o Broots não remove a proteção nem os converte.',
         ],
@@ -102,7 +103,7 @@ export const MANUAL = [
     id: 'lector',
     titulo: 'Ler e traduzir',
     bloques: [
-      { texto: 'No painel de um livro EPUB, clique em “Ler” para abri-lo no leitor do Broots. A poltrona fica por sua conta.' },
+      { texto: 'No painel de um livro, clique em “Ler” para abri-lo no leitor do Broots (ou dê dois cliques na capa). A poltrona fica por sua conta. Aqui falamos de EPUB; PDFs e quadrinhos têm uma seção só deles.' },
       {
         lista: [
           'Passe as páginas com as setas ← →, com a roda do mouse ou com um clique nas laterais (sem precisar molhar o dedo).',
@@ -112,6 +113,25 @@ export const MANUAL = [
           'Selecione um trecho com o mouse para destacá-lo e anotar algo (veja Destaques e notas).',
           'Clique numa imagem do livro para vê-la em tamanho grande. Um clique aproxima, o gesto de pinça no trackpad também, e aproximada dá para percorrer arrastando. Esc ou o X da janela a fecham.',
           'Para voltar à biblioteca: o X da janela ou Esc. Com um livro aberto, o X fecha o livro, não o Broots; aperte de novo para fechar o Broots. Sua página fica salva.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'paginas',
+    titulo: "PDFs e quadrinhos",
+    bloques: [
+      { texto: "O Broots também lê PDFs e quadrinhos (CBZ e CBR). Eles abrem igual a um EPUB, em “Ler” ou com dois cliques, guardam sua página e contam em “Minha leitura”. A diferença: aqui cada página é como uma foto, então não dá para mudar a letra, mas dá para aproximar." },
+      {
+        lista: [
+          "Para aproximar: faça o gesto de pinça no trackpad, use Ctrl + roda ou Ctrl + e Ctrl -, ou dê dois cliques onde quiser olhar. Ctrl 0 volta à página inteira. O Broots lembra o zoom de cada livro.",
+          "Com zoom, percorra a página arrastando, com a roda ou com as setas ↑ ↓. Quando chegar à borda, mais um gesto da roda passa para a página seguinte.",
+          "Uma ou duas páginas: com a janela larga, aparecem duas de cada vez, com a capa sozinha e as páginas deitadas também. O botão com as folhinhas, lá em cima, muda isso para aquele livro.",
+          "Mangá: o botão “Mangá” põe a leitura da direita para a esquerda (as setas, os lados e a barra de baixo também invertem). Ele liga sozinho se o quadrinho indicar por dentro ou se o livro tiver a etiqueta “Manga”. O que você escolher fica para aquele livro.",
+          "Se o livro tem índice, ele está em “Índice”. Num quadrinho, vem das marcações ou das pastas.",
+          "Se um livro tem EPUB e PDF, “Ler” abre o EPUB (é lá que ficam os destaques e a tradução) e “Ler o PDF” aparece embaixo. Cada formato lembra a própria página.",
+          "Destacar e traduzir PDFs vêm numa próxima etapa: ainda não estão aqui, nem em PDFs nem em quadrinhos.",
+          "O que não abre: um PDF com DRM de uma loja só pode ser lido no app ou dispositivo dessa loja, e o Broots não mexe nele. PDFs e quadrinhos com senha também não abrem por enquanto. PDFs que só têm a marca de “não copiar” ou “não imprimir” são lidos normalmente.",
         ],
       },
     ],
@@ -302,7 +322,8 @@ export const MANUAL = [
           [['F1'], 'Abrir esta ajuda (sim, esta mesma)'],
           [['←', '→'], 'No leitor: página anterior e seguinte'],
           [['Espaço', 'PgDn', 'PgUp'], 'No leitor: também viram a página'],
-          [['Ctrl +', 'Ctrl -'], 'No leitor: aumentar ou diminuir a letra (ou faça o gesto de pinça no trackpad, ou Ctrl + roda)'],
+          [['Ctrl +', 'Ctrl -'], 'No leitor: aumentar ou diminuir a letra (ou faça o gesto de pinça no trackpad, ou Ctrl + roda). Num PDF ou quadrinho, aproximar ou afastar'],
+          [['Ctrl 0'], 'Num PDF ou quadrinho: voltar à página inteira'],
           [['F'], 'No leitor: modo foco (só o texto, em tela cheia)'],
           [['Ctrl+Enter'], 'No leitor: salvar a nota de um destaque'],
         ],

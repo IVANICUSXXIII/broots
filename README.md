@@ -51,6 +51,8 @@ la biblioteca (`metadata.db`).
   archivo `My Clippings.txt`). Si un libro está en el Kindle pero no en tu biblioteca, lo podés sumar.
 - **Club de lectura:** llevá un libro con tus subrayados y notas a Claude, Gemini o NotebookLM, para charlar
   sobre él con una inteligencia artificial.
+- **PDF y cómics:** leé PDF y cómics (CBZ y CBR) dentro de Broots, de a una o dos páginas, con zoom y manga de derecha a
+  izquierda. Tu página queda guardada y la lectura cuenta en «Mi lectura». No abre archivos con DRM ni con contraseña.
 - **Lector:** leé tus EPUB dentro de Broots, con el tamaño de letra que quieras. Con una clave gratuita de Gemini,
   puede traducir el libro mientras leés.
 - **Hábito de lectura:** Broots anota tus sesiones de lectura (con meta opcional y descanso para la vista) y
@@ -110,6 +112,10 @@ Broots es gratis. Si te sirve, podés apoyar a quienes lo hacen posible:
 
 Broots es software libre, con licencia [GNU GPL versión 3](LICENSE) o posterior: podés usarlo, compartirlo
 y cambiarlo. Si publicás una versión cambiada, también tiene que ser libre y con su código abierto.
+
+Lee PDF con [pdf.js](https://github.com/mozilla/pdf.js) (Apache 2.0) y cómics RAR con [libarchive](https://github.com/libarchive/libarchive)
+(BSD), a través de [libarchive-wasm](https://github.com/ofk/libarchive-wasm) (MIT). Sus avisos están en
+[`app/licencias-de-terceros.txt`](app/licencias-de-terceros.txt).
 
 Broots usa las herramientas de [Calibre](https://calibre-ebook.com/), de Kovid Goyal y su comunidad (también
 GPL versión 3), y está hecho con Electron, React, Motion y Tailwind CSS, con las fuentes Inter y Literata.

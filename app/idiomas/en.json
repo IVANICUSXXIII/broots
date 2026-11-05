@@ -628,6 +628,8 @@
       "importada": "Imported",
       "leerExplicacion": "Open the EPUB in the Broots reader (with translation)",
       "leer": "Read",
+      "leerFormato": "Read the {formato}",
+      "leerPaginasExplicacion": "Open the {formato} in the Broots reader",
       "abrirFormato": "Open the {formato} with its default program",
       "mostrarCarpeta": "Show in folder",
       "verEtiqueta": "Show the books with this tag",
@@ -641,6 +643,25 @@
         "other": "This book has {n} damaged tags in Calibre (text with code or only symbols), probably from a metadata download. They’re hidden; you can delete them from Edit."
       },
       "visor": "{titulo} · click, press Esc or drag the cover to go back"
+    },
+    "paginas": {
+      "manga": "Manga",
+      "mangaPrendido": "Reading right to left. Click to read left to right",
+      "mangaApagado": "Reading left to right. Click to read like manga, right to left",
+      "verUna": "Show one page",
+      "verDos": "Show two pages side by side",
+      "temaBoton": "Theme",
+      "temaExplica": "In a PDF or comic, the page is like a photo: pinch to get closer, but the text size stays put. The theme colors what’s around it.",
+      "siguienteManga": "Next page (←)",
+      "anteriorManga": "Previous page (→)",
+      "pista": "Turn the page with the arrow keys or the wheel. Pinch the trackpad to zoom in and drag to move around the page.",
+      "zoomActual": "{n}%",
+      "paginaRota": "This page couldn’t be shown. It may be damaged in the file.",
+      "pdf": {
+        "contrasena": "This PDF has a password. Broots can’t open password-protected PDFs yet.",
+        "drm": "This PDF is protected (DRM): it can only be read in the app or device of the store where it was bought.",
+        "danado": "I couldn’t open this PDF: it looks damaged."
+      }
     },
     "lector": {
       "cerrar": "Close",
@@ -726,6 +747,10 @@
       "agregados": {
         "one": "✓ {n} new book on the shelf.",
         "other": "✓ {n} new books on the shelf."
+      },
+      "filtrosQuitados": {
+        "one": "I cleared the filters so you can see it.",
+        "other": "I cleared the filters so you can see them."
       },
       "fallo": "“{nombre}”: {mensaje}",
       "noPudeLeer": "Couldn’t read the library: {error}",
@@ -1225,6 +1250,11 @@
       "funciona": "✓ Gemini is in great shape: “{ejemplo}”",
       "noPudeExplicar": "Couldn’t explain it: {detalle}",
       "nadaQueExplicar": "Nothing is selected to explain."
+    },
+    "paginas": {
+      "comicContrasena": "This comic has a password. Broots can’t open password-protected comics.",
+      "comicNoAbre": "I couldn’t open this comic. It may be damaged or have a password.",
+      "comicSinImagenes": "I didn’t find any images inside this comic."
     },
     "lector": {
       "noEsEpub": "The file doesn't look like a valid EPUB.",

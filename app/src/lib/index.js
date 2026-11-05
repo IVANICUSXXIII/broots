@@ -5,3 +5,4 @@ export * from './movimiento.js';
 export * from './idioma.js';
 export * from './habito.js';
 export * from './lectura.js';
+export * from './paginas.js';

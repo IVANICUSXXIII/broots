@@ -68,7 +68,7 @@ function nuevaMarcaDeFin() {
   return fin;
 }
 
-function BotonBarra({ activo, children, ...props }) {
+export function BotonBarra({ activo, children, ...props }) {
   return (
     <motion.button
       type="button"
@@ -108,7 +108,7 @@ function ClaveGemini({ tieneClave, onListo, onCerrar }) {
 }
 
 /** "Página [45] de 312": el número se puede editar para ir directo a otra página. */
-function IrAPagina({ actual, ultimaVisible, total, aproximado, sinEstimar, onIr }) {
+export function IrAPagina({ actual, ultimaVisible, total, aproximado, sinEstimar, onIr }) {
   const [texto, setTexto] = useState(null); // null = mostrando la página actual
   const ir = () => {
     const n = parseInt(texto, 10);

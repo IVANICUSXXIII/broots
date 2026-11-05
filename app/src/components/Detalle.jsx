@@ -11,8 +11,7 @@ import { AnimatePresence, motion, useMotionValue, useTransform, animate } from '
 import {
   año, fechaCorta, nombreIdioma, numero, tamaño, valoraciones, etiquetasValidas,
   nombreEtiqueta, resorte, resorteRapido, resortePresion, resorteSuave, resorteVuelo, t,
-  duracion, estimacion, lecturaDelLibro, region, ritmoTexto, tipoEstado,
-} from '../lib/index.js';
+  duracion, estimacion, lecturaDelLibro, region, ritmoTexto, tipoEstado, formatosParaLeer } from '../lib/index.js';
 import { IconoAbrir, IconoCarpeta, IconoCerrar, IconoCheck, IconoCita, IconoEditar, IconoEnviar, IconoLeer, IconoReleer } from './Iconos.jsx';
 import { ElegirEstrellas } from './Editar.jsx';
 import { etiquetaDe } from './Compartir.jsx';
@@ -421,7 +420,7 @@ function TuLectura({ libro, habito, colEstado, onReleer }) {
         </p>
       ))}
       {queda && <p className="mt-1 text-verde">{t('habito.libro.queda', { tiempo: queda })}</p>}
-      {terminada && libro.formats.some((f) => f.format === 'EPUB') && (
+      {terminada && formatosParaLeer(libro).length > 0 && (
         <motion.button
           type="button"
           onClick={onReleer}
@@ -456,6 +455,7 @@ export function PanelDetalle({
     };
   }, [libro.id, libro.uuid, versionSubrayados]);
   const subrayados = lista?.uuid === libro.uuid ? lista : { entradas: [], md: false };
+  const legibles = formatosParaLeer(libro); // 1.11: EPUB, PDF, CBZ o CBR, el preferido primero
   // Cambios rápidos (estado, estrellas): se guardan al instante en Calibre.
   const [estadoRapido, setEstadoRapido] = useState(null);
   const guardando = estadoRapido?.guardando;
@@ -602,20 +602,26 @@ export function PanelDetalle({
               )}
             </motion.div>
 
-            {libro.formats.some((f) => f.format === 'EPUB') && (
-              <motion.div variants={item} className="mt-6 flex justify-center">
+            {legibles.length > 0 && (
+              <motion.div variants={item} className="mt-6 flex flex-col items-center gap-1.5">
                 <motion.button
                   type="button"
-                  onClick={() => onLeer(libro.id)}
+                  onClick={() => onLeer(libro.id, legibles[0])}
                   whileHover={{ y: -1 }}
                   whileTap={{ scale: 0.96, transition: resortePresion }}
                   transition={resorteRapido}
-                  title={t('detalle.leerExplicacion')}
+                  title={legibles[0] === 'EPUB' ? t('detalle.leerExplicacion') : t('detalle.leerPaginasExplicacion', { formato: legibles[0] })}
                   className="squircle inline-flex items-center gap-2 rounded-[12px] bg-verde px-5 py-2 text-[0.82rem] font-medium text-superficie shadow-[0_6px_16px_-8px_var(--verde)] hover:brightness-110"
                 >
                   <IconoLeer className="size-4" />
                   {t('detalle.leer')}
                 </motion.button>
+                {/* 1.11: el mismo libro en otro formato, cada uno con su propia posición */}
+                {legibles.slice(1).map((formato) => (
+                  <button key={formato} type="button" onClick={() => onLeer(libro.id, formato)} data-leer-formato={formato} className="text-[0.74rem] font-medium text-acento underline-offset-2 hover:underline">
+                    {t('detalle.leerFormato', { formato })}
+                  </button>
+                ))}
               </motion.div>
             )}
             <AvanceLibro libro={libro} habito={habito} colEstado={colEstado} />

@@ -70,7 +70,7 @@ function Opciones({ grupo, opciones, valor, onCambiar }) {
   );
 }
 
-export function ControlesLectura({ ajustes, onCambiar, idGrupo = 'lector' }) {
+export function ControlesLectura({ ajustes, onCambiar, idGrupo = 'lector', soloTema = false }) {
   const boton = 'grid h-7 w-9 place-items-center rounded-[8px] bg-superficie-2 text-tinta shadow-[inset_0_0_0_1px_var(--borde)] transition-colors hover:text-acento disabled:opacity-40';
   return (
     <div data-controles-lectura>
@@ -80,7 +80,11 @@ export function ControlesLectura({ ajustes, onCambiar, idGrupo = 'lector' }) {
           <MuestraTema key={tema} tema={tema} activo={ajustes.tema === tema} onElegir={(v) => onCambiar({ tema: v })} />
         ))}
       </div>
-
+      {/* 1.11: en un PDF o un cómic la página es una foto: letra, fuente y márgenes no se pueden cambiar. */}
+      {soloTema ? (
+        <p className="mt-3 text-[0.7rem] leading-relaxed text-tinta-tenue" data-solo-tema>{t('paginas.temaExplica')}</p>
+      ) : (
+        <>
       <Titulo>{t('lectura.letra')}</Titulo>
       <div className="flex items-center gap-2">
         <motion.button type="button" whileTap={{ scale: 0.92, transition: resortePresion }} className={boton} disabled={ajustes.letra <= LETRA.min} onClick={() => onCambiar({ letra: ajustes.letra - 1 })} title={t('configuracion.letraChica')} data-letra-menos>
@@ -135,12 +139,14 @@ export function ControlesLectura({ ajustes, onCambiar, idGrupo = 'lector' }) {
         <Interruptor activo={ajustes.justificar} onCambiar={(v) => onCambiar({ justificar: v })} etiqueta={t('lectura.justificar')} />
         <p className="px-2 text-[0.68rem] leading-snug text-tinta-tenue">{t('lectura.justificarDetalle')}</p>
       </div>
+        </>
+      )}
     </div>
   );
 }
 
 /** El panel del botón «Aa» del lector. El velo hace que el clic afuera solo lo cierre (no pasa de página). */
-export function PanelLectura({ abierto, onCerrar, ajustes, onCambiar }) {
+export function PanelLectura({ abierto, onCerrar, ajustes, onCambiar, soloTema = false }) {
   return (
     <AnimatePresence>
       {abierto && (
@@ -163,7 +169,7 @@ export function PanelLectura({ abierto, onCerrar, ajustes, onCambiar }) {
                 <IconoCerrar className="size-3" />
               </button>
             </div>
-            <ControlesLectura ajustes={ajustes} onCambiar={onCambiar} />
+            <ControlesLectura ajustes={ajustes} onCambiar={onCambiar} soloTema={soloTema} />
           </motion.aside>
         </>
       )}

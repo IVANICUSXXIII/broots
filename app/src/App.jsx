@@ -18,8 +18,7 @@ import {
   tipoEstado,
   tx,
   useIdioma,
-  valorDeEstado,
-} from './lib/index.js';
+  valorDeEstado, esDePaginas, formatosParaLeer } from './lib/index.js';
 import { BarraHerramientas } from './components/BarraHerramientas.jsx';
 import { BarraLateral } from './components/BarraLateral.jsx';
 import { Grilla, Lista, RADIO_PORTADA } from './components/Vistas.jsx';
@@ -29,6 +28,7 @@ import { HojaKindle } from './components/Kindle.jsx';
 import { HojaClub } from './components/Club.jsx';
 import { HojaEditar } from './components/Editar.jsx';
 import { Lector } from './components/Lector.jsx';
+import { LectorPaginas } from './components/LectorPaginas.jsx';
 import { HojaCompartir, etiquetaDe, idBibliotecaFamilia } from './components/Compartir.jsx';
 import { HojaDuplicados } from './components/Duplicados.jsx';
 import { Configuracion } from './components/Configuracion.jsx';
@@ -144,6 +144,27 @@ function ubicarEnVista(id, vista) {
   const grilla = tarjeta.parentElement.getBoundingClientRect();
   const ancho = tarjeta.offsetWidth;
   return { x: grilla.left + tarjeta.offsetLeft, y: grilla.top + tarjeta.offsetTop, w: ancho, h: ancho * 1.5, radio: RADIO_PORTADA };
+}
+
+/**
+ * 1.11: deja a la vista un libro de la estantería, sin importar el orden. Devuelve el elemento de su portada (o null si no
+ * se dibujó). Con soloSiHaceFalta, no mueve nada si ya se ve entero.
+ */
+function llevarALaVista(id, vista, { soloSiHaceFalta = false } = {}) {
+  const el = document.querySelector(vista === 'lista' ? `[data-portada-lista="${id}"]` : `[data-tarjeta="${id}"]`);
+  const estante = el?.closest('[data-estanteria]');
+  if (!estante || !el.offsetParent) return null;
+  const marco = estante.getBoundingClientRect();
+  const portada = vista === 'lista' ? el : el.querySelector('.portada');
+  // Igual que en ubicarEnVista: en la grilla, con offsets. Las tarjetas pueden estar deslizándose, y lo que importa es dónde terminan.
+  const visible = el.getBoundingClientRect();
+  const arriba = vista === 'lista' ? visible.top : el.parentElement.getBoundingClientRect().top + el.offsetTop;
+  const alto = vista === 'lista' ? visible.height : el.offsetHeight;
+  if (soloSiHaceFalta && arriba >= marco.top && arriba + alto <= marco.bottom) return portada;
+  const destino = estante.scrollTop + arriba - marco.top - (marco.height - alto) / 2;
+  // El primer salto va directo: la portada sale volando al panel desde su lugar. El ajuste final, suave.
+  estante.scrollTo({ top: destino, behavior: soloSiHaceFalta ? 'smooth' : 'auto' });
+  return portada;
 }
 
 export default function App() {
@@ -331,6 +352,11 @@ function Aplicacion() {
   const [hojaEditar, setHojaEditar] = useState(false);
   // Etapa 5: id del libro abierto en el lector (o null).
   const [leyendo, setLeyendo] = useState(null);
+  const [formatoLeyendo, setFormatoLeyendo] = useState(null); // 1.11: null = el preferido del libro (ver formatosParaLeer)
+  const abrirLector = useCallback((id, formato = null) => {
+    setFormatoLeyendo(formato);
+    setLeyendo(id);
+  }, []);
   const refLeyendo = useUltimo(leyendo);
   const refSoloLectura = useUltimo(soloLectura);
   const [hojaDuplicados, setHojaDuplicados] = useState(false);
@@ -376,13 +402,16 @@ function Aplicacion() {
     const valor = valorDeEstado(colEstado, 'leyendo');
     if (valor && !soloLectura) await editarRapido(libro.id, { custom: { [colEstado.label]: valor } });
     await recargarHabito();
-    setLeyendo(libro.id);
+    abrirLector(libro.id);
   };
   const crearColumnaEstado = async () => {
     const r = await window.habito.crearColumna();
     if (r.ok) actualizarBiblioteca(r.biblioteca);
     return r;
   };
+  const [irAgregados, setIrAgregados] = useState(null); // 1.11: { ids, detalle, limpio }: los libros nuevos a los que hay que llevarte
+  const [resaltados, setResaltados] = useState([]); // si fueron varios, se marcan un momento
+  const refRecienAgregado = useRef(null);
   const mostrarAviso = (texto, error = false) => {
     setAviso({ texto, error, clave: Date.now() });
     setTimeout(() => setAviso((a) => (a?.texto === texto ? null : a)), 7000);
@@ -396,6 +425,8 @@ function Aplicacion() {
     const fallidos = r.resultados.filter((x) => !x.ok);
     const detalle = fallidos.map((x) => t('app.fallo', { nombre: x.nombre, mensaje: x.mensaje })).join(' · ');
     mostrarAviso(`${ok ? `${t('app.agregados', { n: ok })} ` : ''}${detalle}`, ok === 0);
+    // 1.11: te lleva al libro nuevo (ver el efecto de abajo). Si estás leyendo o con una hoja abierta, no te mueve de ahí.
+    if (ok && !refLeyendo.current && !refHojaAbierta.current) setIrAgregados({ ids: r.resultados.filter((x) => x.ok).map((x) => x.id), detalle });
   };
 
   // Arrastrar a la ventana: My Clippings.txt importa subrayados; los libros (EPUB, PDF…) se agregan.
@@ -528,12 +559,12 @@ function Aplicacion() {
     setTour(true);
   };
 
-  // 1.10: doble clic en un libro: directo al lector, sin panel. Sin EPUB no hay lector: queda el panel.
+  // 1.10: doble clic en un libro: directo al lector, sin panel. Si no hay nada que Broots sepa abrir, queda el panel.
   const refLibros = useUltimo(libros);
   const leerDirecto = useCallback((id) => {
-    if (!refLibros.current.find((l) => l.id === id)?.formats.some((f) => f.format === 'EPUB')) return;
+    if (!formatosParaLeer(refLibros.current.find((l) => l.id === id)).length) return;
     cerrar();
-    setLeyendo(id);
+    abrirLector(id);
   }, [cerrar]);
 
   const ampliar = (elementoPortada) => {
@@ -578,9 +609,55 @@ function Aplicacion() {
   // marcar el libro abierto y ocultar el original mientras su copia vuela hacia él.
   const reglas = [];
   if (seleccionado != null) reglas.push(`[data-tarjeta="${seleccionado}"] .marco-seleccion{opacity:1}`);
+  for (const id of resaltados) reglas.push(`[data-tarjeta="${id}"] .marco-seleccion{opacity:1}`);
   if (vuelo && vuelo.tipo !== 'ampliar') reglas.push(`[data-portada-panel="${vuelo.libroId}"]{visibility:hidden}`);
   if (ampliada && seleccionado != null) reglas.push(`[data-portada-panel="${seleccionado}"]{visibility:hidden}`);
   if (vuelo?.tipo === 'ampliar') reglas.push(`[data-portada-visor="${vuelo.libroId}"]{visibility:hidden}`);
+
+  // 1.11: si agregaste libros, Broots te lleva hasta ellos: con el orden por título, uno nuevo puede caer lejos del principio
+  // y parecer que no entró. Si una búsqueda, un filtro o una biblioteca virtual lo esconde, los saca y te avisa.
+  // Con uno solo abre su panel; con una pila muestra el primero y marca todos un momento.
+  useEffect(() => {
+    if (!irAgregados) return;
+    const { ids, detalle, limpio } = irAgregados;
+    if (!libros.some((l) => ids.includes(l.id))) return; // la biblioteca nueva todavía no llegó
+    const destino = visibles.find((l) => ids.includes(l.id));
+    if (!destino) {
+      if (limpio) {
+        const espera = setTimeout(() => setIrAgregados(null), 3000); // por si algo más lo esconde: no quedarse esperando
+        return () => clearTimeout(espera);
+      }
+      setBusqueda('');
+      limpiarFiltros();
+      setBibliotecaVirtual(TODOS);
+      setIrAgregados({ ...irAgregados, limpio: true });
+      mostrarAviso(`${t('app.agregados', { n: ids.length })} ${t('app.filtrosQuitados', { n: ids.length })} ${detalle}`.trim());
+      return;
+    }
+    const cuadro = requestAnimationFrame(() => {
+      setIrAgregados(null);
+      const portada = llevarALaVista(destino.id, refVista.current);
+      if (ids.length > 1) setResaltados(ids);
+      else if (portada && destino.id !== refSeleccionado.current) {
+        refRecienAgregado.current = destino.id;
+        abrir(destino.id, portada);
+      }
+    });
+    return () => cancelAnimationFrame(cuadro);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [irAgregados, libros, visibles]);
+  useEffect(() => {
+    if (!resaltados.length) return;
+    const espera = setTimeout(() => setResaltados([]), 5000);
+    return () => clearTimeout(espera);
+  }, [resaltados]);
+  // Cuando la grilla le hace lugar al panel, las tarjetas se reacomodan: el libro nuevo no se puede perder de vista.
+  useEffect(() => {
+    if (!espacioPanel || seleccionado == null || refRecienAgregado.current !== seleccionado) return;
+    refRecienAgregado.current = null;
+    const espera = setTimeout(() => llevarALaVista(seleccionado, refVista.current, { soloSiHaceFalta: true }), 80);
+    return () => clearTimeout(espera);
+  }, [espacioPanel, seleccionado]);
 
   // Atajos: "/" o Ctrl+F buscar · Esc cerrar visor o panel · Ctrl+B mostrar/ocultar la barra lateral · F1 ayuda.
   const refAmpliada = useUltimo(ampliada);
@@ -706,7 +783,7 @@ function Aplicacion() {
           </AnimatePresence>
 
           <main className="squircle flex min-w-0 flex-1 flex-col overflow-hidden rounded-[22px] bg-superficie shadow-panel">
-            <div className="min-h-0 flex-1 overflow-y-auto">
+            <div data-estanteria className="min-h-0 flex-1 overflow-y-auto">
               {/* Sin animar la altura: las portadas se reacomodan solas (y sin tirones) */}
               {chips.length > 0 && (
                 <div className="flex flex-wrap gap-2 px-7 pt-5">
@@ -825,7 +902,7 @@ function Aplicacion() {
             habito={datosHabito}
             onReleer={() => releer(libroSeleccionado)}
             onConvertir={convertirLibro}
-            onLeer={setLeyendo}
+            onLeer={abrirLector}
             soloLectura={soloLectura}
             familia={soloLectura ? [] : familia}
             onMarcarPara={async (integranteId, libroId, marcar) => {
@@ -878,16 +955,13 @@ function Aplicacion() {
             onCerrar={() => setHojaCompartir(false)}
           />
         )}
-        {leyendo && libros.some((l) => l.id === leyendo) && (
-          <Lector
-            key={`lector-${leyendo}`}
-            libro={libros.find((l) => l.id === leyendo)}
-            colEstado={colEstado}
-            soloLectura={soloLectura}
-            onEditarRapido={editarRapido}
-            onCerrar={() => setLeyendo(null)}
-          />
-        )}
+        {leyendo && libros.some((l) => l.id === leyendo) && (() => {
+          const libro = libros.find((l) => l.id === leyendo);
+          const formato = formatoLeyendo ?? formatosParaLeer(libro)[0];
+          const comunes = { libro, colEstado, soloLectura, onEditarRapido: editarRapido, onCerrar: () => setLeyendo(null) };
+          // 1.11: PDF y cómics van en el lector de páginas.
+          return esDePaginas(formato) ? <LectorPaginas key={`lector-${leyendo}-${formato}`} formato={formato} {...comunes} /> : <Lector key={`lector-${leyendo}`} {...comunes} />;
+        })()}
         {hojaEditar && libroSeleccionado && (
           <HojaEditar
             key="editar"
@@ -939,7 +1013,7 @@ function Aplicacion() {
             soloLectura={soloLectura}
             onLeer={(id) => {
               setMiLectura(false);
-              setLeyendo(id);
+              abrirLector(id);
             }}
             onEditarRapido={async (id, cambios) => {
               const r = await editarRapido(id, cambios);

@@ -55,6 +55,10 @@ contextBridge.exposeInMainWorld('edicion', {
 contextBridge.exposeInMainWorld('lector', {
   abrir: (id) => ipcRenderer.invoke('lector:abrir', id),
   capitulo: (id, href) => ipcRenderer.invoke('lector:capitulo', id, href),
+  // 1.11: PDF y cómics (ver paginas.cjs).
+  abrirPaginas: (id, formato) => ipcRenderer.invoke('paginas:abrir', id, formato),
+  rangoPdf: (id, inicio, fin) => ipcRenderer.invoke('paginas:rangoPdf', id, inicio, fin),
+  recursoPdf: (tipo, nombre) => ipcRenderer.invoke('paginas:recursoPdf', tipo, nombre),
   guardarPosicion: (id, posicion) => ipcRenderer.invoke('lector:posicion', id, posicion),
   estadoTraduccion: () => ipcRenderer.invoke('traduccion:estado'),
   // La clave viaja una sola vez hacia el proceso principal, que la cifra; nunca vuelve.

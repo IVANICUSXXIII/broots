@@ -56,6 +56,7 @@ export const MANUAL = [
       {
         lista: [
           'Tocá el «+» de la barra de arriba, o arrastrá los archivos (EPUB, PDF, MOBI…) a la ventana de Broots. Se aceptan pilas enteras.',
+          'Al terminar, Broots te lleva al libro nuevo y abre su panel. Si agregaste varios, te muestra el primero y los marca un momento. Si una búsqueda o un filtro lo tapaba, los saca y te avisa.',
           'Si un libro no tiene EPUB o PDF, en su panel aparece «Convertir a EPUB» o «Convertir a PDF». Puede tardar un poco: buen momento para cebarte un mate.',
           'Los libros con protección (DRM) se copian tal cual: Broots no les quita la protección ni los convierte.',
         ],
@@ -106,7 +107,7 @@ export const MANUAL = [
     id: 'lector',
     titulo: 'Leer y traducir',
     bloques: [
-      { texto: 'En el panel de un libro EPUB, tocá «Leer» para abrirlo en el lector de Broots. El sillón lo ponés vos.' },
+      { texto: 'En el panel de un libro, tocá «Leer» para abrirlo en el lector de Broots (o hacé doble clic en la portada). El sillón lo ponés vos. Acá va lo del EPUB; los PDF y los cómics tienen su propia sección.' },
       {
         lista: [
           'Pasá de página con las flechas ← →, la rueda del mouse o un clic en los costados (sin chuparte el dedo).',
@@ -116,6 +117,25 @@ export const MANUAL = [
           'Seleccioná texto con el mouse para subrayarlo y anotarle algo (ver Subrayados y notas).',
           'Tocá una imagen del libro para verla en grande. Un clic la acerca, pellizcar el trackpad también, y acercada se recorre arrastrando. La cierran Esc o la cruz de la ventana.',
           'Para volver a la biblioteca: la cruz de la ventana o Esc. Con un libro abierto, la cruz cierra el libro y no Broots; apretala otra vez para cerrar Broots. Tu página queda guardada.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'paginas',
+    titulo: "PDF y cómics",
+    bloques: [
+      { texto: "Broots también lee PDF y cómics (CBZ y CBR). Abren igual que un EPUB, desde «Leer» o con doble clic, guardan tu página y cuentan en «Mi lectura». La diferencia: acá cada página es como una foto, así que la letra no se puede cambiar, pero sí podés acercarte." },
+      {
+        lista: [
+          "Acercarte: pellizcá el trackpad, usá Ctrl + rueda o Ctrl + y Ctrl -, o hacé doble clic donde quieras mirar. Ctrl 0 vuelve a la página entera. Broots recuerda el zoom para cada libro.",
+          "Acercada, la página se recorre arrastrando, con la rueda o con las flechas ↑ ↓. Cuando llegás al borde, otro gesto de la rueda pasa a la página siguiente.",
+          "Una o dos páginas: si la ventana es ancha, se ven de a dos, con la tapa sola y las páginas apaisadas también. El botón con las hojitas, arriba, lo cambia para ese libro.",
+          "Manga: el botón «Manga» pone la lectura de derecha a izquierda (se dan vuelta las flechas, los costados y la barra de abajo). Se prende solo si el cómic lo indica por dentro o si el libro tiene la etiqueta «Manga». Lo que elijas queda para ese libro.",
+          "Si el libro tiene índice, está en «Índice». En un cómic sale de sus marcas o de sus carpetas.",
+          "Si un libro tiene EPUB y PDF, «Leer» abre el EPUB (ahí están los subrayados y la traducción) y abajo aparece «Leer el PDF». Cada formato recuerda su propia página.",
+          "Subrayar y traducir PDF llegan en otra etapa: todavía no están, ni en PDF ni en cómics.",
+          "Lo que no se abre: un PDF con DRM de una tienda solo se puede leer en la app o el dispositivo de esa tienda, y Broots no lo toca. Los PDF y los cómics con contraseña tampoco se abren por ahora. Los PDF que solo tienen la marca de «no copiar» o «no imprimir» se leen normalmente.",
         ],
       },
     ],
@@ -306,7 +326,8 @@ export const MANUAL = [
           [['F1'], 'Abrir esta ayuda (sí, esta misma)'],
           [['←', '→'], 'En el lector: página anterior y siguiente'],
           [['Espacio', 'Av Pág', 'Re Pág'], 'En el lector: también pasan de página'],
-          [['Ctrl +', 'Ctrl -'], 'En el lector: agrandar o achicar la letra (o pellizcá el trackpad, o Ctrl + rueda)'],
+          [['Ctrl +', 'Ctrl -'], 'En el lector: agrandar o achicar la letra (o pellizcá el trackpad, o Ctrl + rueda). En un PDF o un cómic, acercar o alejar'],
+          [['Ctrl 0'], 'En un PDF o un cómic: volver a la página entera'],
           [['F'], 'En el lector: modo enfoque (solo el texto, en pantalla completa)'],
           [['Ctrl+Enter'], 'En el lector: guardar la nota de un subrayado'],
         ],

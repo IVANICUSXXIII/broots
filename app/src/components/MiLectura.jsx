@@ -6,8 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import {
   diaLocal, duracion, estimacion, lecturaDelLibro, nivelDelDia, region, resorte, resortePresion, resumen, ritmoTexto,
-  semanasDelMapa, t, tipoEstado, valorDeEstado,
-} from '../lib/index.js';
+  semanasDelMapa, t, tipoEstado, valorDeEstado, formatosParaLeer } from '../lib/index.js';
 import { IconoCerrar, IconoLeer, IconoRacha } from './Iconos.jsx';
 
 const COLORES_MAPA = ['bg-superficie-2', 'bg-verde/25', 'bg-verde/45', 'bg-verde/70', 'bg-verde'];
@@ -335,7 +334,7 @@ export function MiLectura({ datos, libros, colEstado, soloLectura, onLeer, onEdi
                           </p>
                         )}
                       </div>
-                      {libro.formats.some((f) => f.format === 'EPUB') && (
+                      {formatosParaLeer(libro).length > 0 && (
                         <button
                           type="button"
                           onClick={() => onLeer(libro.id)}

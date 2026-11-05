@@ -254,7 +254,7 @@ function Opcion({ activa, children, ...props }) {
 }
 
 /** Botón de la barra del lector: en modo libre, solo el ícono (sin reloj a la vista, para no mirar la hora). */
-export function BotonSesion({ sesion, restanteCapitulo }) {
+export function BotonSesion({ sesion, restanteCapitulo, sinCapitulos = false }) {
   // El panel abierto vive en la sesión: así el Esc del lector lo cierra primero, antes que el libro.
   const { panelAbierto: abierto, setPanelAbierto: setAbierto } = sesion;
 
@@ -299,7 +299,8 @@ export function BotonSesion({ sesion, restanteCapitulo }) {
             <div className="flex flex-wrap gap-1">
               <Opcion activa={modo === 'libre'} onClick={() => sesion.setModo('libre')}>{t('habito.lector.libre')}</Opcion>
               <Opcion activa={modo === 'minutos'} onClick={() => sesion.setModo('minutos')}>{t('habito.lector.porMinutos')}</Opcion>
-              <Opcion activa={modo === 'capitulo'} onClick={() => sesion.setModo('capitulo')}>{t('habito.lector.hastaCapitulo')}</Opcion>
+              {/* 1.11: un PDF o un cómic sin índice no tiene capítulos que esperar */}
+              {!sinCapitulos && <Opcion activa={modo === 'capitulo'} onClick={() => sesion.setModo('capitulo')}>{t('habito.lector.hastaCapitulo')}</Opcion>}
             </div>
             {modo === 'minutos' && (
               <div className="mt-2 flex gap-1">

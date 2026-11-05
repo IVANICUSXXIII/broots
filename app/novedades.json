@@ -1,4 +1,36 @@
 {
+  "1.11.0": {
+    "es": [
+      "Broots ahora lee PDF. Se abren con «Leer» o con doble clic, recuerdan tu página y cuentan en «Mi lectura», como un EPUB.",
+      "Y lee cómics: CBZ y CBR, con las páginas en el orden que corresponde (el 10 va después del 2, aunque parezca obvio).",
+      "Manga de derecha a izquierda: se prende solo si el cómic lo dice o si el libro tiene la etiqueta «Manga», y hay un botón por si no acierta.",
+      "De a una o de a dos páginas, según el ancho de la ventana o lo que elijas. La tapa va sola, y las páginas apaisadas también.",
+      "Acercate con el pellizco del trackpad, Ctrl + rueda o doble clic, y recorré la página arrastrando.",
+      "Si un libro tiene EPUB y PDF, ahora podés elegir, y cada uno recuerda su página.",
+      "Cuando agregás un libro, Broots te lleva hasta él y abre su panel. Ya no hay que salir a buscarlo por el estante.",
+      "Los PDF con DRM de una tienda y los archivos con contraseña no se abren: Broots te explica por qué y no los toca. Subrayar y traducir PDF llegan más adelante."
+    ],
+    "en": [
+      "Broots now reads PDFs. Open them with “Read” or a double-click; they remember your page and count in “My reading”, just like an EPUB.",
+      "And it reads comics: CBZ and CBR, with the pages in the right order.",
+      "Right-to-left manga: it turns on by itself if the comic says so or the book has the “Manga” tag, and there’s a button in case it guesses wrong.",
+      "One page or two, depending on the window width or your choice. The cover goes solo, and so do landscape pages.",
+      "Get closer with a trackpad pinch, Ctrl + wheel or a double-click, and drag to move around the page.",
+      "If a book has both EPUB and PDF, you can now choose, and each one remembers its page.",
+      "When you add a book, Broots takes you right to it and opens its panel. No more hunting along the shelf.",
+      "PDFs with a store’s DRM and password-protected files don’t open: Broots tells you why and leaves them alone. Highlighting and translating PDFs come later."
+    ],
+    "pt": [
+      "Agora o Broots lê PDFs. Eles abrem em “Ler” ou com dois cliques, lembram sua página e contam em “Minha leitura”, como um EPUB.",
+      "E lê quadrinhos: CBZ e CBR, com as páginas na ordem certa.",
+      "Mangá da direita para a esquerda: liga sozinho se o quadrinho indicar ou se o livro tiver a etiqueta “Manga”, e tem um botão caso ele erre.",
+      "Uma ou duas páginas, conforme a largura da janela ou a sua escolha. A capa fica sozinha, e as páginas deitadas também.",
+      "Aproxime com o gesto de pinça no trackpad, Ctrl + roda ou dois cliques, e arraste para percorrer a página.",
+      "Se um livro tem EPUB e PDF, agora você escolhe, e cada um lembra a própria página.",
+      "Quando você adiciona um livro, o Broots leva você até ele e abre o painel. Chega de procurar na estante.",
+      "PDFs com DRM de uma loja e arquivos com senha não abrem: o Broots explica o motivo e não mexe neles. Destacar e traduzir PDFs vêm mais adiante."
+    ]
+  },
   "1.10.0": {
     "es": [
       "Doble clic en una portada y ya estás leyendo. El clic simple sigue abriendo el panel del libro.",

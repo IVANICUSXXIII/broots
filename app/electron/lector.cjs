@@ -168,4 +168,4 @@ function recurso(ruta, interna) {
   return new Response(datos, { headers: { 'content-type': tipo } });
 }
 
-module.exports = { abrir, capitulo, recurso, resolver, textos };
+module.exports = { abrir, capitulo, recurso, resolver, textos, decodificar };

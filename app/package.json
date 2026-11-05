@@ -1,6 +1,6 @@
 {
   "name": "broots",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "description": "Broots: gestor moderno de e-books compatible con Calibre",
   "main": "electron/main.cjs",
   "scripts": {
@@ -17,6 +17,7 @@
     "@vitejs/plugin-react": "^6.1.2",
     "electron": "^44.7.2",
     "electron-builder": "^26.15.3",
+    "pdfjs-dist": "6.5.438",
     "tailwindcss": "^4.3.3",
     "vite": "^8.3.4"
   },
@@ -26,6 +27,7 @@
     "@fontsource-variable/literata": "^5.3.0",
     "@fontsource/opendyslexic": "^5.3.0",
     "fflate": "^0.8.3",
+    "libarchive-wasm": "1.2.0",
     "motion": "^14.3.0",
     "nodemailer": "^10.1.1",
     "react": "^19.3.1",
@@ -48,6 +50,7 @@
       "electron/**/*",
       "idiomas/**/*",
       "novedades.json",
+      "licencias-de-terceros.txt",
       "package.json"
     ],
     "win": {

@@ -122,8 +122,9 @@ function scriptDeVentana(escenario, datos) {
 
 function correrBroots(script, entorno, captura) {
   return new Promise((resolver) => {
-    const electron = require('electron');
-    const proceso = spawn(electron, ['.', `--capture=${captura}`], {
+    // BROOTS_EJECUTABLE=instalador/win-unpacked/Broots.exe prueba el programa ya empaquetado (con --sin-compilar).
+    const empaquetado = process.env.BROOTS_EJECUTABLE;
+    const proceso = spawn(empaquetado ?? require('electron'), [...(empaquetado ? [] : ['.']), `--capture=${captura}`], {
       cwd: APP,
       env: { ...process.env, BROOTS_DATOS: DATOS, BROOTS_IDIOMA_WINDOWS: 'es-AR', CAPTURE_JS: script, ...entorno },
     });
@@ -137,7 +138,7 @@ function correrBroots(script, entorno, captura) {
       try {
         resolver(JSON.parse(JSON.parse(linea.slice('[captura] '.length))));
       } catch {
-        resolver([{ nombre: 'Broots respondió', ok: false, detalle: salida.split('\n').filter((l) => /error/i.test(l)).slice(-3).join(' | ') || 'sin respuesta' }]);
+        resolver([{ nombre: 'Broots respondió', ok: false, detalle: salida.split('\n').filter((l) => /error/i.test(l)).slice(-3).join(' | ') || salida.trim().split('\n').slice(-3).join(' | ') || 'sin respuesta' }]);
       }
     });
   });
@@ -172,12 +173,13 @@ for (const nombre of elegidos) {
   fs.mkdirSync(DATOS, { recursive: true });
   // El escenario puede sumar claves a config.json (p. ej. una configuración vieja), pero la biblioteca
   // siempre es la de prueba: libraryPath va al final para que nada la reemplace.
-  const extra = typeof escenario.config === 'function' ? escenario.config({ BIBLIOTECA, COMPARTIDO }) : {};
+  const extra = typeof escenario.config === 'function' ? escenario.config({ BIBLIOTECA, COMPARTIDO, libros }) : {};
   fs.writeFileSync(path.join(DATOS, 'config.json'), JSON.stringify({ ...extra, libraryPath: BIBLIOTECA, tema: 'light' }, null, 2));
 
   const entorno = typeof escenario.entorno === 'function' ? escenario.entorno({ TEMP }) : escenario.entorno ?? {};
   const captura = path.join(CAPTURAS, `${nombre}.png`);
-  const resultados = await correrBroots(scriptDeVentana(escenario, { libros, total }), entorno, captura);
+  // Un escenario puede mandarle datos a su prueba con datos() (por ejemplo, los libros que sumó en config).
+  const resultados = await correrBroots(scriptDeVentana(escenario, { libros, total, ...escenario.datos?.() }), entorno, captura);
   if (escenario.verificar) resultados.push(...(await escenario.verificar({ BIBLIOTECA, COMPARTIDO, DATOS, fs, path })));
 
   for (const r of resultados) {

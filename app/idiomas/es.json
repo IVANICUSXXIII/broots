@@ -628,6 +628,8 @@
       "importada": "Importada",
       "leerExplicacion": "Abrir el EPUB en el lector de Broots (con traducción)",
       "leer": "Leer",
+      "leerFormato": "Leer el {formato}",
+      "leerPaginasExplicacion": "Abrir el {formato} en el lector de Broots",
       "abrirFormato": "Abrir el {formato} con su programa predeterminado",
       "mostrarCarpeta": "Mostrar en carpeta",
       "verEtiqueta": "Mostrar los libros con esta etiqueta",
@@ -641,6 +643,25 @@
         "other": "Este libro tiene {n} etiquetas dañadas en Calibre (texto con código o solo símbolos), probablemente de una descarga de metadatos. Están ocultas; podés borrarlas desde Editar."
       },
       "visor": "{titulo} · clic, Esc o arrastrá la portada para volver"
+    },
+    "paginas": {
+      "manga": "Manga",
+      "mangaPrendido": "Se lee de derecha a izquierda. Tocá para leer de izquierda a derecha",
+      "mangaApagado": "Se lee de izquierda a derecha. Tocá para leer como manga, de derecha a izquierda",
+      "verUna": "Ver una página",
+      "verDos": "Ver dos páginas juntas",
+      "temaBoton": "Tema",
+      "temaExplica": "En un PDF o un cómic la página es como una foto: se acerca con el pellizco, pero la letra no cambia. El tema pinta lo que la rodea.",
+      "siguienteManga": "Página siguiente (←)",
+      "anteriorManga": "Página anterior (→)",
+      "pista": "Pasá de página con las flechas o la rueda. Pellizcá el trackpad para acercarte y arrastrá para recorrer la página.",
+      "zoomActual": "{n} %",
+      "paginaRota": "Esta página no se pudo mostrar. Puede estar dañada en el archivo.",
+      "pdf": {
+        "contrasena": "Este PDF tiene contraseña. Broots todavía no sabe abrir PDF con contraseña.",
+        "drm": "Este PDF está protegido (DRM): solo se puede leer en la app o el dispositivo de la tienda donde se compró.",
+        "danado": "No pude abrir este PDF: parece dañado."
+      }
     },
     "lector": {
       "cerrar": "Cerrar",
@@ -726,6 +747,10 @@
       "agregados": {
         "one": "✓ {n} libro nuevo en el estante.",
         "other": "✓ {n} libros nuevos en el estante."
+      },
+      "filtrosQuitados": {
+        "one": "Saqué los filtros para mostrártelo.",
+        "other": "Saqué los filtros para mostrártelos."
       },
       "fallo": "«{nombre}»: {mensaje}",
       "noPudeLeer": "No pude leer la biblioteca: {error}",
@@ -1225,6 +1250,11 @@
       "funciona": "✓ Gemini está en forma: «{ejemplo}»",
       "noPudeExplicar": "No pude explicarlo: {detalle}",
       "nadaQueExplicar": "No hay nada seleccionado para explicar."
+    },
+    "paginas": {
+      "comicContrasena": "Este cómic tiene contraseña. Broots no sabe abrir cómics con contraseña.",
+      "comicNoAbre": "No pude abrir este cómic. Puede estar dañado o tener contraseña.",
+      "comicSinImagenes": "No encontré ninguna imagen dentro de este cómic."
     },
     "lector": {
       "noEsEpub": "El archivo no parece un EPUB válido.",
