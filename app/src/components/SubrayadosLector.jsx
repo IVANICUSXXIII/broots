@@ -12,8 +12,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { SERVICIOS_MUSICA, fechaCorta, idiomaActual, resorte, resortePresion, resorteRapido, t } from '../lib/index.js';
 import { COLORES, anclaDeSeleccion, buscarEnParrafos, despintar, envolver, indiceNormalizado, normalizar, ordenar, textoDeAncla } from '../lib/subrayados.js';
-import { IconoAnterior, IconoBorrar, IconoBuscar, IconoCerrar, IconoCopiar, IconoEditar, IconoExplicar, IconoSubrayar } from './Iconos.jsx';
+import { IconoAnterior, IconoBorrar, IconoBuscar, IconoCerrar, IconoCopiar, IconoDefinir, IconoEditar, IconoExplicar, IconoSubrayar } from './Iconos.jsx';
 import { explicable } from './Explicar.jsx';
+import { definible } from '../lib/diccionario.js';
 
 const LARGO_MAXIMO = 8000; // caracteres: más que eso ya no es un subrayado, es medio capítulo
 
@@ -270,11 +271,11 @@ export function useSubrayados({ libro, r, texto, marco, abierto, avisar }) {
   const paraExplicar = () => {
     const b = estado.current.barra;
     if (!b) return null;
-    if (b.modo === 'nuevo') return { modo: 'nuevo', ancla: b.ancla, texto: b.ancla.texto, parrafo: r.parrafos[b.ancla.parrafo]?.textContent ?? '', caja: b.caja };
+    if (b.modo === 'nuevo') return { modo: 'nuevo', ancla: b.ancla, texto: b.ancla.texto, indice: b.ancla.parrafo, parrafo: r.parrafos[b.ancla.parrafo]?.textContent ?? '', caja: b.caja };
     const e = lista.current.find((x) => x.id === b.id);
     const a = r.anclas?.get(b.id);
     if (!e) return null;
-    return { modo: b.modo, id: b.id, texto: e.texto, parrafo: a ? r.parrafos[a.parrafo]?.textContent ?? '' : '', caja: b.caja };
+    return { modo: b.modo, id: b.id, texto: e.texto, indice: a?.parrafo, parrafo: a ? r.parrafos[a.parrafo]?.textContent ?? '' : '', caja: b.caja };
   };
 
   /** Subraya una selección con una nota ya escrita (la explicación de Gemini). Devuelve true si se guardó. */
@@ -387,7 +388,7 @@ export function useSubrayados({ libro, r, texto, marco, abierto, avisar }) {
 
 // ---------- La barrita ----------
 
-const ANCHO_BARRA = 440; // con «Explicar» (1.9) y «Buscar» (1.10)
+const ANCHO_BARRA = 540; // con «Explicar» (1.9), «Buscar» (1.10) y «Definir» (1.12)
 
 function BotonBarrita({ children, ...props }) {
   return (
@@ -408,7 +409,7 @@ function posicion(caja) {
   return { left: centro, top: caja.y > 54 ? caja.y - 46 : caja.y + caja.alto + 8 };
 }
 
-export function BarraSubrayado({ sub, onExplicar }) {
+export function BarraSubrayado({ sub, onExplicar, onDefinir }) {
   const { barra } = sub;
   const [buscando, setBuscando] = useState(false); // 1.10: la barrita muestra adónde buscar
   const [musica, setMusica] = useState(null);
@@ -422,7 +423,9 @@ export function BarraSubrayado({ sub, onExplicar }) {
   };
   const servicioMusica = SERVICIOS_MUSICA.find((m) => m.id === musica);
   const entrada = barra?.id ? sub.entradas.find((e) => e.id === barra.id) : null;
-  const seExplica = barra && explicable(barra.modo === 'nuevo' ? barra.ancla?.texto : entrada?.texto); // 1.9
+  const seleccionado = barra?.modo === 'nuevo' ? barra.ancla?.texto : entrada?.texto;
+  const seExplica = barra && explicable(seleccionado); // 1.9
+  const seDefine = barra && definible(seleccionado); // 1.12: una palabra o una expresión corta
   return (
     <AnimatePresence>
       {barra && (
@@ -481,6 +484,11 @@ export function BarraSubrayado({ sub, onExplicar }) {
           <BotonBarrita data-accion="copiar" onClick={sub.copiar}>
             <IconoCopiar className="size-3.5" /> {t('subrayados.lector.copiar')}
           </BotonBarrita>
+          {seDefine && onDefinir && (
+            <BotonBarrita data-accion="definir" onClick={onDefinir} title={t('definir.botonExplica')}>
+              <IconoDefinir className="size-3.5 text-acento" /> {t('definir.boton')}
+            </BotonBarrita>
+          )}
           {seExplica && onExplicar && (
             <BotonBarrita data-accion="explicar" onClick={onExplicar} title={t('explicar.botonExplica')}>
               <IconoExplicar className="size-3.5 text-acento" /> {t('explicar.boton')}

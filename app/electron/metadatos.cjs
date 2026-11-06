@@ -105,4 +105,4 @@ function busquedaDePortada(libro) {
   return `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(consulta)}`;
 }
 
-module.exports = { buscar, buscarEnUrl, leerOpf, busquedaDePortada };
+module.exports = { buscar, buscarEnUrl, leerOpf, busquedaDePortada, AUTOR_DESCONOCIDO };

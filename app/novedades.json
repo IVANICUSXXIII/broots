@@ -1,4 +1,41 @@
 {
+  "1.12.0": {
+    "es": [
+      "Llegó «Definir»: seleccionás una palabra, tocás el botón en la barrita y sale qué significa. Al instante y sin internet, ideal para el avión o para esa palabra que venís esquivando hace tres capítulos.",
+      "Hay diccionario de español, inglés y portugués, armados con Wiktionary. Se bajan la primera vez que los pedís (de 10 a 41 MB) y solo el idioma que uses.",
+      "Entiende las palabras conjugadas: «corrió» te lleva a «correr», «tenés» a «tener» y «diciéndole» a «decir».",
+      "Sale en el idioma de lo que estás viendo. Para el sentido en ese párrafo, en tu idioma, «Explicar» sigue a un toque, también desde la tarjeta del diccionario.",
+      "Si la palabra no está, te lo dice y te ofrece Gemini, sin gastarte el cupo por su cuenta. Y la definición se puede guardar como nota. Por ahora funciona en EPUB.",
+      "Y un arreglo: la barrita de un subrayado (o la tarjeta de «Explicar» o «Definir») ya no se cierra sola en los primeros segundos de abrir un libro, mientras Broots cuenta las páginas."
+    ],
+    "en": [
+      "Say hello to “Define”: select a word, click the button in the bar and see what it means. Instantly and offline, perfect for planes or for that word you’ve been dodging for three chapters.",
+      "There are Spanish, English and Portuguese dictionaries, built from Wiktionary. They download the first time you ask (10 to 41 MB), and only the language you use.",
+      "It understands inflected words: “ran” takes you to “run”, and “sister’s” to “sister”.",
+      "It comes in the language of what you’re looking at. For the meaning in that paragraph, in your language, “Explain” is still one click away, right from the dictionary card too.",
+      "If the word isn’t there, it tells you and offers Gemini, without spending your quota on its own. You can also save a definition as a note. For now it works in EPUB.",
+      "Plus a fix: a highlight’s bar (or the “Explain” and “Define” cards) no longer closes by itself in the first seconds after you open a book, while Broots counts the pages."
+    ],
+    "pt": [
+      "Chegou o «Definir»: selecione uma palavra, toque no botão da barrinha e veja o que significa. Na hora e sem internet, ótimo para o avião ou para aquela palavra que você vem evitando há três capítulos.",
+      "Há dicionário de espanhol, inglês e português, feitos com o Wiktionary. Baixam na primeira vez que você pede (de 10 a 41 MB), e só o idioma que você usar.",
+      "Ele entende palavras conjugadas: «assumiu» leva a «assumir», e «disse-lhe» a «dizer».",
+      "Vem no idioma do que você está vendo. Para o sentido naquele parágrafo, no seu idioma, o «Explicar» continua a um toque, também no cartão do dicionário.",
+      "Se a palavra não estiver lá, ele avisa e oferece o Gemini, sem gastar sua cota sozinho. E dá para guardar a definição como nota. Por enquanto funciona em EPUB.",
+      "E uma correção: a barrinha de um destaque (ou o cartão do «Explicar» ou do «Definir») não fecha mais sozinha nos primeiros segundos depois de abrir um livro, enquanto o Broots conta as páginas."
+    ]
+  },
+  "1.11.1": {
+    "es": [
+      "Los títulos llegan peinados: si un archivo no trae datos, Broots saca del nombre el título, el autor y la serie, y descarta la firma de los sitios de descarga. Lo que ya está en tu biblioteca no se toca."
+    ],
+    "en": [
+      "Titles arrive with their hair combed: if a file has no data, Broots reads the title, author and series from its name and drops the download-site signature. Nothing already in your library gets touched."
+    ],
+    "pt": [
+      "Os títulos chegam penteados: se o arquivo não traz dados, o Broots tira do nome o título, o autor e a série e descarta a assinatura dos sites de download. O que já está na sua biblioteca não muda."
+    ]
+  },
   "1.11.0": {
     "es": [
       "Broots ahora lee PDF. Se abren con «Leer» o con doble clic, recuerdan tu página y cuentan en «Mi lectura», como un EPUB.",

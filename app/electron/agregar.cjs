@@ -14,6 +14,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { zipSync } = require('fflate');
 const calibre = require('./calibre.cjs');
+const { esMarcaDeSitio } = require('./nombreDeArchivo.cjs');
 const { t } = require('./idioma.cjs');
 
 const EXTENSIONES_LIBRO = ['.epub', '.azw3', '.azw', '.mobi', '.prc', '.pdf', '.kfx', '.txt', '.docx'];
@@ -56,7 +57,7 @@ function tituloParaCalibre(titulo, autor) {
     const m = /\s*\(([^()]*)\)\s*$/.exec(limpio);
     if (!m) break;
     const dentro = normalizar(m[1]);
-    const esOrigen = /^(z ?lib(rary)?( org)?|libgen.*|epub|pdf|ebook|www .*)$/.test(dentro);
+    const esOrigen = esMarcaDeSitio(m[1]) || /^(epub|pdf|ebook)$/.test(dentro);
     const esAutor = apellidos.length > 0 && apellidos.every((a) => dentro.includes(a));
     if (!esOrigen && !esAutor) break;
     limpio = limpio.slice(0, m.index).trim();

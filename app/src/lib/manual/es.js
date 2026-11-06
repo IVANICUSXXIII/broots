@@ -57,6 +57,7 @@ export const MANUAL = [
         lista: [
           'Tocá el «+» de la barra de arriba, o arrastrá los archivos (EPUB, PDF, MOBI…) a la ventana de Broots. Se aceptan pilas enteras.',
           'Al terminar, Broots te lleva al libro nuevo y abre su panel. Si agregaste varios, te muestra el primero y los marca un momento. Si una búsqueda o un filtro lo tapaba, los saca y te avisa.',
+          'Si el archivo no trae datos adentro, Broots los saca del nombre: quita la firma de los sitios de descarga y, si el nombre los dice, completa autor, serie y editorial. También separa las palabras pegadas y arregla los títulos todos en mayúsculas. Los archivos con datos propios y los libros que ya están en tu biblioteca no se tocan.',
           'Si un libro no tiene EPUB o PDF, en su panel aparece «Convertir a EPUB» o «Convertir a PDF». Puede tardar un poco: buen momento para cebarte un mate.',
           'Los libros con protección (DRM) se copian tal cual: Broots no les quita la protección ni los convierte.',
         ],
@@ -154,6 +155,23 @@ export const MANUAL = [
           '«Justificar el texto» lo deja parejo de los dos lados, como en papel. Viene apagado porque a veces deja algún hueco entre palabras.',
           'Lo que elijas vale para todos los libros, en esta PC. También lo cambiás en Configuración → Lectura y traducción, con una muestra.',
           'Tus subrayados quedan pegados al texto: con otra fuente u otros márgenes siguen en el mismo lugar (cambia el número de página, no la frase).',
+        ],
+      },
+      { subtitulo: 'Definir una palabra, sin internet' },
+      {
+        pasos: [
+          'Seleccioná una palabra o una expresión corta (doble clic elige una palabra).',
+          'En la barrita de subrayar, tocá «Definir».',
+          'Aparece qué significa, al instante. Si es una forma como «corrió» o «diciéndole», te lleva a «correr» o «decir».',
+        ],
+      },
+      {
+        lista: [
+          'La primera vez que definís en un idioma, Broots baja ese diccionario: español (18 MB), inglés (41 MB) o portugués (10 MB). Se baja una sola vez y queda en esta PC, no en la carpeta de tu biblioteca. Después anda sin internet.',
+          'La definición sale en el idioma de lo que estás viendo: un libro en inglés se define en inglés, y un párrafo traducido por Broots, en el idioma de Broots. Para el sentido en ese párrafo, y en tu idioma, tocá «Explicar».',
+          'Si la palabra no está (pasa con nombres propios y con palabras muy nuevas o muy raras), la tarjeta te lo dice y te ofrece «Explicar con Gemini». No llama a Gemini por su cuenta, así no te gasta el cupo.',
+          'Hay diccionario de español, inglés y portugués. Por ahora funciona en EPUB: en PDF y cómics todavía no se puede seleccionar texto.',
+          'Los diccionarios son una versión resumida de Wiktionary, escrito por voluntarios. Son muy completos, pero alguna definición puede ser despareja. El crédito está en cada tarjeta, con un enlace a la página original.',
         ],
       },
       { subtitulo: 'Explicar una palabra o una frase' },

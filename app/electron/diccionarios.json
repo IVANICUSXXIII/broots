@@ -1,0 +1,26 @@
+{
+  "es": {
+    "version": "2026.11",
+    "archivo": "es-2026.11.db",
+    "url": "https://github.com/IVANICUSXXIII/broots-diccionarios/releases/download/v2026.11/es-2026.11.db.br",
+    "sha256": "8b7119ddc6aee3d63e594981fcc9499e7ce8d448b4aaecf79dadfe6e295d67a4",
+    "bajar": 18157982,
+    "disco": 97525760
+  },
+  "en": {
+    "version": "2026.11",
+    "archivo": "en-2026.11.db",
+    "url": "https://github.com/IVANICUSXXIII/broots-diccionarios/releases/download/v2026.11/en-2026.11.db.br",
+    "sha256": "17f0f6fcd748508ed5d4ca7b74c8235ceee146ee9e382c79fa501adca24dc9a8",
+    "bajar": 40788856,
+    "disco": 140648448
+  },
+  "pt": {
+    "version": "2026.11",
+    "archivo": "pt-2026.11.db",
+    "url": "https://github.com/IVANICUSXXIII/broots-diccionarios/releases/download/v2026.11/pt-2026.11.db.br",
+    "sha256": "494a75ccdc7a15b841a23a2bcf5595502dd4bfb5d3ea0f78666d0826c98aa83e",
+    "bajar": 9355332,
+    "disco": 39362560
+  }
+}

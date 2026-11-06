@@ -6,3 +6,4 @@ export * from './idioma.js';
 export * from './habito.js';
 export * from './lectura.js';
 export * from './paginas.js';
+export * from './diccionario.js';

@@ -5,6 +5,8 @@
 //   node pruebas/correr.mjs todos           corre todos (menos los lentos)
 //   --sin-compilar                          no vuelve a compilar la interfaz
 //
+// Turnos: una sola corrida a la vez en toda la PC; la que llega después espera (ver tomarTurno).
+//
 // Seguridad: la biblioteca real SOLO se lee (se copia su metadata.db y algunos libros a %TEMP%).
 // Broots corre con BROOTS_DATOS (configuración aparte), cada escenario verifica primero que la
 // ventana abrió la biblioteca de prueba, y al final se comprueba que la base real no cambió.
@@ -25,6 +27,13 @@ const BIBLIOTECA = path.join(TEMP, 'broots-prueba');
 const DATOS = path.join(TEMP, 'broots-prueba-datos');
 const CAPTURAS = path.join(TEMP, 'broots-pruebas-capturas');
 const COMPARTIDO = path.join(TEMP, 'Broots compartido'); // carpeta sugerida para Familia en las pruebas
+const LIMITE_ESCENARIO = 4 * 60 * 1000; // el más largo tarda unos 2 minutos y medio: más que esto es un cuelgue
+const LIMITE_LENTO = 10 * 60 * 1000; // los marcados «lento» bajan cosas de verdad
+
+const duracion = (ms) => {
+  const s = Math.round(ms / 1000);
+  return s < 60 ? `${s} s` : `${Math.floor(s / 60)} min${s % 60 ? ` ${s % 60} s` : ''}`;
+};
 
 // ---------- Escenarios ----------
 
@@ -120,7 +129,7 @@ function scriptDeVentana(escenario, datos) {
   })()`;
 }
 
-function correrBroots(script, entorno, captura) {
+function correrBroots(script, entorno, captura, limiteMs) {
   return new Promise((resolver) => {
     // BROOTS_EJECUTABLE=instalador/win-unpacked/Broots.exe prueba el programa ya empaquetado (con --sin-compilar).
     const empaquetado = process.env.BROOTS_EJECUTABLE;
@@ -131,9 +140,14 @@ function correrBroots(script, entorno, captura) {
     let salida = '';
     proceso.stdout.on('data', (d) => (salida += d));
     proceso.stderr.on('data', (d) => (salida += d));
-    const limite = setTimeout(() => proceso.kill(), 10 * 60 * 1000);
+    let vencido = false;
+    const limite = setTimeout(() => {
+      vencido = true;
+      proceso.kill();
+    }, limiteMs);
     proceso.on('exit', () => {
       clearTimeout(limite);
+      if (vencido) return resolver([{ nombre: 'terminó dentro del límite', ok: false, detalle: `lo corté a los ${duracion(limiteMs)}: la ventana se colgó o quedó frenada` }]);
       const linea = salida.split('\n').find((l) => l.startsWith('[captura] '));
       try {
         resolver(JSON.parse(JSON.parse(linea.slice('[captura] '.length))));
@@ -144,7 +158,71 @@ function correrBroots(script, entorno, captura) {
   });
 }
 
+// ---------- Turno: una sola corrida a la vez en toda la PC ----------
+
+// Dos corridas juntas se pisan la pantalla y los puertos, y dan fallas falsas. El aviso vive fuera de %TEMP%
+// porque hay sesiones que corren con otro TEMP, y si la corrida murió sin borrarlo, el siguiente lo descarta.
+const TURNO = path.join(process.env.LOCALAPPDATA ?? os.homedir(), 'Broots-pruebas', 'turno.json');
+const ESPERA_MAXIMA = 20 * 60 * 1000;
+const VIEJO = 2 * 60 * 60 * 1000; // más que la corrida más larga posible: Windows puede reusar el número de un proceso muerto
+
+function sigueVivo(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return error.code === 'EPERM';
+  }
+}
+
+/** Devuelve null si consiguió el turno, o los datos de la corrida que lo tiene. */
+function tomarTurno() {
+  fs.mkdirSync(path.dirname(TURNO), { recursive: true });
+  try {
+    fs.writeFileSync(TURNO, JSON.stringify({ pid: process.pid, inicio: Date.now(), carpeta: APP, escenarios: elegidos }), { flag: 'wx' });
+    return null;
+  } catch (error) {
+    if (error.code !== 'EEXIST') throw error;
+  }
+  let otra = null;
+  let modificado = Date.now();
+  try {
+    modificado = fs.statSync(TURNO).mtimeMs;
+    otra = JSON.parse(fs.readFileSync(TURNO, 'utf8'));
+  } catch {
+    // Otra corrida lo está escribiendo o borrando justo ahora: se vuelve a mirar en la próxima vuelta.
+  }
+  const abandonado = otra ? !sigueVivo(otra.pid) || Date.now() - otra.inicio > VIEJO : Date.now() - modificado > 10000;
+  if (abandonado) {
+    fs.rmSync(TURNO, { force: true });
+    return tomarTurno();
+  }
+  return otra ?? { carpeta: 'otra corrida', escenarios: [] };
+}
+
+async function esperarTurno() {
+  const fin = Date.now() + ESPERA_MAXIMA;
+  let avisado = false;
+  for (let otra = tomarTurno(); otra; otra = tomarTurno()) {
+    if (!avisado) console.log(`⏳ Ya hay pruebas corriendo (${path.basename(path.dirname(otra.carpeta))}: ${otra.escenarios.join(' ') || 'sin detalle'}). Espero mi turno, hasta ${duracion(ESPERA_MAXIMA)}.`);
+    avisado = true;
+    if (Date.now() > fin) {
+      console.log(`✗ No se liberó el turno en ${duracion(ESPERA_MAXIMA)}: no corrí nada. Si no hay pruebas abiertas, borrá ${TURNO}.`);
+      process.exit(3);
+    }
+    await new Promise((listo) => setTimeout(listo, 5000));
+  }
+  // Se borra solo si es nuestro. Si matan la corrida a la fuerza esto no llega a correr, y por eso se revisa el proceso.
+  process.on('exit', () => {
+    try {
+      if (JSON.parse(fs.readFileSync(TURNO, 'utf8')).pid === process.pid) fs.rmSync(TURNO, { force: true });
+    } catch {}
+  });
+}
+
 // ---------- Correr ----------
+
+await esperarTurno();
 
 if (!process.argv.includes('--sin-compilar')) {
   console.log('Compilando la interfaz…');
@@ -156,9 +234,12 @@ const real = bibliotecaReal();
 const huellaReal = huella(path.join(real, 'metadata.db'));
 fs.mkdirSync(CAPTURAS, { recursive: true });
 let fallas = 0;
+const inicioCorrida = Date.now();
+const tiempos = []; // { nombre, ms, fallo }: para el resumen del final
 
 for (const nombre of elegidos) {
   const escenario = escenarios[nombre];
+  const inicioEscenario = Date.now();
   console.log(`\n▶ ${nombre}: ${escenario.descripcion}`);
 
   // Biblioteca y configuración de prueba, nuevas para cada escenario.
@@ -179,7 +260,8 @@ for (const nombre of elegidos) {
   const entorno = typeof escenario.entorno === 'function' ? escenario.entorno({ TEMP }) : escenario.entorno ?? {};
   const captura = path.join(CAPTURAS, `${nombre}.png`);
   // Un escenario puede mandarle datos a su prueba con datos() (por ejemplo, los libros que sumó en config).
-  const resultados = await correrBroots(scriptDeVentana(escenario, { libros, total, ...escenario.datos?.() }), entorno, captura);
+  const limiteMs = escenario.lento ? LIMITE_LENTO : LIMITE_ESCENARIO;
+  const resultados = await correrBroots(scriptDeVentana(escenario, { libros, total, ...escenario.datos?.() }), entorno, captura, limiteMs);
   if (escenario.verificar) resultados.push(...(await escenario.verificar({ BIBLIOTECA, COMPARTIDO, DATOS, fs, path })));
 
   for (const r of resultados) {
@@ -188,6 +270,9 @@ for (const nombre of elegidos) {
   }
   console.log(`  captura: ${captura}`);
   for (const limpiar of escenario.limpiar?.({ TEMP }) ?? []) fs.rmSync(limpiar, { recursive: true, force: true });
+  const ms = Date.now() - inicioEscenario;
+  tiempos.push({ nombre, ms, fallo: resultados.some((r) => !r.ok) });
+  console.log(`  tiempo: ${duracion(ms)}`);
 }
 
 for (const carpeta of [BIBLIOTECA, DATOS, COMPARTIDO]) fs.rmSync(carpeta, { recursive: true, force: true });
@@ -197,5 +282,9 @@ if (huella(path.join(real, 'metadata.db')) !== huellaReal) {
   console.log('\n⚠️  LA BASE DE LA BIBLIOTECA REAL CAMBIÓ DURANTE LAS PRUEBAS. Si no usaste Broots o Calibre mientras tanto, revisalo ya (hay respaldos en .broots/respaldos).');
   process.exit(2);
 }
+console.log(`\nTiempos, de más a menos lento: ${[...tiempos].sort((a, b) => b.ms - a.ms).map((t) => `${t.nombre} ${duracion(t.ms)}`).join(' · ')}`);
+console.log(`Total: ${duracion(Date.now() - inicioCorrida)}.`);
+const conFallas = tiempos.filter((t) => t.fallo).map((t) => t.nombre);
+if (conFallas.length) console.log(`Para repetir solo lo que falló: node pruebas/correr.mjs ${conFallas.join(' ')} --sin-compilar`);
 console.log(`\n${fallas ? `✗ ${fallas} comprobaciones fallaron` : '✓ Todo bien'} · la biblioteca real no cambió.`);
 process.exit(fallas ? 1 : 0);

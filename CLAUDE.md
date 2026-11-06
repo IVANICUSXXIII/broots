@@ -11,12 +11,12 @@ Gestor de e-books de escritorio (Windows) compatible con Calibre: misma carpeta 
   - `calibre.cjs` y `calibrePropio.cjs` manejan las herramientas de Calibre.
   - `idioma.cjs`: el idioma de Broots y la función `t()` para los mensajes de Electron.
   - `actualizaciones.cjs`: busca versiones nuevas de Broots en GitHub (`IVANICUSXXIII/broots`), las baja, verifica su huella y las instala al cerrar.
-  - El resto, una función cada uno: `edicion`, `agregar`, `duplicados`, `metadatos`, `web` (Amazon), `envio` (Kindle por Gmail), `subrayados` (los del Kindle), `club`, `lector` (EPUB), `paginas` (PDF de a pedazos y cómics; los CBR los descomprime `extraerComic.cjs` en otro hilo, a `cache/comics`), `traduccion` (Gemini: traducir y, desde la 1.9, «Explicar», que guarda cada explicación 30 días en `.broots/explicaciones`), `compartir`, `habito` (sesiones de lectura y relecturas en `.broots/habito`, un archivo por mes y por PC; crea la columna «Estado» con `calibredb add_custom_column`), `anotaciones` (subrayados y notas del lector en `.broots/subrayados-lector`, un archivo por PC, y la lista única Broots + Kindle de cada libro) y `cuaderno` (el .md de cada libro en su carpeta `data`, la de Calibre para archivos extra; lo de abajo de `<!-- broots:fin -->` es del usuario y no se toca).
+  - El resto, una función cada uno: `edicion`, `agregar`, `nombreDeArchivo` (qué dice el nombre de un archivo sin datos adentro: título, autores, serie, editorial; lo usa `agregarArchivos`), `duplicados`, `metadatos`, `web` (Amazon), `envio` (Kindle por Gmail), `subrayados` (los del Kindle), `club`, `lector` (EPUB), `paginas` (PDF de a pedazos y cómics; los CBR los descomprime `extraerComic.cjs` en otro hilo, a `cache/comics`), `traduccion` (Gemini: traducir y, desde la 1.9, «Explicar», que guarda cada explicación 30 días en `.broots/explicaciones`), `compartir`, `habito` (sesiones de lectura y relecturas en `.broots/habito`, un archivo por mes y por PC; crea la columna «Estado» con `calibredb add_custom_column`), `anotaciones` (subrayados y notas del lector en `.broots/subrayados-lector`, un archivo por PC, y la lista única Broots + Kindle de cada libro), `diccionario` («Definir»: baja, verifica y busca; ver Diccionario) y `cuaderno` (el .md de cada libro en su carpeta `data`, la de Calibre para archivos extra; lo de abajo de `<!-- broots:fin -->` es del usuario y no se toca).
 - `app/src/`: interfaz React. `components/` con una pantalla u hoja por archivo (`Tour.jsx`: el tour de bienvenida, textos en `tour.*`); `lib/` con búsqueda tipo Calibre, formato, movimiento (resortes), epub, `lectura.js` (tema, fuente, interlineado y márgenes del lector; los colores de cada tema están en `index.css`, `[data-tema-lector]`), `paginas.js` y `pdf.js` (el lector de páginas: `LectorPaginas.jsx`, para PDF y cómics), subrayados (anclas por párrafo y pintar con `<mark>`, que no mueve el texto), `idioma.js` (`t()` de la interfaz), el manual de la Ayuda (`manual/<idioma>.js`: si cambia una función, actualizar los tres) y las instrucciones del club (`club/<idioma>.js`).
 - `app/idiomas/`: los textos de Broots, un archivo por idioma (`es.json`, `en.json`, `pt.json`), con una sección `interfaz` y otra `electron`.
 - `app/pruebas/`: pruebas automáticas (ver abajo).
 - `app/build/`: ícono. `app/instalador/`: instaladores generados (no van al repositorio).
-- `app/scripts/`: `dev`, `publicar` (ver Versiones), `notas` (la descripción de cada versión) y `preparar-version` (lo usa Actions).
+- `app/scripts/`: `dev`, `publicar` (ver Versiones), `notas` (la descripción de cada versión), `preparar-version` (lo usa Actions) y `armar-diccionarios` (a mano, ver Diccionario).
 - `.github/workflows/instalador.yml`: GitHub Actions arma el instalador en el repositorio público.
 
 ## Reglas de oro
@@ -37,6 +37,7 @@ Gestor de e-books de escritorio (Windows) compatible con Calibre: misma carpeta 
 - Una versión nueva de calibredb actualiza el esquema de `metadata.db`. Por eso, si Calibre está instalado, se usa ese y no la copia propia.
 - Jerarquías: «Sagas.Harry Potter» cuelga de «Sagas». Broots siempre las muestra en árbol (`ramasDeEtiqueta` en `lib/biblioteca.js`, que no parte puntos finales, iniciales, números ni direcciones web) y entiende `tags:"=.Sagas"` y `tags:"=..Sagas"`.
 - `calibredb remove` manda a la papelera de Calibre (`--permanent` solo en copias temporales).
+- Sin datos adentro, Calibre copia el nombre del archivo como título (y parte «Título - Autor» solo). `ebook-meta` lee lo mismo sin tocar nada: si el título es el nombre, Broots lo limpia. Va en `calibredb add --title`, no en un `set_metadata` posterior: Calibre busca los repetidos con el título que recibe, y si se limpiara después, el mismo archivo agregado dos veces no se reconocería.
 
 ## PDF y cómics
 
@@ -45,6 +46,15 @@ Gestor de e-books de escritorio (Windows) compatible con Calibre: misma carpeta 
 - Con la app en el disco no hay servidor: pdf.js pide tipografías y tablas por IPC (`recursoPdf`) y el archivo de a pedazos (`rangoPdf`).
 - DRM y contraseña: pdf.js se niega a abrirlos y `lib/pdf.js` traduce el error. Nunca pasarle una contraseña ni insistir. Los PDF con la marca de «no copiar» y contraseña vacía se leen (decisión del usuario).
 - Posición: en `lectura.json`, cada formato en `formatos.<FORMATO>`. Capítulo y párrafo de afuera son del EPUB; progreso y página de afuera son los del último formato leído (los muestra el panel).
+
+## Diccionario
+
+- «Definir» (`components/Definir.jsx`, `lib/diccionario.js`, `electron/diccionario.cjs`): uno por idioma (español, inglés, portugués), resumido de Wiktionary. No viaja en el instalador: se baja la primera vez que se pide, de **`IVANICUSXXIII/broots-diccionarios`**, a `%LOCALAPPDATA%\Broots\diccionarios`. Después no usa internet.
+- Licencia CC BY-SA 4.0: es un archivo de datos aparte, no se mezcla con el código GPL. Cada definición muestra el crédito (enlace a su página de Wiktionary, «resumido» y la licencia): no sacarlo. Avisos en `licencias-de-terceros.txt` y `CREDITOS.txt` (en el repositorio de diccionarios).
+- Va en su propio repositorio para no tocar `releases/latest` de `broots`, de donde salen las actualizaciones. Es público: subir ahí solo con el OK del usuario.
+- `electron/diccionarios.json` fija versión, dirección, huella y pesos de cada uno. Para sacar diccionarios nuevos: `scripts/armar-diccionarios.mjs` (las instrucciones están al principio; tarda más de una hora), subir los `.db.br` a una versión nueva, copiar el json y correr `diccionario-real`. Un diccionario de una versión anterior se sigue usando mientras baja el nuevo en silencio.
+- Qué diccionario se usa lo decide `elegirDiccionario`: lo que se ve en pantalla (párrafo traducido → idioma de Broots; si no, por sus palabras), después el idioma del libro y después el de Broots. Por el texto y no por Calibre a propósito: hay libros mal etiquetados y citas en otro idioma.
+- En `palabras`, varias filas pueden compartir `clave` («año» y «ano»): siempre gana la coincidencia exacta. En el crudo de wiktextract hay verbos raros cuya base no tiene definición: esas formas guardan su texto («Participio de bosticar»).
 
 ## Interfaz y rendimiento
 
@@ -63,6 +73,10 @@ node pruebas/correr.mjs            # lista los escenarios
 node pruebas/correr.mjs lector     # corre uno
 ```
 
+Cuánto probar: mientras se trabaja, solo los escenarios del tema. `todos`, una sola vez antes de unir (tarda de 7 a 14 minutos); después, repetir solo lo que falló, con el comando que da el resumen final. Otra corrida completa solo si un arreglo toca algo compartido, y diciendo por qué.
+
+Una sola corrida a la vez en toda la PC: la que llega después espera su turno hasta 20 minutos (`%LOCALAPPDATA%\Broots-pruebas\turno.json`), así que no hacen falta esperas ni bucles a mano. Cada escenario se corta a los 4 minutos (10 los marcados `lento`). Con `BROOTS_DATOS`, la ventana no se frena al quedar tapada o minimizada (`backgroundThrottling` en `main.cjs`): frenada, una prueba de 25 s tardaba más de 3 minutos.
+
 El corredor arma la biblioteca de prueba copiando la base real (solo lectura) y algunos libros, corre Broots con `BROOTS_DATOS`, verifica que la ventana abrió la biblioteca de prueba y, al final, que la base real no cambió. Simulaciones disponibles:
 - `BROOTS_TRADUCCION_FALSA=1`: traduce anteponiendo el idioma ("ES· ", "EN· "…).
 - `BROOTS_IDIOMA_WINDOWS=pt-BR`: simula el idioma de Windows. El corredor pone `es-AR` en todos los escenarios (las pruebas buscan textos en español), salvo que el escenario pida otro.
@@ -73,6 +87,7 @@ El corredor arma la biblioteca de prueba copiando la base real (solo lectura) y 
 - En pruebas, «Buscar» no abre el navegador: anota la dirección en `busquedas.log` (dentro de `BROOTS_DATOS`). Y `window.lector.pruebaCruz()` hace lo mismo que tocar la cruz (`window.close()` no sirve: se saltea el evento).
 - `BROOTS_AGREGAR=a.cbz;b.pdf|c.epub`: con `BROOTS_DATOS`, cada toque de «+» agrega esos archivos sin abrir el diálogo («;» separa una vez de otra y «|», los archivos).
 - `BROOTS_EJECUTABLE=instalador/win-unpacked/Broots.exe` (con `--sin-compilar`): corre las pruebas sobre el programa ya empaquetado. Sirve para lo que cambia dentro del `.asar`, como el hilo que descomprime los CBR.
+- `BROOTS_DICCIONARIOS=manifiesto.json`: de dónde bajar los diccionarios, en vez de GitHub; `=real` baja los de verdad (lo usa el escenario `diccionario-real`, que es lento y no corre con `todos`). Sin esta variable, las pruebas no bajan ningún diccionario.
 - `BROOTS_VENTANA=960x600`: abre la ventana con ese tamaño (solo con `BROOTS_DATOS`). Fuera de las pruebas, Broots recuerda el tamaño en `ventana.json` y la primera vez abre maximizada.
 
 Un escenario puede sumar claves al `config.json` de prueba con `config: () => ({ … })` (el corredor lo escribe con `JSON.stringify` y siempre fija `libraryPath` a la biblioteca de prueba) y mandarle datos a su prueba con `datos: () => ({ … })`. `pruebas/libros-de-prueba.mjs` arma a mano PDF (también con DRM o contraseña), CBZ y CBR (RAR 4 y 5, sin compresión; sin WinRAR no se pueden armar comprimidos).

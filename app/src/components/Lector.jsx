@@ -31,6 +31,7 @@ import { FormularioGemini } from './Gemini.jsx';
 import { IconoAnterior, IconoCerrar, IconoEnfoque, IconoIndice, IconoLlave, IconoMedida, IconoSiguiente, IconoSubrayar, IconoTraducir } from './Iconos.jsx';
 import { PanelLectura } from './LecturaAMedida.jsx';
 import { TarjetaExplicacion, useExplicar } from './Explicar.jsx';
+import { TarjetaDefinicion, useDefinir } from './Definir.jsx';
 import { AvisoSesion, BotonSesion, useSesionLectura } from './SesionLectura.jsx';
 import { BarraSubrayado, NotaSubrayado, PanelSubrayados, useSubrayados } from './SubrayadosLector.jsx';
 
@@ -190,11 +191,15 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
   }, []);
   const sub = useSubrayados({ libro, r, texto, marco, abierto: Boolean(datos), avisar });
   const explicar = useExplicar({ libro, sub, avisar }); // 1.9
+  const definir = useDefinir({ sub, explicar, avisar, r, idiomaLibro: datos?.idioma || libro.languages[0] }); // 1.12
 
   // ---------- Medidas y páginas ----------
 
   const medir = useCallback(() => {
-    const caja = marco.current.getBoundingClientRect();
+    // El tamaño real, no el de pantalla: mientras el lector se abre, el resorte lo achica apenas y getBoundingClientRect
+    // daría de menos. Después, la medida «corregida» hacía contar otra vez todas las páginas del libro.
+    const estilo = getComputedStyle(marco.current);
+    const caja = { width: parseFloat(estilo.width), height: parseFloat(estilo.height) };
     const disponible = caja.width - r.margenes.lateral * 2;
     const cols = disponible >= 1000 ? 2 : 1;
     const ancho = Math.floor(Math.min(r.margenes.ancho, (disponible - ESPACIO * (cols - 1)) / cols));
@@ -552,13 +557,20 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aproximado]);
 
-  // Guarda por dónde vas cada vez que cambia la página (y la barrita de subrayar, si quedó abierta, se va).
+  // Guarda por dónde vas cada vez que cambia la página y cuando termina de contarlas (recién ahí hay números firmes).
   useEffect(() => {
     if (capitulos.length) guardarPosicion(Math.round(progreso * 1000) / 1000, aproximado ? null : ultimaVisible, aproximado ? null : totalPaginas);
-    sub.cerrarBarra();
-    explicar.cerrar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [info.cap, info.vista, aproximado]);
+
+  // Al cambiar de página, la barrita de subrayar y la tarjeta de «Explicar» se van. Solo entonces: el conteo corre en
+  // segundo plano y, si cerrara lo que esté abierto al terminar, se te iría de las manos mientras lo usás.
+  useEffect(() => {
+    sub.cerrarBarra();
+    explicar.cerrar();
+    definir.cerrar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [info.cap, info.vista]);
 
   // Última página del libro: la sesión ofrece marcarlo como Leído.
   useEffect(() => {
@@ -723,6 +735,7 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
       }
       if (e.key === 'Escape') {
         if (explicar.tarjeta) return explicar.cerrar(); // 1.9: la tarjetita de «Explicar»
+        if (definir.tarjeta) return definir.cerrar(); // 1.12: la de «Definir»
         if (sub.cerrarAlgo()) return; // la nota, la barrita de subrayar o la lista de subrayados
         if (claveAbierta) setClaveAbierta(false);
         else if (panelMedida) setPanelMedida(false);
@@ -748,7 +761,7 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
     };
     window.addEventListener('keydown', alPresionar);
     return () => window.removeEventListener('keydown', alPresionar);
-  }, [siguiente, anterior, onCerrar, explicar.tarjeta, claveAbierta, panelMedida, indiceAbierto, enfoque, imagenGrande, actividad, sesion.panelAbierto, sesion.setPanelAbierto]);
+  }, [siguiente, anterior, onCerrar, explicar.tarjeta, definir.tarjeta, claveAbierta, panelMedida, indiceAbierto, enfoque, imagenGrande, actividad, sesion.panelAbierto, sesion.setPanelAbierto]);
 
   // Rueda del mouse o del touchpad: una página por gesto.
   const ultimaRueda = useRef(0);
@@ -758,7 +771,7 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
       if (!sub.nota && !imagenGrande) alPellizcar(e.deltaY);
       return;
     }
-    if (sub.nota || sub.panelAbierto || panelMedida || explicar.tarjeta || indiceAbierto || imagenGrande) return; // escribiendo una nota o con un panel abierto, la rueda no pasa de página
+    if (sub.nota || sub.panelAbierto || panelMedida || explicar.tarjeta || definir.tarjeta || indiceAbierto || imagenGrande) return; // escribiendo una nota o con un panel abierto, la rueda no pasa de página
     const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
     if (Math.abs(delta) < 12 || Date.now() - ultimaRueda.current < 380) return;
     ultimaRueda.current = Date.now();
@@ -1084,12 +1097,13 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
         {/* Subrayados: la lista de la derecha y, al seleccionar o tocar uno, la barrita y la nota. El velo hace que
             el clic afuera solo las cierre (no pasa de página); si estabas escribiendo una nota, la guarda. */}
         <PanelSubrayados sub={sub} libroId={libro.id} onIr={irASubrayado} alResultado={(texto, error) => avisar(texto, error ? 'errorSubrayado' : 'subrayado')} />
-        {(sub.barra || sub.nota || explicar.tarjeta) && (
-          <div data-velo-subrayado className="absolute inset-0 z-[25]" onClick={() => (sub.nota ? sub.guardarNota() : explicar.tarjeta ? explicar.cerrar() : sub.cerrarBarra())} />
+        {(sub.barra || sub.nota || explicar.tarjeta || definir.tarjeta) && (
+          <div data-velo-subrayado className="absolute inset-0 z-[25]" onClick={() => (sub.nota ? sub.guardarNota() : explicar.tarjeta ? explicar.cerrar() : definir.tarjeta ? definir.cerrar() : sub.cerrarBarra())} />
         )}
-        <BarraSubrayado sub={sub} onExplicar={explicar.abrir} />
+        <BarraSubrayado sub={sub} onExplicar={explicar.abrir} onDefinir={definir.abrir} />
         <NotaSubrayado sub={sub} />
         <TarjetaExplicacion explicar={explicar} onConfigurar={() => setClaveAbierta(true)} />
+        <TarjetaDefinicion definir={definir} />
 
         <PanelLectura abierto={panelMedida} onCerrar={() => setPanelMedida(false)} ajustes={ajustes} onCambiar={cambiarAjustes} />
 

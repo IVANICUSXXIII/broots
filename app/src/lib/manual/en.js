@@ -53,6 +53,7 @@ export const MANUAL = [
         lista: [
           'Click the “+” in the top bar, or drag the files (EPUB, PDF, MOBI…) onto the Broots window. Whole stacks welcome.',
           'When it’s done, Broots takes you to the new book and opens its panel. If you added several, it shows you the first and marks them all for a moment. If a search or filter was hiding it, Broots clears them and tells you.',
+          'If a file has no data of its own, Broots gets it from the file name: it removes download-site signatures and, when the name says so, fills in author, series and publisher. It also separates words stuck together and fixes all-caps titles. Files with their own data and books already in your library stay as they are.',
           'If a book has no EPUB or PDF, its panel shows “Convert to EPUB” or “Convert to PDF”. It may take a little while: perfect time to put the kettle on.',
           'Protected books (DRM) are copied as they are: Broots doesn’t remove their protection or convert them.',
         ],
@@ -150,6 +151,23 @@ export const MANUAL = [
           '“Justify text” makes it even on both sides, like a printed book. It starts off because now and then it leaves a gap between words.',
           'Your choices apply to every book on this PC. You can also change them in Settings → Reading and translation, with a preview.',
           'Your highlights stick to the text: with another font or other margins they stay put (the page number changes, the sentence doesn’t).',
+        ],
+      },
+      { subtitulo: 'Define a word, offline' },
+      {
+        pasos: [
+          'Select a word or a short expression (a double-click picks a word).',
+          'In the highlight bar, click “Define”.',
+          'Its meaning appears right away. If it’s a form like “ran” or “sister’s”, it takes you to “run” or “sister”.',
+        ],
+      },
+      {
+        lista: [
+          'The first time you define something in a language, Broots downloads that dictionary: Spanish (18 MB), English (41 MB) or Portuguese (10 MB). It only downloads once and stays on this PC, not in your library folder. After that, it works offline.',
+          'The definition comes in the language of what you’re looking at: a book in English is defined in English, and a paragraph translated by Broots, in Broots’s language. For the meaning in that paragraph, in your language, click “Explain”.',
+          'If the word isn’t there (it happens with proper names and with very new or very rare words), the card says so and offers “Explain with Gemini”. It doesn’t call Gemini on its own, so it won’t use up your quota.',
+          'There are dictionaries for Spanish, English and Portuguese. For now it works in EPUB: PDFs and comics don’t have text selection yet.',
+          'The dictionaries are an abridged version of Wiktionary, written by volunteers. They’re very complete, but some definitions can be uneven. The credit is on every card, with a link to the original page.',
         ],
       },
       { subtitulo: 'Explain a word or a sentence' },

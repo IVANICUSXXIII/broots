@@ -108,23 +108,33 @@ export default {
   },
   async prueba({ PRUEBA, hasta, comprobar, boton, tecla, esperar }) {
     const id = PRUEBA.libros.epub[0].id;
+    // El filtro se toca en cuanto aparece: si la lista se reiniciara al montarse, se perdería ese primer toque.
+    let filtroTocado = false;
+    const vigia = new MutationObserver(() => {
+      const filtro = document.querySelector('[data-filtro-origen="kindle"]');
+      if (!filtro || filtroTocado) return;
+      filtroTocado = true;
+      vigia.disconnect();
+      filtro.click();
+    });
+    vigia.observe(document.body, { childList: true, subtree: true });
     document.querySelector(`[data-tarjeta="${id}"] button`).click();
     const panel = await hasta(() => document.querySelector('.fixed.top-11'));
     const lista = await hasta(() => panel.querySelector('[data-subrayados-panel]'), 10000);
     const items = () => [...(lista?.querySelectorAll('[data-subrayado-panel]') ?? [])];
-    comprobar('el panel muestra una sola lista con los tres', items().length === 3, lista?.innerText.slice(0, 300));
-    comprobar('con el origen de cada uno', items().filter((e) => e.dataset.origen === 'kindle').length === 2 && items().filter((e) => e.dataset.origen === 'broots').length === 1);
-    lista?.querySelector('[data-filtro-origen="kindle"]')?.click();
     await esperar(300);
-    comprobar('el filtro «Kindle» deja solo los del Kindle', items().length === 2 && items().every((e) => e.dataset.origen === 'kindle'));
+    comprobar('el filtro «Kindle» deja solo los del Kindle, aunque se toque apenas aparece', filtroTocado && items().length === 2 && items().every((e) => e.dataset.origen === 'kindle'));
     lista?.querySelector('[data-filtro-origen="todos"]')?.click();
     await esperar(300);
+    comprobar('el panel muestra una sola lista con los tres', items().length === 3, lista?.innerText.slice(0, 300));
+    comprobar('con el origen de cada uno', items().filter((e) => e.dataset.origen === 'kindle').length === 2 && items().filter((e) => e.dataset.origen === 'broots').length === 1);
 
     // En el lector: la lista tiene los tres; el inventado no se puede ir (no está en el EPUB).
     boton(panel, 'Leer').click();
     const texto = await hasta(() => document.querySelector('.texto-libro')?.childElementCount && document.querySelector('.texto-libro'));
     const lector = texto?.closest('.fixed');
-    await hasta(() => !/de (~|…)/.test(lector.querySelector('footer').innerText), 60000);
+    const contando = () => /de (~|…)/.test(lector.querySelector('footer').innerText);
+    await hasta(() => !contando(), 60000);
     await hasta(() => /\d/.test(lector.querySelector('[data-boton-subrayados]')?.innerText ?? ''), 10000);
     lector.querySelector('[data-boton-subrayados]').click();
     const enLector = await hasta(() => lector.querySelector('[data-panel-subrayados]'), 5000);
@@ -142,10 +152,25 @@ export default {
     await esperar(800);
     comprobar('el del Kindle se pinta en su capítulo, a la vista', enPantalla(kindle), kindle?.textContent);
     comprobar('y llega con el anillo para encontrarlo', kindle?.classList.contains('destacado') || texto.querySelector('mark.destacado'));
+    comprobar('cambiar de capítulo no hace contar las páginas otra vez', !contando(), lector.querySelector('footer').innerText);
     // Tocarlo abre una barrita sin colores (solo Copiar): los del Kindle se cambian en el Kindle.
     kindle?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     const barraKindle = await hasta(() => lector.querySelector('[data-barra-subrayado="kindle"]'), 5000);
     comprobar('tocar el del Kindle abre la barrita, sin colores ni borrar', barraKindle && !barraKindle.querySelector('[data-color], [data-accion="borrar"]'));
+    tecla('Escape');
+    await hasta(() => !lector.querySelector('[data-barra-subrayado]'), 3000);
+
+    // Mientras se cuentan las páginas (cambiar la letra las hace contar de nuevo), la barrita abierta no se cierra sola.
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: '+', ctrlKey: true }));
+    await hasta(contando, 5000);
+    await esperar(300); // que se reacomode la letra nueva (eso sí puede mover la página)
+    texto.querySelector('mark[data-subrayado="kindle-encontrado"]').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    const barraContando = await hasta(() => lector.querySelector('[data-barra-subrayado="kindle"]'), 2000);
+    const abrioContando = contando();
+    await hasta(() => !contando(), 60000);
+    await esperar(300);
+    comprobar('la barrita abierta mientras se cuentan las páginas', barraContando && abrioContando, `barrita: ${Boolean(barraContando)}, contando: ${abrioContando}`);
+    comprobar('sigue abierta cuando termina el conteo', lector.querySelector('[data-barra-subrayado="kindle"]'));
     tecla('Escape');
     await hasta(() => !lector.querySelector('[data-barra-subrayado]'), 3000);
 

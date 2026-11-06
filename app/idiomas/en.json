@@ -1014,6 +1014,28 @@
       "justificarDetalle": "Even on both sides, like a printed book. Now and then it leaves a gap between words.",
       "letraActual": "Text size: {n}"
     },
+    "definir": {
+      "boton": "Define",
+      "botonExplica": "What it means, according to the dictionary: instantly and offline",
+      "buscando": "Flipping through the dictionary…",
+      "bajando": "Downloading the {idioma} dictionary ({peso})…",
+      "preparando": "Putting it on the shelf…",
+      "unaSolaVez": "It only downloads once. After that, it works offline.",
+      "cancelar": "Cancel",
+      "formaDe": "Form of",
+      "noEsta": "This one isn’t in the {idioma} dictionary. It may be a proper name, or something very new or very rare.",
+      "sinDiccionario": "There’s no dictionary for this language yet: Broots has Spanish, English and Portuguese.",
+      "explicarConGemini": "Explain with Gemini",
+      "noPude": "I couldn’t search the dictionary. Please try again.",
+      "resumido": "abridged",
+      "creditoExplica": "Definition from Wiktionary, abridged by Broots. CC BY-SA 4.0 license. Click to see the original page or the license.",
+      "prefijoNota": "Definition of “{palabra}” (Wiktionary, CC BY-SA 4.0): ",
+      "idiomas": {
+        "es": "Spanish",
+        "en": "English",
+        "pt": "Portuguese"
+      }
+    },
     "explicar": {
       "boton": "Explain",
       "botonExplica": "Ask Gemini what this means, in context and spoiler-free",
@@ -1171,6 +1193,14 @@
       "errorDesconocido": "unknown error",
       "noPudo": "Calibre couldn't finish the operation: {detalle}",
       "compartida": "This is a shared library: it is read-only."
+    },
+    "diccionario": {
+      "noPude": "I couldn’t download the dictionary. Please try again.",
+      "sinInternet": "I couldn’t download the dictionary: there seems to be no internet. It only needs a connection this once.",
+      "respondio": "I couldn’t download the dictionary (the server replied {estado}). Please try again later.",
+      "noCoincide": "The downloaded dictionary doesn’t match the original, so I discarded it. Please try again.",
+      "sinEspacio": "There’s not enough disk space for the dictionary: it needs {megas} MB.",
+      "cortada": "The dictionary download took too long and was cut off. Please try again."
     },
     "calibrePropio": {
       "noPudeConsultar": "couldn't check the latest Calibre version (GitHub answered {estado})",

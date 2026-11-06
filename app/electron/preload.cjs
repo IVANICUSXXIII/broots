@@ -70,6 +70,16 @@ contextBridge.exposeInMainWorld('lector', {
   colorBarra: (colores) => ipcRenderer.invoke('lector:colorBarra', colores),
   // 1.9: «Explicar»: qué quiere decir lo seleccionado, en su contexto (Gemini, al idioma de Broots).
   explicar: (id, pedido) => ipcRenderer.invoke('traduccion:explicar', id, pedido),
+  // 1.12: «Definir»: el diccionario sin internet. Se baja una vez, la primera que se pide.
+  definir: (idioma, texto) => ipcRenderer.invoke('diccionario:definir', idioma, texto),
+  bajarDiccionario: (idioma) => ipcRenderer.invoke('diccionario:bajar', idioma),
+  cancelarDiccionario: (idioma) => ipcRenderer.invoke('diccionario:cancelar', idioma),
+  abrirDiccionario: (destino, idioma, palabra) => ipcRenderer.invoke('diccionario:abrir', destino, idioma, palabra),
+  alProgresoDiccionario: (avisar) => {
+    const oyente = (_e, estado) => avisar(estado);
+    ipcRenderer.on('diccionario:progreso', oyente);
+    return () => ipcRenderer.removeListener('diccionario:progreso', oyente);
+  },
   // 1.10: con un libro abierto, la cruz de la ventana cierra el libro (main.cjs le avisa al lector).
   abierto: (si) => ipcRenderer.invoke('lector:abierto', si),
   pruebaCruz: () => ipcRenderer.invoke('pruebas:cruz'),

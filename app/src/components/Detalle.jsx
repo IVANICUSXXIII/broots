@@ -281,11 +281,7 @@ function ListaSubrayados({ libro, lista }) {
   const [todos, setTodos] = useState(false);
   const [origen, setOrigen] = useState('todos');
   const [resultado, setResultado] = useState(null);
-  useEffect(() => {
-    setTodos(false);
-    setOrigen('todos');
-    setResultado(null);
-  }, [libro.id]);
+  // Vive adentro del bloque con key={libro.id}: otro libro es otra lista, y todo esto vuelve a empezar solo.
   const { entradas } = lista;
   const deAmbos = entradas.some((e) => e.origen === 'broots') && entradas.some((e) => e.origen === 'kindle');
   const filtradas = origen === 'todos' || !deAmbos ? entradas : entradas.filter((e) => e.origen === origen);

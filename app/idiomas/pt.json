@@ -1014,6 +1014,28 @@
       "justificarDetalle": "Alinhado dos dois lados, como no papel. Às vezes deixa um vão entre as palavras.",
       "letraActual": "Tamanho da letra: {n}"
     },
+    "definir": {
+      "boton": "Definir",
+      "botonExplica": "O que significa, segundo o dicionário: na hora e sem internet",
+      "buscando": "Folheando o dicionário…",
+      "bajando": "Baixando o dicionário de {idioma} ({peso})…",
+      "preparando": "Colocando na estante…",
+      "unaSolaVez": "Baixa uma vez só. Depois funciona sem internet.",
+      "cancelar": "Cancelar",
+      "formaDe": "Forma de",
+      "noEsta": "Esta não está no dicionário de {idioma}. Pode ser um nome próprio, ou algo muito novo ou muito raro.",
+      "sinDiccionario": "Ainda não há dicionário para este idioma: o Broots tem espanhol, inglês e português.",
+      "explicarConGemini": "Explicar com o Gemini",
+      "noPude": "Não consegui consultar o dicionário. Tente de novo.",
+      "resumido": "resumido",
+      "creditoExplica": "Definição do Wiktionary, resumida pelo Broots. Licença CC BY-SA 4.0. Clique para ver a página original ou a licença.",
+      "prefijoNota": "Definição de “{palabra}” (Wiktionary, CC BY-SA 4.0): ",
+      "idiomas": {
+        "es": "espanhol",
+        "en": "inglês",
+        "pt": "português"
+      }
+    },
     "explicar": {
       "boton": "Explicar",
       "botonExplica": "O Gemini explica o que isso quer dizer, nesse contexto e sem spoilers",
@@ -1171,6 +1193,14 @@
       "errorDesconocido": "erro desconhecido",
       "noPudo": "O Calibre não conseguiu concluir a operação: {detalle}",
       "compartida": "Esta é uma biblioteca compartilhada: é somente leitura."
+    },
+    "diccionario": {
+      "noPude": "Não consegui baixar o dicionário. Tente de novo.",
+      "sinInternet": "Não consegui baixar o dicionário: parece que não há internet. Só precisa de conexão desta vez.",
+      "respondio": "Não consegui baixar o dicionário (o servidor respondeu {estado}). Tente de novo mais tarde.",
+      "noCoincide": "O dicionário baixado não confere com o original, então foi descartado. Tente de novo.",
+      "sinEspacio": "Não há espaço em disco para o dicionário: são necessários {megas} MB.",
+      "cortada": "O download do dicionário demorou demais e foi interrompido. Tente de novo."
     },
     "calibrePropio": {
       "noPudeConsultar": "não foi possível consultar a última versão do Calibre (o GitHub respondeu {estado})",

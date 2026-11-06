@@ -9,6 +9,18 @@ instalador para leer PDF y cómics, cada una con su licencia:
 
 El resto de las dependencias con su licencia está en la carpeta de cada paquete (node_modules).
 
+Datos que NO viajan en el instalador y no son parte del programa: Broots los baja aparte, la primera vez que se toca
+«Definir» en ese idioma, y conservan su propia licencia:
+
+* Diccionarios de Broots (https://github.com/IVANICUSXXIII/broots-diccionarios), licencia Creative Commons
+  Atribución-CompartirIgual 4.0 Internacional (CC BY-SA 4.0, https://creativecommons.org/licenses/by-sa/4.0/). Son una
+  versión resumida de Wiktionary (https://www.wiktionary.org/), obra de sus colaboradores. Los datos los extrae
+  kaikki.org (https://kaikki.org/) con wiktextract (https://github.com/tatuylonen/wiktextract, de Tatu Ylonen, licencia
+  MIT; solo se usa lo que produce, el programa no se distribuye). Cambios: sin nombres propios, ejemplos, etimología ni
+  pronunciación; hasta 12 sentidos por categoría; las formas conjugadas apuntan a su palabra base; marcas traducidas y
+  filtradas. Detalle en CREDITOS.txt, en ese repositorio. Cada definición muestra el crédito, con un enlace a su página
+  de Wiktionary y a la licencia. Ni Wiktionary ni sus autores respaldan a Broots.
+
 
 libarchive
 ----------

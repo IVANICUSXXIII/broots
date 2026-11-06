@@ -21,6 +21,7 @@ const cuaderno = require('./cuaderno.cjs');
 const traduccion = require('./traduccion.cjs');
 const compartir = require('./compartir.cjs');
 const calibrePropio = require('./calibrePropio.cjs');
+const diccionario = require('./diccionario.cjs');
 const actualizaciones = require('./actualizaciones.cjs');
 const idioma = require('./idioma.cjs');
 const { t } = idioma;
@@ -598,6 +599,8 @@ function crearVentana() {
       sandbox: true,
       // El festejo de una versión nueva suena al abrir, sin esperar un clic (se apaga en Configuración).
       autoplayPolicy: 'no-user-gesture-required',
+      // En pruebas, una ventana tapada o minimizada no se frena: si no, una prueba de 25 s tarda más de 3 minutos.
+      backgroundThrottling: !process.env.BROOTS_DATOS,
     },
   });
 
@@ -952,6 +955,23 @@ ipcMain.handle('traduccion:traducir', (_e, id, textos, urgente) => {
   // Siempre al idioma de Broots (cada idioma tiene su propia caché).
   return traduccion.traducir(leerConfig(), carpetaDatos(), libro.uuid, (textos ?? []).map(String), Boolean(urgente), idioma.actual());
 });
+// 1.12: «Definir» lo seleccionado en el lector, con el diccionario sin internet.
+ipcMain.handle('diccionario:definir', (_e, idioma, texto) => diccionario.definir(idioma, texto));
+ipcMain.handle('diccionario:bajar', (_e, idioma) =>
+  diccionario.bajarDiccionario(idioma, (estado) => {
+    if (ventana && !ventana.isDestroyed()) ventana.webContents.send('diccionario:progreso', estado);
+  }),
+);
+ipcMain.handle('diccionario:cancelar', (_e, idioma) => diccionario.cancelarBajada(idioma));
+ipcMain.handle('diccionario:abrir', (_e, destino, idioma, palabra) => {
+  const direccion = diccionario.direccion(destino, idioma, palabra);
+  if (!direccion) return { ok: false };
+  // En pruebas no se abre el navegador: se anota adónde iría.
+  if (process.env.BROOTS_DATOS) fs.appendFileSync(path.join(process.env.BROOTS_DATOS, 'busquedas.log'), `${direccion}\n`);
+  else shell.openExternal(direccion);
+  return { ok: true };
+});
+
 // 1.9: «Explicar» lo seleccionado en el lector, en el idioma de Broots (se guarda 30 días, como caché).
 ipcMain.handle('traduccion:explicar', (_e, id, pedido) => {
   const libro = libroPorId(id);

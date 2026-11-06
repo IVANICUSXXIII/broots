@@ -65,10 +65,11 @@ export function useExplicar({ libro, sub, avisar }) {
     avisar(t('subrayados.lector.copiado'), 'subrayado');
   };
 
-  return { tarjeta, abrir, cerrar, guardarComoNota, copiar, reintentar: () => tarjeta && pedir(tarjeta) };
+  // pedir: también lo usa la tarjeta de «Definir» (1.12), para pasar del diccionario a Gemini.
+  return { tarjeta, abrir, pedir, cerrar, guardarComoNota, copiar, reintentar: () => tarjeta && pedir(tarjeta) };
 }
 
-function Accion({ children, ...props }) {
+export function AccionTarjeta({ children, ...props }) {
   return (
     <motion.button
       type="button"
@@ -82,20 +83,21 @@ function Accion({ children, ...props }) {
 }
 
 /**
- * La tarjetita: debajo de lo seleccionado si entra; si no, arriba (pero nunca pegada al borde de arriba, donde
- * aparecen los avisos del lector). onConfigurar abre el panel de la clave de Gemini.
+ * Dónde va una tarjetita: debajo de lo seleccionado si entra (alto: lo que puede llegar a ocupar); si no, arriba, pero
+ * nunca pegada al borde de arriba, donde aparecen los avisos del lector.
  */
+export function lugarTarjeta(caja, ancho, alto) {
+  return {
+    left: Math.min(Math.max(caja.x + caja.ancho / 2, ancho / 2 + 8), caja.anchoMarco - ancho / 2 - 8),
+    ...(caja.y + caja.alto + alto < caja.altoMarco ? { top: caja.y + caja.alto + 10 } : { bottom: Math.min(caja.altoMarco - caja.y + 10, caja.altoMarco - alto - 40) }),
+  };
+}
+
+/** La tarjetita. onConfigurar abre el panel de la clave de Gemini. */
 export function TarjetaExplicacion({ explicar, onConfigurar }) {
   const x = explicar.tarjeta;
   const ANCHO = 336;
-  const lugar = x
-    ? {
-        left: Math.min(Math.max(x.caja.x + x.caja.ancho / 2, ANCHO / 2 + 8), x.caja.anchoMarco - ANCHO / 2 - 8),
-        ...(x.caja.y + x.caja.alto + 210 < x.caja.altoMarco
-          ? { top: x.caja.y + x.caja.alto + 10 }
-          : { bottom: Math.min(x.caja.altoMarco - x.caja.y + 10, x.caja.altoMarco - 250) }),
-      }
-    : null;
+  const lugar = x ? lugarTarjeta(x.caja, ANCHO, 210) : null;
   return (
     <AnimatePresence>
       {x && (
@@ -131,13 +133,13 @@ export function TarjetaExplicacion({ explicar, onConfigurar }) {
               </p>
               <div className="mt-2 flex items-center gap-1 border-t border-borde pt-2">
                 {x.modo !== 'kindle' && (
-                  <Accion data-guardar-explicacion onClick={explicar.guardarComoNota} title={t('explicar.guardarExplica')}>
+                  <AccionTarjeta data-guardar-explicacion onClick={explicar.guardarComoNota} title={t('explicar.guardarExplica')}>
                     <IconoEditar className="size-3.5" /> {t('explicar.guardarComoNota')}
-                  </Accion>
+                  </AccionTarjeta>
                 )}
-                <Accion data-copiar-explicacion onClick={explicar.copiar}>
+                <AccionTarjeta data-copiar-explicacion onClick={explicar.copiar}>
                   <IconoCopiar className="size-3.5" /> {t('subrayados.lector.copiar')}
-                </Accion>
+                </AccionTarjeta>
                 <span className="min-w-0 flex-1 truncate text-right text-[0.64rem] text-tinta-tenue" title={t('explicar.cuantoDura')}>
                   {t('explicar.deGemini')}
                 </span>
@@ -150,16 +152,16 @@ export function TarjetaExplicacion({ explicar, onConfigurar }) {
               <p className={`text-[0.78rem] leading-relaxed ${x.estado === 'error' ? 'text-[#bc4749]' : 'text-tinta-suave'}`}>{x.estado === 'sinClave' ? t('explicar.faltaClave') : x.mensaje}</p>
               <div className="mt-1.5 flex gap-1">
                 {x.estado === 'sinClave' ? (
-                  <Accion
+                  <AccionTarjeta
                     onClick={() => {
                       explicar.cerrar();
                       onConfigurar();
                     }}
                   >
                     {t('lector.configurar')}
-                  </Accion>
+                  </AccionTarjeta>
                 ) : (
-                  <Accion onClick={explicar.reintentar}>{t('lector.reintentar')}</Accion>
+                  <AccionTarjeta onClick={explicar.reintentar}>{t('lector.reintentar')}</AccionTarjeta>
                 )}
               </div>
             </div>

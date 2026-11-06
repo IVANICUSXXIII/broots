@@ -4,6 +4,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const calibre = require('./calibre.cjs');
 const { idAgregado } = require('./agregar.cjs');
+const { AUTOR_DESCONOCIDO } = require('./metadatos.cjs');
+const { datosDelNombre, tituloEsElNombre, autorEsDelNombre } = require('./nombreDeArchivo.cjs');
 const { t } = require('./idioma.cjs');
 
 // ---------- Editar datos ----------
@@ -79,6 +81,41 @@ async function cambiarPortada(libraryPath, id, rutaImagen) {
 
 const EXTENSIONES_AGREGABLES = ['.epub', '.pdf', '.mobi', '.azw', '.azw3', '.kfx', '.txt', '.docx', '.rtf', '.fb2', '.cbz', '.cbr', '.djvu', '.lit', '.prc'];
 
+/** Título y autores que Calibre lee del archivo, o null si no se pudo saber (ebook-meta solo lee: no toca la biblioteca). */
+async function leidoDelArchivo(ruta) {
+  const programa = calibre.herramienta('ebook-meta');
+  if (!programa) return null;
+  const r = await calibre.ejecutar(programa, [ruta], 60000);
+  const titulo = /^Title\s*:\s*(.*?)\s*$/m.exec(r.salida)?.[1];
+  if (r.error || !titulo) return null;
+  const autores = /^Author\(s\)\s*:\s*(.*?)\s*$/m.exec(r.salida)?.[1].replace(/\s*\[.*\]$/, '') ?? '';
+  return { titulo, autores };
+}
+
+/**
+ * Si el archivo no trae datos adentro (Calibre copiaría su nombre como título), usa lo que el nombre dice, ya limpio.
+ * Si trae datos, no se toca nada. Devuelve { opciones } para «calibredb add» y la editorial, que ahí no se puede pasar.
+ * Va al agregar y no después porque Calibre busca los repetidos con estos datos: si se limpiara después, el mismo
+ * archivo agregado dos veces no se reconocería.
+ */
+async function datosParaAgregar(ruta) {
+  const datos = datosDelNombre(ruta);
+  if (!datos) return { opciones: [] };
+  const leido = await leidoDelArchivo(ruta);
+  if (!leido || !tituloEsElNombre(leido.titulo, ruta)) return { opciones: [] };
+
+  const opciones = ['--title', datos.titulo];
+  const sinAutor = AUTOR_DESCONOCIDO.includes(leido.autores);
+  // Un autor que vino de adentro del archivo se respeta aunque el título sea el nombre.
+  if (sinAutor || autorEsDelNombre(leido.autores, ruta)) {
+    if (datos.autores.length) opciones.push('--authors', datos.autores.join(' & '));
+    else if (!sinAutor) opciones.push('--authors', t('agregar.autorDesconocido')); // Calibre tomó «libgen.li» o «Standard Comics» por autor
+  }
+  if (datos.serie) opciones.push('--series', datos.serie);
+  if (datos.serie && datos.numero != null) opciones.push('--series-index', String(datos.numero));
+  return { opciones, editorial: datos.editorial };
+}
+
 /**
  * Agrega archivos de libros a la biblioteca, de a uno (Calibre lee título, autor y portada del archivo).
  * Si Calibre detecta que el libro ya existe, no lo duplica y lo informa.
@@ -91,8 +128,11 @@ async function agregarArchivos(libraryPath, rutas) {
       resultados.push({ nombre, ok: false, mensaje: t('edicion.noEsLibro') });
       continue;
     }
-    const r = await calibre.calibredb(libraryPath, ['add', ruta]);
+    const { opciones, editorial } = await datosParaAgregar(ruta);
+    const r = await calibre.calibredb(libraryPath, ['add', ...opciones, ruta]);
     const id = r.ok ? idAgregado(r.salida) : null;
+    // Si la editorial no se pudo guardar, el libro igual entró: no es para frenar el agregado.
+    if (id && editorial) await calibre.calibredb(libraryPath, ['set_metadata', String(id), '--field', `publisher:${editorial}`]);
     if (id) resultados.push({ nombre, ok: true, id });
     else if (r.ok) resultados.push({ nombre, ok: false, mensaje: t('edicion.yaEsta') });
     else resultados.push({ nombre, ok: false, mensaje: r.mensaje });
