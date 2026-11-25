@@ -123,6 +123,32 @@ export const MANUAL = [
     ],
   },
   {
+    id: 'voz',
+    titulo: 'Escuchar en voz alta',
+    bloques: [
+      { texto: 'Broots te lee el libro en voz alta, como un audiolibro, mientras resalta el párrafo que suena. Ideal para cocinar, cebar mate o descansar la vista.' },
+      {
+        lista: [
+          'En el lector, tocá el parlante de arriba (al lado de «Aa») o apretá la L. Empieza por lo que ves en la página.',
+          'También podés seleccionar un texto y tocar el parlante de la barrita de subrayar: lee desde esa oración.',
+          'Lee párrafo por párrafo y pasa de página sola. Al terminar el capítulo sigue con el próximo.',
+          'Abajo aparece una barrita: pausa (también con la L), párrafo anterior y siguiente, la velocidad (de 0,75× a 2×) y la voz. Para cortar, la cruz de la barrita o el parlante de arriba.',
+          'Si pasás de página a mano mientras escuchás, sigue leyendo desde la página que ves.',
+          'Lee lo que está en pantalla: si el párrafo está traducido, lee la traducción; si tocaste para ver el original, el original.',
+          'El tiempo que escuchás cuenta como lectura en Mi lectura.',
+        ],
+      },
+      { subtitulo: 'Las voces' },
+      {
+        lista: [
+          'Sin internet: Daniela (español de Argentina), Kristin (inglés) y Faber (portugués). Cada una se baja la primera vez que la necesitás (entre 60 y 110 MB) y después anda sin conexión. Broots elige la voz según el idioma de cada párrafo.',
+          'Con internet: la voz de Gemini, más natural, con la misma clave que usás para traducir. El cupo gratis es chico (unos 10 pedidos por día, entre 10 y 15 minutos de lectura): Broots junta varios párrafos en cada pedido, y si el cupo se termina sigue solo con la voz sin internet. Se renueva al día siguiente.',
+          'En una PC con poco procesador, Daniela puede hacer una pausa corta entre párrafos: es la más detallada de las tres.',
+        ],
+      },
+    ],
+  },
+  {
     id: 'paginas',
     titulo: "PDF y cómics",
     bloques: [
@@ -347,6 +373,7 @@ export const MANUAL = [
           [['Ctrl +', 'Ctrl -'], 'En el lector: agrandar o achicar la letra (o pellizcá el trackpad, o Ctrl + rueda). En un PDF o un cómic, acercar o alejar'],
           [['Ctrl 0'], 'En un PDF o un cómic: volver a la página entera'],
           [['F'], 'En el lector: modo enfoque (solo el texto, en pantalla completa)'],
+          [['L'], 'En el lector: escuchar en voz alta, pausar y seguir'],
           [['Ctrl+Enter'], 'En el lector: guardar la nota de un subrayado'],
         ],
       },

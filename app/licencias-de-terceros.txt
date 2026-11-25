@@ -1,11 +1,18 @@
 Broots es software libre con licencia GNU GPL versión 3 o posterior. Estas piezas de terceros viajan dentro del
-instalador para leer PDF y cómics, cada una con su licencia:
+instalador para leer PDF y cómics y para leer en voz alta, cada una con su licencia:
 
 * pdf.js (https://github.com/mozilla/pdf.js), Apache License 2.0. Su licencia y las de sus tipografías, tablas de
   caracteres y decodificadores (PDFium, OpenJPEG, qcms, QuickJS, Liberation) están en dist/pdfjs, junto a cada pieza.
 * libarchive (https://github.com/libarchive/libarchive), licencia BSD, compilada a WebAssembly junto con las bibliotecas
   de compresión que usa. Su aviso está abajo.
 * libarchive-wasm (https://github.com/ofk/libarchive-wasm), licencia MIT. Su aviso está abajo.
+* sherpa-onnx (https://github.com/k2-fsa/sherpa-onnx), Apache License 2.0: el motor de la voz (paquetes
+  sherpa-onnx-node y sherpa-onnx-win-x64). Trae ONNX Runtime (https://github.com/microsoft/onnxruntime), licencia MIT,
+  y espeak-ng (https://github.com/espeak-ng/espeak-ng), licencia GNU GPL versión 3 o posterior. Sus licencias están en
+  la carpeta de cada paquete.
+* Datos de espeak-ng (resources/espeak-ng-data), GNU GPL versión 3 o posterior: los que pasan las letras a sonidos,
+  recortados a español, inglés y portugués. Cambios: solo esos idiomas y, en sus archivos de voz, el nombre del autor
+  sin su mail de contacto. El original está en https://github.com/espeak-ng/espeak-ng.
 
 El resto de las dependencias con su licencia está en la carpeta de cada paquete (node_modules).
 
@@ -20,6 +27,21 @@ Datos que NO viajan en el instalador y no son parte del programa: Broots los baj
   pronunciación; hasta 12 sentidos por categoría; las formas conjugadas apuntan a su palabra base; marcas traducidas y
   filtradas. Detalle en CREDITOS.txt, en ese repositorio. Cada definición muestra el crédito, con un enlace a su página
   de Wiktionary y a la licencia. Ni Wiktionary ni sus autores respaldan a Broots.
+
+Y las voces para leer en voz alta sin internet, que se bajan la primera vez que se toca «Escuchar» en ese idioma, tal
+como las publica el proyecto Piper (https://huggingface.co/rhasspy/piper-voices). Broots les agrega al bajarlas lo
+que el motor necesita (una lista de sonidos y unos datos al final del modelo); el modelo no cambia:
+
+* Daniela (español de Argentina, es_AR-daniela-high), entrenada por larcanio con grabaciones de Google
+  (https://www.openslr.org/61/, licencia CC BY-SA 4.0). Parte de la voz inglesa «lessac», cuyas grabaciones son solo
+  para investigación; por eso Broots no la guarda en ningún repositorio propio: se baja de su sitio original.
+* Kristin (inglés de Estados Unidos, en_US-kristin-medium), con grabaciones de LibriVox (https://librivox.org), de
+  dominio público.
+* Faber (portugués de Brasil, pt_BR-faber-medium, la versión de antes del 12/11/2026), con grabaciones de OHF-Voice
+  (https://github.com/OHF-Voice/voice-datasets, licencia CC0). Como Daniela, parte de la voz «lessac»: se baja de su
+  sitio original y Broots no la guarda en ningún repositorio propio.
+
+La voz «con internet» es la de Gemini (Google), con la clave de cada usuario y bajo las condiciones de Google.
 
 
 libarchive

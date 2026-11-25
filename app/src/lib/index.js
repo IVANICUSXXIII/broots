@@ -7,3 +7,4 @@ export * from './habito.js';
 export * from './lectura.js';
 export * from './paginas.js';
 export * from './diccionario.js';
+export * from './voz.js';

@@ -15,6 +15,11 @@ Broots es gratis y es software libre. **[Bajar la última versión](https://gith
 > a partir da 1.6.0 ele se atualiza sozinho. O instalador ainda não tem assinatura digital: se o Windows disser
 > “O Windows protegeu o computador”, clique em “Mais informações” e depois em “Executar assim mesmo”.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/capturas/estanteria-oscuro.png">
+  <img src="docs/capturas/estanteria-claro.png" alt="La estantería de Broots: portadas en grilla, con filtros por estado de lectura, idioma y etiquetas">
+</picture>
+
 ## Qué es Broots
 
 Broots trabaja sobre la misma carpeta que [Calibre](https://calibre-ebook.com/), el gestor de libros
@@ -38,8 +43,8 @@ la biblioteca (`metadata.db`).
 ## Qué podés hacer
 
 - **Tu estantería:** tus libros en grilla o en lista, con portadas grandes, filtros por autor, etiqueta o
-  serie, y el buscador con las mismas búsquedas que Calibre (`tags:novela`, `rating:>3`…). También ves las
-  bibliotecas virtuales que armaste en Calibre.
+  serie, y el buscador con las mismas búsquedas que Calibre (`tags:novela`, `rating:>3`…). Las etiquetas con
+  jerarquía de Calibre («Sagas.Harry Potter») se ven en árbol, y también las bibliotecas virtuales que armaste.
 - **Editar:** todos los datos de un libro (título, autores, serie, etiquetas, fechas, editorial, tus columnas
   propias), la portada y los formatos. «Buscar datos» trae datos y portadas de Google Books y Open Library, o
   de la página de un libro que pegues.
@@ -53,14 +58,54 @@ la biblioteca (`metadata.db`).
   sobre él con una inteligencia artificial.
 - **PDF y cómics:** leé PDF y cómics (CBZ y CBR) dentro de Broots, de a una o dos páginas, con zoom y manga de derecha a
   izquierda. Tu página queda guardada y la lectura cuenta en «Mi lectura». No abre archivos con DRM ni con contraseña.
-- **Lector:** leé tus EPUB dentro de Broots, con el tamaño de letra que quieras. Con una clave gratuita de Gemini,
-  puede traducir el libro mientras leés.
+- **Lector:** leé tus EPUB dentro de Broots, a tu medida: tema (claro, sepia, oscuro o negro), fuente,
+  tamaño, interlineado y márgenes. Con una clave gratuita de Gemini, traduce el libro mientras leés, y
+  «Explicar» te aclara una frase en su contexto.
+- **Definir:** seleccioná una palabra y mirá qué significa, al instante y sin internet. Hay diccionario de
+  español, inglés y portugués, armados con Wiktionary; cada uno se baja la primera vez que lo pedís.
+- **Subrayados y notas:** subrayá en cuatro colores y anotá lo que se te ocurra. Tus subrayados del Kindle
+  aparecen en la misma lista, y cada libro tiene su archivo Markdown para Obsidian o Notion.
 - **Hábito de lectura:** Broots anota tus sesiones de lectura (con meta opcional y descanso para la vista) y
   te muestra tu racha, tu ritmo, el mapa de calor del año y cuánto te falta para terminar cada libro. Estados
   En pausa y Abandonado, relecturas y un modo enfoque que deja solo el texto.
 - **Familia:** compartí libros con la gente de tu casa. Broots arma en tu Google Drive una copia solo con
   los libros de cada uno, que ellos abren en modo solo lectura.
 - **Ayuda:** un manual completo dentro de la app (tecla F1), con buscador.
+
+## Cómo se ve
+
+Las capturas usan una biblioteca de ejemplo con clásicos de dominio público. Si tu GitHub está en modo oscuro,
+las ves con el tema oscuro de Broots.
+
+**Editar un libro.** Todos los datos, la portada y tus columnas propias de Calibre, en una sola hoja.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/capturas/editar-oscuro.png">
+  <img src="docs/capturas/editar-claro.png" alt="La hoja «Editar libro» de Broots con los datos de Don Quijote de la Mancha">
+</picture>
+
+**El lector, traduciendo.** *Pride and Prejudice* en inglés, leído en español. Tocá un párrafo para ver el
+original.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/capturas/lector-oscuro.png">
+  <img src="docs/capturas/lector-claro.png" alt="El lector de Broots mostrando el primer capítulo de Pride and Prejudice traducido al español">
+</picture>
+
+**Definir, sin internet.** ¿Qué era un hidalgo? Seleccionás la palabra y Broots te lo dice al instante, aunque
+estés en un avión.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/capturas/definir-oscuro.png">
+  <img src="docs/capturas/definir-claro.png" alt="El lector de Broots con el comienzo de Don Quijote y la definición de «hidalgo» en una tarjeta">
+</picture>
+
+**Configuración.** Ordenada por secciones, como en macOS.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/capturas/configuracion-oscuro.png">
+  <img src="docs/capturas/configuracion-claro.png" alt="La Configuración de Broots, en la sección Lectura y traducción">
+</picture>
 
 ## Cómo instalarlo
 
@@ -163,6 +208,7 @@ cd app
 npm install
 npm run dev                       # Broots en modo desarrollo
 node pruebas/correr.mjs todos     # pruebas automáticas
+node pruebas/capturas.mjs         # vuelve a sacar las capturas de este README (hace falta Calibre)
 npm run instalador                # arma el instalador de Windows (para probar)
 npm run publicar                  # publica la versión: GitHub Actions arma el instalador (hace falta permiso)
 ```

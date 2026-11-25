@@ -181,3 +181,19 @@ export const IconoExplicar = (p) => (
 export const IconoMedida = (p) => (
   <Icono {...p}><path d="M3 19 8.5 5 14 19M5 14.5h7" /><path d="m14.5 19 3.5-9 3.5 9M15.6 16h4.8" /></Icono>
 );
+// 1.13: leer en voz alta.
+export const IconoVoz = (p) => (
+  <Icono {...p}><path d="M4 9.5v5h3.5l4.5 3.8V5.7L7.5 9.5H4Z" /><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18.2 6.3a8 8 0 0 1 0 11.4" /></Icono>
+);
+export const IconoReproducir = (p) => (
+  <Icono {...p}><path d="M7.5 5.2v13.6a.8.8 0 0 0 1.2.7l11-6.8a.8.8 0 0 0 0-1.4l-11-6.8a.8.8 0 0 0-1.2.7Z" fill="currentColor" /></Icono>
+);
+export const IconoPausa = (p) => (
+  <Icono {...p}><rect x="6.5" y="5" width="3.6" height="14" rx="1" fill="currentColor" /><rect x="13.9" y="5" width="3.6" height="14" rx="1" fill="currentColor" /></Icono>
+);
+export const IconoParrafoAnterior = (p) => (
+  <Icono {...p}><path d="M6 5v14" /><path d="M18 6.5v11a.7.7 0 0 1-1.1.6L9.6 12.6a.7.7 0 0 1 0-1.2l7.3-5.5a.7.7 0 0 1 1.1.6Z" /></Icono>
+);
+export const IconoParrafoSiguiente = (p) => (
+  <Icono {...p}><path d="M18 5v14" /><path d="M6 6.5v11a.7.7 0 0 0 1.1.6l7.3-5.5a.7.7 0 0 0 0-1.2L7.1 5.9A.7.7 0 0 0 6 6.5Z" /></Icono>
+);

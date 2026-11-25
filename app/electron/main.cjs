@@ -22,6 +22,7 @@ const traduccion = require('./traduccion.cjs');
 const compartir = require('./compartir.cjs');
 const calibrePropio = require('./calibrePropio.cjs');
 const diccionario = require('./diccionario.cjs');
+const voz = require('./voz.cjs');
 const actualizaciones = require('./actualizaciones.cjs');
 const idioma = require('./idioma.cjs');
 const { t } = idioma;
@@ -971,6 +972,17 @@ ipcMain.handle('diccionario:abrir', (_e, destino, idioma, palabra) => {
   else shell.openExternal(direccion);
   return { ok: true };
 });
+
+// 1.13: «Escuchar»: leer en voz alta. La voz sin internet se baja una vez, la primera que se pide (como el diccionario).
+ipcMain.handle('voz:estado', (_e, idioma) => voz.estado(idioma));
+ipcMain.handle('voz:bajar', (_e, idioma) =>
+  voz.bajar(idioma, (estado) => {
+    if (ventana && !ventana.isDestroyed()) ventana.webContents.send('voz:progreso', estado);
+  }),
+);
+ipcMain.handle('voz:cancelar', (_e, idioma) => voz.cancelar(idioma));
+ipcMain.handle('voz:decir', (_e, pedido) => voz.decir(leerConfig(), pedido ?? {}));
+ipcMain.handle('voz:olvidar', () => voz.olvidar());
 
 // 1.9: «Explicar» lo seleccionado en el lector, en el idioma de Broots (se guarda 30 días, como caché).
 ipcMain.handle('traduccion:explicar', (_e, id, pedido) => {

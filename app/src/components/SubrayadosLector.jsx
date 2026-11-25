@@ -12,7 +12,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { SERVICIOS_MUSICA, fechaCorta, idiomaActual, resorte, resortePresion, resorteRapido, t } from '../lib/index.js';
 import { COLORES, anclaDeSeleccion, buscarEnParrafos, despintar, envolver, indiceNormalizado, normalizar, ordenar, textoDeAncla } from '../lib/subrayados.js';
-import { IconoAnterior, IconoBorrar, IconoBuscar, IconoCerrar, IconoCopiar, IconoDefinir, IconoEditar, IconoExplicar, IconoSubrayar } from './Iconos.jsx';
+import { IconoAnterior, IconoBorrar, IconoBuscar, IconoCerrar, IconoCopiar, IconoDefinir, IconoEditar, IconoExplicar, IconoSubrayar, IconoVoz } from './Iconos.jsx';
 import { explicable } from './Explicar.jsx';
 import { definible } from '../lib/diccionario.js';
 
@@ -388,7 +388,7 @@ export function useSubrayados({ libro, r, texto, marco, abierto, avisar }) {
 
 // ---------- La barrita ----------
 
-const ANCHO_BARRA = 540; // con «Explicar» (1.9), «Buscar» (1.10) y «Definir» (1.12)
+const ANCHO_BARRA = 572; // con «Explicar» (1.9), «Buscar» (1.10), «Definir» (1.12) y «Escuchar» (1.13)
 
 function BotonBarrita({ children, ...props }) {
   return (
@@ -409,7 +409,7 @@ function posicion(caja) {
   return { left: centro, top: caja.y > 54 ? caja.y - 46 : caja.y + caja.alto + 8 };
 }
 
-export function BarraSubrayado({ sub, onExplicar, onDefinir }) {
+export function BarraSubrayado({ sub, onExplicar, onDefinir, onEscuchar }) {
   const { barra } = sub;
   const [buscando, setBuscando] = useState(false); // 1.10: la barrita muestra adónde buscar
   const [musica, setMusica] = useState(null);
@@ -484,6 +484,12 @@ export function BarraSubrayado({ sub, onExplicar, onDefinir }) {
           <BotonBarrita data-accion="copiar" onClick={sub.copiar}>
             <IconoCopiar className="size-3.5" /> {t('subrayados.lector.copiar')}
           </BotonBarrita>
+          {onEscuchar && (
+            // 1.13: leer en voz alta desde la oración donde empieza lo seleccionado.
+            <BotonBarrita data-accion="escuchar" onClick={onEscuchar} title={t('voz.desdeAca')}>
+              <IconoVoz className="size-3.5" />
+            </BotonBarrita>
+          )}
           {seDefine && onDefinir && (
             <BotonBarrita data-accion="definir" onClick={onDefinir} title={t('definir.botonExplica')}>
               <IconoDefinir className="size-3.5 text-acento" /> {t('definir.boton')}

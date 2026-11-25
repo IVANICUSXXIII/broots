@@ -436,4 +436,4 @@ async function explicar(config, carpetaDatos, uuid, pedido, destino = 'es') {
   return { ok: true, explicacion, guardada: false };
 }
 
-module.exports = { estado, conClave, traducir, probar, explicar };
+module.exports = { estado, conClave, traducir, probar, explicar, leerClave, falsa: FALSA }; // leerClave y falsa: para la voz de Gemini (voz.cjs)

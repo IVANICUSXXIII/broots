@@ -1,0 +1,2 @@
+# Datos de espeak-ng (voz alta): se guardan tal cual, sin tocar los fines de línea.
+app/voz/espeak-ng-data/** -text

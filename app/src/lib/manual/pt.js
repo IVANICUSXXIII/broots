@@ -119,6 +119,32 @@ export const MANUAL = [
     ],
   },
   {
+    id: 'voz',
+    titulo: 'Ouvir em voz alta',
+    bloques: [
+      { texto: 'O Broots lê o livro em voz alta para você, como um audiolivro, destacando o parágrafo que está tocando. Ótimo para cozinhar, dobrar roupa ou descansar a vista.' },
+      {
+        lista: [
+          'No leitor, clique no alto-falante lá em cima (ao lado do «Aa») ou aperte L. Começa pelo que você vê na página.',
+          'Você também pode selecionar um texto e clicar no alto-falante da barrinha de destaque: lê a partir daquela frase.',
+          'Lê parágrafo por parágrafo e vira a página sozinho. No fim do capítulo, segue para o próximo.',
+          'Aparece uma barrinha embaixo: pausa (o L também serve), parágrafo anterior e próximo, a velocidade (de 0,75× a 2×) e a voz. Para parar, o X da barrinha ou o alto-falante lá de cima.',
+          'Se você virar a página enquanto ouve, a leitura continua pela página que você está vendo.',
+          'Lê o que está na tela: se o parágrafo está traduzido, lê a tradução; se você clicou para ver o original, o original.',
+          'O tempo ouvindo conta como leitura em Minha leitura.',
+        ],
+      },
+      { subtitulo: 'As vozes' },
+      {
+        lista: [
+          'Sem internet: Daniela (espanhol da Argentina), Kristin (inglês) e Faber (português do Brasil). Cada uma é baixada na primeira vez que você precisa dela (de 60 a 110 MB) e depois funciona sem conexão. O Broots escolhe a voz pelo idioma de cada parágrafo.',
+          'Com internet: a voz do Gemini, mais natural, com a mesma chave que você usa para traduzir. A cota grátis é pequena (uns 10 pedidos por dia, de 10 a 15 minutos de leitura): o Broots junta vários parágrafos em cada pedido e, se a cota acabar, segue com a voz sem internet. Renova no dia seguinte.',
+          'Num PC com processador mais modesto, a Daniela pode fazer uma pausa curta entre parágrafos: é a mais detalhada das três.',
+        ],
+      },
+    ],
+  },
+  {
     id: 'paginas',
     titulo: "PDFs e quadrinhos",
     bloques: [
@@ -343,6 +369,7 @@ export const MANUAL = [
           [['Ctrl +', 'Ctrl -'], 'No leitor: aumentar ou diminuir a letra (ou faça o gesto de pinça no trackpad, ou Ctrl + roda). Num PDF ou quadrinho, aproximar ou afastar'],
           [['Ctrl 0'], 'Num PDF ou quadrinho: voltar à página inteira'],
           [['F'], 'No leitor: modo foco (só o texto, em tela cheia)'],
+          [['L'], 'No leitor: ouvir em voz alta, pausar e continuar'],
           [['Ctrl+Enter'], 'No leitor: salvar a nota de um destaque'],
         ],
       },

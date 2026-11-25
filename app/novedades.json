@@ -1,4 +1,30 @@
 {
+  "1.13.0": {
+    "es": [
+      "Llegó «Escuchar»: Broots te lee el libro en voz alta. Tocá el parlante de arriba (o la L) y empieza por lo que ves: resalta el párrafo que suena, pasa de página solo y sigue con el capítulo siguiente. Ideal para cocinar, cebar mate o descansar la vista.",
+      "Voces sin internet: Daniela, con acento argentino, para español; Kristin para inglés y Faber para portugués de Brasil. Cada una se baja la primera vez que la necesitás (de 60 a 115 MB) y después lee sin conexión.",
+      "Con internet, también la voz de Gemini, con la misma clave que usás para traducir. Ojo: el cupo gratis es chico (unos 10 pedidos por día). Si se termina, Broots sigue solo con la voz sin internet.",
+      "Abajo aparece una barrita, sin tapar el texto: pausa (o la L), párrafo anterior y siguiente, y la velocidad, de 0,75× a 2×, que cambia al instante.",
+      "Lee lo que está en pantalla: si el párrafo está traducido, lee la traducción. Y desde la barrita de subrayar podés escuchar a partir de lo que seleccionaste.",
+      "El tiempo que escuchás cuenta como lectura en «Mi lectura». Por ahora funciona en EPUB."
+    ],
+    "en": [
+      "Say hello to “Read aloud”: Broots reads the book to you. Click the speaker at the top (or press L) and it starts with what you see: it highlights the paragraph you’re hearing, turns the page on its own and moves on to the next chapter. Perfect for cooking, folding laundry or resting your eyes.",
+      "Offline voices: Daniela, with an Argentine accent, for Spanish; Kristin for English and Faber for Brazilian Portuguese. Each one downloads the first time you need it (60 to 115 MB) and then reads with no connection.",
+      "Online, there’s also Gemini’s voice, with the same key you use to translate. Heads up: the free quota is small (about 10 requests a day). When it runs out, Broots carries on with the offline voice.",
+      "A small bar appears at the bottom, without covering the text: pause (or L), previous and next paragraph, and speed, from 0.75× to 2×, which changes instantly.",
+      "It reads what’s on screen: if a paragraph is translated, it reads the translation. And from the highlight bar you can listen starting from what you selected.",
+      "Time spent listening counts as reading in My reading. For now it works with EPUB."
+    ],
+    "pt": [
+      "Chegou o «Ouvir»: o Broots lê o livro em voz alta para você. Clique no alto-falante lá em cima (ou aperte L) e ele começa pelo que você vê: destaca o parágrafo que está tocando, vira a página sozinho e segue para o próximo capítulo. Ótimo para cozinhar, dobrar roupa ou descansar a vista.",
+      "Vozes sem internet: Daniela, com sotaque argentino, para espanhol; Kristin para inglês e Faber para português do Brasil. Cada uma é baixada na primeira vez que você precisa dela (de 60 a 115 MB) e depois lê sem conexão.",
+      "Com internet, também a voz do Gemini, com a mesma chave que você usa para traduzir. Atenção: a cota grátis é pequena (uns 10 pedidos por dia). Se acabar, o Broots segue com a voz sem internet.",
+      "Aparece uma barrinha embaixo, sem cobrir o texto: pausa (ou o L), parágrafo anterior e próximo, e a velocidade, de 0,75× a 2×, que muda na hora.",
+      "Lê o que está na tela: se o parágrafo está traduzido, lê a tradução. E pela barrinha de destaque você pode ouvir a partir do que selecionou.",
+      "O tempo ouvindo conta como leitura em Minha leitura. Por enquanto funciona em EPUB."
+    ]
+  },
   "1.12.0": {
     "es": [
       "Llegó «Definir»: seleccionás una palabra, tocás el botón en la barrita y sale qué significa. Al instante y sin internet, ideal para el avión o para esa palabra que venís esquivando hace tres capítulos.",

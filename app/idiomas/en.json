@@ -1128,6 +1128,32 @@
           "texto": "Use the window’s X, top right, or Esc: with a book open, the X takes you back to the library instead of closing Broots. Click it again and Broots closes. Your page is saved."
         }
       }
+    },
+    "voz": {
+      "boton": "Read aloud (L)",
+      "botonParar": "Stop reading aloud",
+      "desdeAca": "Read aloud from here",
+      "anterior": "Previous paragraph",
+      "siguiente": "Next paragraph",
+      "pausar": "Pause (L)",
+      "seguir": "Resume (L)",
+      "velocidad": "Reading speed",
+      "sinInternet": "Offline",
+      "sinInternetExplica": "Broots’ own voice: it reads on your PC, no internet needed",
+      "geminiExplica": "Gemini’s voice: more natural, but it needs internet and your key (the free quota is about 10 requests a day)",
+      "cerrar": "Stop reading aloud",
+      "hayQueBajar": "To read in {idioma}, Broots needs to download {nombre}’s voice ({peso}).",
+      "unaSolaVez": "It only downloads once. After that, it reads offline.",
+      "bajar": "Download",
+      "cancelar": "Cancel",
+      "reintentar": "Try again",
+      "preparandoVoz": "Warming up the voice…",
+      "finDelLibro": "The end. What a ride!",
+      "sinVozIdioma": "There’s no offline voice for this language. With your Gemini key, Broots reads it with Gemini’s voice.",
+      "noPudeLeer": "I couldn’t read this part aloud.",
+      "sigoSinInternet": "Switching to the offline voice.",
+      "noPude": "I couldn’t download the voice. Please try again.",
+      "noPudeSonar": "I couldn’t play the audio. Please try again; if it keeps happening, let us know."
     }
   },
   "electron": {
@@ -1362,6 +1388,19 @@
       },
       "tuyo": "From here down it’s all yours: write whatever you like, Broots won’t touch it.",
       "antes": "before"
+    },
+    "voz": {
+      "noPude": "I couldn’t download the voice. Please try again.",
+      "sinInternet": "I couldn’t download the voice: there seems to be no internet. It only needs a connection this once.",
+      "respondio": "I couldn’t download the voice (the server answered {estado}). Please try again later.",
+      "noCoincide": "The downloaded voice doesn’t match the original, so I discarded it. Please try again.",
+      "sinEspacio": "There’s not enough disk space for the voice: it needs {megas} MB.",
+      "cortada": "The voice download took too long and was cut off. Please try again.",
+      "noPudeLeer": "I couldn’t read this part aloud.",
+      "sinInternetGemini": "I couldn’t reach Gemini: there seems to be no internet.",
+      "cupoGemini": "Gemini is too busy to answer right now.",
+      "geminiRespondio": "Gemini couldn’t read it (it answered {estado}).",
+      "cupoGeminiDia": "Gemini’s free voice quota for today is used up (it renews tomorrow)."
     }
   }
 }

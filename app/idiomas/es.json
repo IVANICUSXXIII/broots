@@ -1128,6 +1128,32 @@
           "texto": "Con la cruz de la ventana, arriba a la derecha, o con Esc: con un libro abierto, la cruz te lleva a la biblioteca y no cierra Broots. Otro clic en la cruz, ahí sí. Tu página queda guardada."
         }
       }
+    },
+    "voz": {
+      "boton": "Escuchar en voz alta (L)",
+      "botonParar": "Dejar de escuchar",
+      "desdeAca": "Escuchar desde acá",
+      "anterior": "Párrafo anterior",
+      "siguiente": "Párrafo siguiente",
+      "pausar": "Pausa (L)",
+      "seguir": "Seguir (L)",
+      "velocidad": "Velocidad de lectura",
+      "sinInternet": "Sin internet",
+      "sinInternetExplica": "La voz de Broots: lee en tu PC, sin internet",
+      "geminiExplica": "La voz de Gemini: más natural, pero necesita internet y tu clave (el cupo gratis es de unos 10 pedidos por día)",
+      "cerrar": "Dejar de escuchar",
+      "hayQueBajar": "Para leer en {idioma} hay que bajar la voz de {nombre} ({peso}).",
+      "unaSolaVez": "Se baja una sola vez. Después lee sin internet.",
+      "bajar": "Bajar",
+      "cancelar": "Cancelar",
+      "reintentar": "Reintentar",
+      "preparandoVoz": "Afinando la voz…",
+      "finDelLibro": "Fin del libro. ¡Qué viaje!",
+      "sinVozIdioma": "Para este idioma no hay voz sin internet. Con tu clave de Gemini, Broots lo lee con la voz de Gemini.",
+      "noPudeLeer": "No pude leer este pedazo en voz alta.",
+      "sigoSinInternet": "Sigo con la voz sin internet.",
+      "noPude": "No pude bajar la voz. Probá de nuevo.",
+      "noPudeSonar": "No pude hacer sonar el audio. Probá de nuevo; si sigue, avisanos."
     }
   },
   "electron": {
@@ -1362,6 +1388,19 @@
       },
       "tuyo": "De acá para abajo es tuyo: escribí lo que quieras, que Broots no lo toca.",
       "antes": "antes"
+    },
+    "voz": {
+      "noPude": "No pude bajar la voz. Probá de nuevo.",
+      "sinInternet": "No pude bajar la voz: parece que no hay internet. Hace falta conexión solo esta vez.",
+      "respondio": "No pude bajar la voz (el servidor respondió {estado}). Probá de nuevo más tarde.",
+      "noCoincide": "La voz bajada no coincide con la original, así que la descarté. Probá de nuevo.",
+      "sinEspacio": "No hay lugar en el disco para la voz: hacen falta {megas} MB.",
+      "cortada": "La descarga de la voz tardó demasiado y se cortó. Probá de nuevo.",
+      "noPudeLeer": "No pude leer este pedazo en voz alta.",
+      "sinInternetGemini": "No pude llegar a Gemini: parece que no hay internet.",
+      "cupoGemini": "Gemini está con mucho pedido y no contesta.",
+      "geminiRespondio": "Gemini no pudo leerlo (respondió {estado}).",
+      "cupoGeminiDia": "Se terminó el cupo gratis de hoy de la voz de Gemini (se renueva mañana)."
     }
   }
 }

@@ -1,0 +1,62 @@
+{
+  "es": {
+    "id": "daniela",
+    "nombre": "Daniela",
+    "version": "2026.11",
+    "ritmo": 0.7,
+    "onnx": {
+      "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5ec43b186ef915a195d3ddbcfd9916e76c503c3f/es/es_AR/daniela/high/es_AR-daniela-high.onnx",
+      "sha256": "7ceb1fc0dab349418c5b54a639ae9ee595212d7c9ea422220d8419163d5cc985",
+      "bytes": 114199011
+    },
+    "json": {
+      "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5ec43b186ef915a195d3ddbcfd9916e76c503c3f/es/es_AR/daniela/high/es_AR-daniela-high.onnx.json",
+      "sha256": "aedbf69647e1d754c62ecf8e0366ca5f16af3e768e3c6b5329af6eb6bde3852b",
+      "bytes": 7248
+    }
+  },
+  "en": {
+    "id": "kristin",
+    "nombre": "Kristin",
+    "version": "2026.11",
+    "ritmo": 0.7,
+    "onnx": {
+      "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5ec43b186ef915a195d3ddbcfd9916e76c503c3f/en/en_US/kristin/medium/en_US-kristin-medium.onnx",
+      "sha256": "5849957f929cbf720c258f8458692d6103fff2f0e3d3b19c8259474bb06a18d4",
+      "bytes": 63531379
+    },
+    "json": {
+      "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5ec43b186ef915a195d3ddbcfd9916e76c503c3f/en/en_US/kristin/medium/en_US-kristin-medium.onnx.json",
+      "sha256": "5681426d4aead22195de70531eeeeddb46493cfaffc5764b2ea3db73428b651c",
+      "bytes": 4968
+    }
+  },
+  "pt": {
+    "id": "faber",
+    "nombre": "Faber",
+    "version": "2026.11",
+    "ritmo": 0.7,
+    "onnx": {
+      "url": "https://huggingface.co/rhasspy/piper-voices/resolve/e7229f7d33a10e145e109b886d661984201ac3c4/pt/pt_BR/faber/medium/pt_BR-faber-medium.onnx",
+      "sha256": "858555e3a064209c57088fe6bd70c4c3dc54d03eaa00c45d5ecaf43a33f95aa7",
+      "bytes": 63201294
+    },
+    "json": {
+      "url": "https://huggingface.co/rhasspy/piper-voices/resolve/e7229f7d33a10e145e109b886d661984201ac3c4/pt/pt_BR/faber/medium/pt_BR-faber-medium.onnx.json",
+      "sha256": "7e694de195ae3fc36dd732c445eb04fb49b649854893cb5506b978f0d50a1d6f",
+      "bytes": 4855
+    }
+  },
+  "gemini": {
+    "modelo": "gemini-3.8-flash-tts",
+    "estilo": "calm, warm audiobook narration, natural pace",
+    "voces": {
+      "es": "es-419-assistant-5",
+      "en": "achernar",
+      "pt": "pt-br-advisor-1",
+      "otro": "Sulafat"
+    },
+    "porMinuto": 3,
+    "porDia": 10
+  }
+}

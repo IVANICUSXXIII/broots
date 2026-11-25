@@ -119,6 +119,32 @@ export const MANUAL = [
     ],
   },
   {
+    id: 'voz',
+    titulo: 'Read aloud',
+    bloques: [
+      { texto: 'Broots reads the book aloud to you, like an audiobook, highlighting the paragraph you’re hearing. Perfect for cooking, folding laundry or resting your eyes.' },
+      {
+        lista: [
+          'In the reader, click the speaker at the top (next to “Aa”) or press L. It starts with what you see on the page.',
+          'You can also select some text and click the speaker in the highlight bar: it reads from that sentence on.',
+          'It reads paragraph by paragraph and turns the page on its own. At the end of a chapter it moves on to the next one.',
+          'A small bar appears at the bottom: pause (L works too), previous and next paragraph, speed (0.75× to 2×) and the voice. To stop, use the bar’s X or the speaker at the top.',
+          'If you turn the page yourself while listening, it carries on from the page you’re seeing.',
+          'It reads what’s on screen: if a paragraph is translated, it reads the translation; if you clicked to see the original, the original.',
+          'Time spent listening counts as reading in My reading.',
+        ],
+      },
+      { subtitulo: 'The voices' },
+      {
+        lista: [
+          'Offline: Daniela (Argentine Spanish), Kristin (English) and Faber (Brazilian Portuguese). Each one downloads the first time you need it (60 to 110 MB) and then works with no connection. Broots picks the voice by each paragraph’s language.',
+          'Online: Gemini’s voice, more natural, with the same key you use to translate. The free quota is small (about 10 requests a day, 10 to 15 minutes of reading): Broots bundles several paragraphs in each request, and if the quota runs out it carries on with the offline voice. It renews the next day.',
+          'On a PC with a modest processor, Daniela may pause briefly between paragraphs: she’s the most detailed of the three.',
+        ],
+      },
+    ],
+  },
+  {
     id: 'paginas',
     titulo: "PDFs and comics",
     bloques: [
@@ -343,6 +369,7 @@ export const MANUAL = [
           [['Ctrl +', 'Ctrl -'], 'In the reader: make the text bigger or smaller (or pinch the trackpad, or Ctrl + wheel). In a PDF or comic, zoom in or out'],
           [['Ctrl 0'], 'In a PDF or comic: back to the whole page'],
           [['F'], 'In the reader: focus mode (just the text, full screen)'],
+          [['L'], 'In the reader: read aloud, pause and resume'],
           [['Ctrl+Enter'], 'In the reader: save a highlight’s note'],
         ],
       },

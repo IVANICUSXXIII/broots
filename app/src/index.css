@@ -447,6 +447,20 @@ textarea,
   background-color: color-mix(in srgb, var(--seleccion) 70%, transparent);
   box-shadow: -6px 0 0 color-mix(in srgb, var(--seleccion) 70%, transparent), 6px 0 0 color-mix(in srgb, var(--seleccion) 70%, transparent);
 }
+/* 1.13: el párrafo que se está leyendo en voz alta. Solo el fondo (como los subrayados): el texto no se mueve. */
+.texto-libro .voz-sonando,
+.texto-libro .voz-sonando.traducido:hover {
+  border-radius: 4px;
+  background-color: color-mix(in srgb, var(--acento-suave) 70%, transparent);
+  box-shadow: -6px 0 0 color-mix(in srgb, var(--acento-suave) 70%, transparent), 6px 0 0 color-mix(in srgb, var(--acento-suave) 70%, transparent);
+}
+/* El que no se pudo leer: rojizo, para que se vea dónde se frenó. */
+.texto-libro .voz-error,
+.texto-libro .voz-error.traducido:hover {
+  border-radius: 4px;
+  background-color: color-mix(in srgb, #bc4749 16%, transparent);
+  box-shadow: -6px 0 0 color-mix(in srgb, #bc4749 16%, transparent), 6px 0 0 color-mix(in srgb, #bc4749 16%, transparent);
+}
 
 /*
   1.8: subrayados. Solo cambian el color de fondo (o agregan una línea abajo): ninguna letra se mueve, así las

@@ -80,6 +80,17 @@ contextBridge.exposeInMainWorld('lector', {
     ipcRenderer.on('diccionario:progreso', oyente);
     return () => ipcRenderer.removeListener('diccionario:progreso', oyente);
   },
+  // 1.13: «Escuchar»: leer en voz alta (sin internet con voces Piper, o con Gemini).
+  estadoVoz: (idioma) => ipcRenderer.invoke('voz:estado', idioma),
+  bajarVoz: (idioma) => ipcRenderer.invoke('voz:bajar', idioma),
+  cancelarVoz: (idioma) => ipcRenderer.invoke('voz:cancelar', idioma),
+  decir: (pedido) => ipcRenderer.invoke('voz:decir', pedido),
+  olvidarVoz: () => ipcRenderer.invoke('voz:olvidar'),
+  alProgresoVoz: (avisar) => {
+    const oyente = (_e, estado) => avisar(estado);
+    ipcRenderer.on('voz:progreso', oyente);
+    return () => ipcRenderer.removeListener('voz:progreso', oyente);
+  },
   // 1.10: con un libro abierto, la cruz de la ventana cierra el libro (main.cjs le avisa al lector).
   abierto: (si) => ipcRenderer.invoke('lector:abierto', si),
   pruebaCruz: () => ipcRenderer.invoke('pruebas:cruz'),

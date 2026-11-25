@@ -21,6 +21,8 @@
 // márgenes y justificado. La fuente, el interlineado y el justificado son variables de CSS en la caja del lector, así
 // la página y el medidor (que cuenta las páginas) miden igual; los márgenes cambian el ancho de página en medir().
 // «Explicar» (Explicar.jsx) le pregunta a Gemini qué quiere decir lo que seleccionaste, desde la barrita de subrayar.
+//
+// 1.13: «Escuchar» (VozAlta.jsx) lee en voz alta desde lo que se ve, resalta el párrafo que suena y pasa de página sola.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { limpiarCapitulo, limpiarFragmento, parrafosDe } from '../lib/epub.js';
@@ -28,12 +30,13 @@ import { ImagenGrande } from './ImagenGrande.jsx';
 import { Tour } from './Tour.jsx';
 import { COLORES_BARRA, MARGENES, cargarFuente, estimacion, idiomaActual, resorte, resortePresion, resorteRapido, ritmoParaEstimar, t, useAjustesLectura, variablesTexto } from '../lib/index.js';
 import { FormularioGemini } from './Gemini.jsx';
-import { IconoAnterior, IconoCerrar, IconoEnfoque, IconoIndice, IconoLlave, IconoMedida, IconoSiguiente, IconoSubrayar, IconoTraducir } from './Iconos.jsx';
+import { IconoAnterior, IconoCerrar, IconoEnfoque, IconoIndice, IconoLlave, IconoMedida, IconoSiguiente, IconoSubrayar, IconoTraducir, IconoVoz } from './Iconos.jsx';
 import { PanelLectura } from './LecturaAMedida.jsx';
 import { TarjetaExplicacion, useExplicar } from './Explicar.jsx';
 import { TarjetaDefinicion, useDefinir } from './Definir.jsx';
 import { AvisoSesion, BotonSesion, useSesionLectura } from './SesionLectura.jsx';
 import { BarraSubrayado, NotaSubrayado, PanelSubrayados, useSubrayados } from './SubrayadosLector.jsx';
+import { BarraVoz, useVozAlta } from './VozAlta.jsx';
 
 const ESPACIO = 64; // separación entre columnas (y entre páginas), en px
 const MARGEN_VERTICAL = 26; // el ancho de página y el margen de los costados dependen de los márgenes elegidos (1.9)
@@ -192,6 +195,10 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
   const sub = useSubrayados({ libro, r, texto, marco, abierto: Boolean(datos), avisar });
   const explicar = useExplicar({ libro, sub, avisar }); // 1.9
   const definir = useDefinir({ sub, explicar, avisar, r, idiomaLibro: datos?.idioma || libro.languages[0] }); // 1.12
+  const accionesVoz = useRef({}); // 1.13: lo que la voz necesita del lector (se completa más abajo, en cada render)
+  const voz = useVozAlta({ r, acciones: accionesVoz, idiomaLibro: datos?.idioma || libro.languages[0], avisar });
+  const refVoz = useRef(voz);
+  refVoz.current = voz;
 
   // ---------- Medidas y páginas ----------
 
@@ -217,6 +224,25 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
   /** En qué columna (página) y en qué vista cae un rectángulo de la pantalla. */
   const columnaDe = (rect, base) => Math.floor((rect.left - base + 2) / (r.geo.ancho + ESPACIO));
   const vistaDe = (rect, base) => Math.floor(columnaDe(rect, base) / r.geo.cols);
+  /** 1.13: en qué vista cae una letra de un párrafo (lugar: posición en su texto). Para seguir la voz página a página. */
+  const vistaDeLugar = (i, lugar) => {
+    const el = r.parrafos[i];
+    if (!el || !r.geo) return null;
+    const recorrido = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    let resto = lugar;
+    for (let n = recorrido.nextNode(); n; n = recorrido.nextNode()) {
+      if (resto < n.data.length) {
+        const rango = document.createRange();
+        rango.setStart(n, resto);
+        rango.setEnd(n, Math.min(n.data.length, resto + 1));
+        const rect = rango.getClientRects()[0];
+        if (rect) return vistaDe(rect, texto.current.getBoundingClientRect().left);
+        break;
+      }
+      resto -= n.data.length;
+    }
+    return r.rangos[i]?.inicio ?? null;
+  };
 
   const mapear = useCallback(() => {
     const base = texto.current.getBoundingClientRect().left;
@@ -257,6 +283,7 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
       r.vista = Math.min(Math.max(0, destino), r.total - 1);
       mover(false);
       publicar();
+      refVoz.current.alReacomodar(); // 1.13: escuchando, la página es la de la voz (no el principio del párrafo)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [medir, mapear, r],
@@ -569,6 +596,7 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
     sub.cerrarBarra();
     explicar.cerrar();
     definir.cerrar();
+    refVoz.current.alCambiarPagina(); // 1.13: si la pasaste a mano y lo que suena ya no se ve, la voz sigue desde acá
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [info.cap, info.vista]);
 
@@ -748,6 +776,9 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
       } else if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.altKey && !e.metaKey) {
         e.preventDefault();
         setEnfoque((v) => !v);
+      } else if (e.key.toLowerCase() === 'l' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        e.preventDefault();
+        refVoz.current.alternar(); // 1.13: escuchar, pausar y seguir
       } else if (e.ctrlKey && ['+', '=', '-'].includes(e.key)) {
         e.preventDefault();
         cambiarLetra(e.key === '-' ? -1 : 1);
@@ -892,6 +923,12 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
     asegurarTraduccion();
   };
 
+  // 1.13: lo que la voz usa del lector (las funciones cambian en cada render; la voz las lee de acá).
+  accionesVoz.current = {
+    irVista, abrirCapitulo, pedirTraduccion, anclaActual, vistaDeLugar, alPasarPagina, actividad, tieneClave,
+    totalCapitulos: datos?.capitulos.length ?? 0,
+  };
+
   // ---------- Pantalla ----------
 
   const entradaActual = (() => {
@@ -946,6 +983,9 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
           <p className="truncate font-serif text-[0.86rem] font-semibold">{libro.title}</p>
           {entradaActual && <p className="truncate text-[0.68rem] text-tinta-tenue">{entradaActual.titulo}</p>}
         </div>
+        <BotonBarra activo={voz.activa} onClick={() => (voz.activa ? voz.parar() : voz.empezar())} disabled={!datos} title={voz.activa ? t('voz.botonParar') : t('voz.boton')} data-boton-voz>
+          <IconoVoz className="size-4" />
+        </BotonBarra>
         <BotonBarra
           activo={panelMedida}
           onClick={() => {
@@ -1100,7 +1140,17 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
         {(sub.barra || sub.nota || explicar.tarjeta || definir.tarjeta) && (
           <div data-velo-subrayado className="absolute inset-0 z-[25]" onClick={() => (sub.nota ? sub.guardarNota() : explicar.tarjeta ? explicar.cerrar() : definir.tarjeta ? definir.cerrar() : sub.cerrarBarra())} />
         )}
-        <BarraSubrayado sub={sub} onExplicar={explicar.abrir} onDefinir={definir.abrir} />
+        <BarraSubrayado
+          sub={sub}
+          onExplicar={explicar.abrir}
+          onDefinir={definir.abrir}
+          onEscuchar={() => {
+            const elegido = sub.paraExplicar();
+            sub.cerrarBarra();
+            window.getSelection()?.removeAllRanges();
+            voz.desdeSeleccion(elegido);
+          }}
+        />
         <NotaSubrayado sub={sub} />
         <TarjetaExplicacion explicar={explicar} onConfigurar={() => setClaveAbierta(true)} />
         <TarjetaDefinicion definir={definir} />
@@ -1136,6 +1186,13 @@ export function Lector({ libro, onCerrar, colEstado, soloLectura, onEditarRapido
           <ImagenGrande key="imagen" imagen={imagenGrande} onCerrar={cerrarImagen} />
         )}
       </AnimatePresence>
+
+      {/* 1.13: la barrita de la voz, en su propia franja: el texto se acomoda arriba y no queda nada tapado. */}
+      {voz.activa && (
+        <div data-franja-voz className="relative z-30 flex h-14 shrink-0 items-center justify-center">
+          <BarraVoz voz={voz} tieneClave={tieneClave} onConfigurarClave={() => setClaveAbierta(true)} />
+        </div>
+      )}
 
       <footer className={`flex h-10 shrink-0 items-center gap-4 px-6 text-[0.7rem] text-tinta-tenue ${flotante('abajo')}`}>
         {capitulos.length > 0 && (

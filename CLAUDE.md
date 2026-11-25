@@ -11,8 +11,8 @@ Gestor de e-books de escritorio (Windows) compatible con Calibre: misma carpeta 
   - `calibre.cjs` y `calibrePropio.cjs` manejan las herramientas de Calibre.
   - `idioma.cjs`: el idioma de Broots y la función `t()` para los mensajes de Electron.
   - `actualizaciones.cjs`: busca versiones nuevas de Broots en GitHub (`IVANICUSXXIII/broots`), las baja, verifica su huella y las instala al cerrar.
-  - El resto, una función cada uno: `edicion`, `agregar`, `nombreDeArchivo` (qué dice el nombre de un archivo sin datos adentro: título, autores, serie, editorial; lo usa `agregarArchivos`), `duplicados`, `metadatos`, `web` (Amazon), `envio` (Kindle por Gmail), `subrayados` (los del Kindle), `club`, `lector` (EPUB), `paginas` (PDF de a pedazos y cómics; los CBR los descomprime `extraerComic.cjs` en otro hilo, a `cache/comics`), `traduccion` (Gemini: traducir y, desde la 1.9, «Explicar», que guarda cada explicación 30 días en `.broots/explicaciones`), `compartir`, `habito` (sesiones de lectura y relecturas en `.broots/habito`, un archivo por mes y por PC; crea la columna «Estado» con `calibredb add_custom_column`), `anotaciones` (subrayados y notas del lector en `.broots/subrayados-lector`, un archivo por PC, y la lista única Broots + Kindle de cada libro), `diccionario` («Definir»: baja, verifica y busca; ver Diccionario) y `cuaderno` (el .md de cada libro en su carpeta `data`, la de Calibre para archivos extra; lo de abajo de `<!-- broots:fin -->` es del usuario y no se toca).
-- `app/src/`: interfaz React. `components/` con una pantalla u hoja por archivo (`Tour.jsx`: el tour de bienvenida, textos en `tour.*`); `lib/` con búsqueda tipo Calibre, formato, movimiento (resortes), epub, `lectura.js` (tema, fuente, interlineado y márgenes del lector; los colores de cada tema están en `index.css`, `[data-tema-lector]`), `paginas.js` y `pdf.js` (el lector de páginas: `LectorPaginas.jsx`, para PDF y cómics), subrayados (anclas por párrafo y pintar con `<mark>`, que no mueve el texto), `idioma.js` (`t()` de la interfaz), el manual de la Ayuda (`manual/<idioma>.js`: si cambia una función, actualizar los tres) y las instrucciones del club (`club/<idioma>.js`).
+  - El resto, una función cada uno: `edicion`, `agregar`, `nombreDeArchivo` (qué dice el nombre de un archivo sin datos adentro: título, autores, serie, editorial; lo usa `agregarArchivos`), `duplicados`, `metadatos`, `web` (Amazon), `envio` (Kindle por Gmail), `subrayados` (los del Kindle), `club`, `lector` (EPUB), `paginas` (PDF de a pedazos y cómics; los CBR los descomprime `extraerComic.cjs` en otro hilo, a `cache/comics`), `traduccion` (Gemini: traducir y, desde la 1.9, «Explicar», que guarda cada explicación 30 días en `.broots/explicaciones`), `compartir`, `habito` (sesiones de lectura y relecturas en `.broots/habito`, un archivo por mes y por PC; crea la columna «Estado» con `calibredb add_custom_column`), `anotaciones` (subrayados y notas del lector en `.broots/subrayados-lector`, un archivo por PC, y la lista única Broots + Kindle de cada libro), `diccionario` («Definir»: baja, verifica y busca; ver Diccionario), `voz` (leer en voz alta; ver Voz alta) y `cuaderno` (el .md de cada libro en su carpeta `data`, la de Calibre para archivos extra; lo de abajo de `<!-- broots:fin -->` es del usuario y no se toca).
+- `app/src/`: interfaz React. `components/` con una pantalla u hoja por archivo (`Tour.jsx`: el tour de bienvenida, textos en `tour.*`; `VozAlta.jsx`: «Escuchar» en el lector); `lib/` con búsqueda tipo Calibre, formato, movimiento (resortes), epub, `lectura.js` (tema, fuente, interlineado y márgenes del lector; los colores de cada tema están en `index.css`, `[data-tema-lector]`), `paginas.js` y `pdf.js` (el lector de páginas: `LectorPaginas.jsx`, para PDF y cómics), subrayados (anclas por párrafo y pintar con `<mark>`, que no mueve el texto), `idioma.js` (`t()` de la interfaz), el manual de la Ayuda (`manual/<idioma>.js`: si cambia una función, actualizar los tres) y las instrucciones del club (`club/<idioma>.js`).
 - `app/idiomas/`: los textos de Broots, un archivo por idioma (`es.json`, `en.json`, `pt.json`), con una sección `interfaz` y otra `electron`.
 - `app/pruebas/`: pruebas automáticas (ver abajo).
 - `app/build/`: ícono. `app/instalador/`: instaladores generados (no van al repositorio).
@@ -56,6 +56,30 @@ Gestor de e-books de escritorio (Windows) compatible con Calibre: misma carpeta 
 - Qué diccionario se usa lo decide `elegirDiccionario`: lo que se ve en pantalla (párrafo traducido → idioma de Broots; si no, por sus palabras), después el idioma del libro y después el de Broots. Por el texto y no por Calibre a propósito: hay libros mal etiquetados y citas en otro idioma.
 - En `palabras`, varias filas pueden compartir `clave` («año» y «ano»): siempre gana la coincidencia exacta. En el crudo de wiktextract hay verbos raros cuya base no tiene definición: esas formas guardan su texto («Participio de bosticar»).
 
+## Voz alta
+
+- «Escuchar» (`components/VozAlta.jsx`, `lib/voz.js`, `electron/voz.cjs` y `electron/procesoVoz.cjs`): sin internet con
+  voces Piper (Daniela es, Kristin en, Faber pt) y el motor **sherpa-onnx-node 1.13.8** (Apache-2.0); con internet,
+  Gemini (`gemini-3.8-flash-tts`, Interactions API) con la clave de traducir. Decisiones y mediciones: notas de la sesión.
+- No pasar a sherpa-onnx 2.x sin más: la 2.0 sacó espeak-ng para las voces Piper (pide los fonemas de afuera).
+- En Electron, `generateAsync` necesita `enableExternalBuffer: false` («External buffers are not allowed»).
+- espeak-ng no abre rutas con tilde (una cuenta «José»): la voz corre en un `utilityProcess` con `cwd` en la carpeta de voces y
+  rutas relativas. `voz/espeak-ng-data` (recortado a es/en/pt y sin los mails de sus autores, que la revisión de `publicar` frena; GPL) viaja en `extraResources` y se copia al lado de las
+  voces. Los paquetes de sherpa van en `asarUnpack`.
+- Las voces no viajan en el instalador: `electron/voces.json` fija dirección, huella y peso; se bajan a
+  `%LOCALAPPDATA%Brootsoces` tal como las publica Piper (`.onnx` + `.onnx.json`) y Broots les agrega los metadatos de
+  sherpa (campo 14 al final del protobuf) y `tokens.txt`. Daniela y Faber (licencia dudosa: parten de «lessac», solo
+  para investigación) se bajan de Hugging Face y no se guardan en ningún repositorio propio. Kristin podrá pasar a
+  `IVANICUSXXIII/broots-voces` (público: crearlo y subir solo con el OK del usuario).
+- Las voces de Piper 1.5 (reentrenadas desde el 9/11/2026) juntan diptongos en un símbolo («aɪ») que sherpa-onnx 1.13.8
+  no lee («Error when reading tokens»): cada voz va fija a un commit de Hugging Face con el formato viejo.
+- Gemini: gratis, 3 pedidos por minuto y **10 por día**; `voz.cjs` los espacia, espera el límite por minuto y guarda
+  lo escuchado en `voces/gemini` (tope 200 MB). Con el cupo del día terminado, sigue con la voz sin internet.
+- `ritmo` (voces.json) es el 1× de cada voz: Piper habla más rápido que un audiolibro; el usuario eligió de oído 0,7. La
+  velocidad se cambia al instante con `playbackRate` (lo ya preparado no se rehace).
+- Problemas de la voz: `%LOCALAPPDATA%Brootsocesoz.log`. La CSP de `index.html` necesita `media-src blob:` para
+  el audio (sin eso, cada pedazo fallaba en silencio).
+
 ## Interfaz y rendimiento
 
 - Broots está en español, inglés y portugués de Brasil. Ningún texto visible va escrito en el código: va en `idiomas/*.json` (en los tres a la vez) y se usa con `t('seccion.clave')`, o `tx()` si lleva <marcas>. Plurales: `{ "one": "…", "other": "{n} …" }`. Fechas y números, con `region()` (es-AR, en-US, pt-BR).
@@ -88,9 +112,14 @@ El corredor arma la biblioteca de prueba copiando la base real (solo lectura) y 
 - `BROOTS_AGREGAR=a.cbz;b.pdf|c.epub`: con `BROOTS_DATOS`, cada toque de «+» agrega esos archivos sin abrir el diálogo («;» separa una vez de otra y «|», los archivos).
 - `BROOTS_EJECUTABLE=instalador/win-unpacked/Broots.exe` (con `--sin-compilar`): corre las pruebas sobre el programa ya empaquetado. Sirve para lo que cambia dentro del `.asar`, como el hilo que descomprime los CBR.
 - `BROOTS_DICCIONARIOS=manifiesto.json`: de dónde bajar los diccionarios, en vez de GitHub; `=real` baja los de verdad (lo usa el escenario `diccionario-real`, que es lento y no corre con `todos`). Sin esta variable, las pruebas no bajan ningún diccionario.
+- `BROOTS_VOCES=manifiesto.json`: de dónde bajar las voces (como `BROOTS_DICCIONARIOS`; `=real`, las de verdad). Sin esta
+  variable, las pruebas no bajan voces. `BROOTS_VOZ_FALSA=1`: la voz «habla» con silencios (`BROOTS_VOZ_FALSA_MS`
+  milisegundos por letra), sin cargar ningún modelo; Gemini también.
 - `BROOTS_VENTANA=960x600`: abre la ventana con ese tamaño (solo con `BROOTS_DATOS`). Fuera de las pruebas, Broots recuerda el tamaño en `ventana.json` y la primera vez abre maximizada.
 
 Un escenario puede sumar claves al `config.json` de prueba con `config: () => ({ … })` (el corredor lo escribe con `JSON.stringify` y siempre fija `libraryPath` a la biblioteca de prueba) y mandarle datos a su prueba con `datos: () => ({ … })`. `pruebas/libros-de-prueba.mjs` arma a mano PDF (también con DRM o contraseña), CBZ y CBR (RAR 4 y 5, sin compresión; sin WinRAR no se pueden armar comprimidos).
+
+Las capturas del README (`docs/capturas/`, tema claro y oscuro) se sacan con `node pruebas/capturas.mjs [pantalla]`. No usan la biblioteca real ni la de prueba (que copia títulos reales): arman una con clásicos de dominio público (`pruebas/capturas/libros.mjs`, portadas y EPUB hechos ahí) en `%PUBLIC%\Biblioteca`, porque la ruta se ve en la ventana y en `%TEMP%` mostraría el usuario de la PC. Hace falta Calibre instalado.
 
 ## Versiones e instalador
 
