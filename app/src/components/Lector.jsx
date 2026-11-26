@@ -87,8 +87,8 @@ export function BotonBarra({ activo, children, ...props }) {
   );
 }
 
-/** Panel para pegar la clave gratuita de Gemini (la escribe el usuario; se guarda cifrada). */
-function ClaveGemini({ tieneClave, onListo, onCerrar }) {
+/** Panel para pegar la clave gratuita de Gemini (la escribe el usuario; se guarda cifrada). También lo usa el PDF (1.14). */
+export function ClaveGemini({ tieneClave, onListo, onCerrar }) {
   return (
     <div className="absolute inset-0 z-20 grid place-items-center p-6">
       <motion.div className="absolute inset-0 bg-[rgb(var(--sombra))]" initial={{ opacity: 0 }} animate={{ opacity: 0.25 }} exit={{ opacity: 0 }} onClick={onCerrar} />

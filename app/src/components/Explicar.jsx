@@ -132,7 +132,7 @@ export function TarjetaExplicacion({ explicar, onConfigurar }) {
                 {x.explicacion}
               </p>
               <div className="mt-2 flex items-center gap-1 border-t border-borde pt-2">
-                {x.modo !== 'kindle' && (
+                {x.modo !== 'kindle' && x.modo !== 'lectura' && (
                   <AccionTarjeta data-guardar-explicacion onClick={explicar.guardarComoNota} title={t('explicar.guardarExplica')}>
                     <IconoEditar className="size-3.5" /> {t('explicar.guardarComoNota')}
                   </AccionTarjeta>

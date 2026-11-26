@@ -34,7 +34,12 @@ function bloque(e) {
   const lugar =
     e.origen === 'kindle'
       ? ['Kindle', e.pagina && t('club.pagina', { n: e.pagina[0] }), e.ubicacion && t('club.posicion', { n: e.ubicacion[0] }), fecha(e.fecha)]
-      : [t(`cuaderno.colores.${e.color}`), e.version === 'traduccion' && t('cuaderno.enLaTraduccion'), fecha(e.fecha)];
+      : [
+          t(`cuaderno.colores.${e.color}`),
+          e.formato === 'PDF' && t('cuaderno.paginaPdf', { n: e.etiquetaPagina || (e.parrafo ?? 0) + 1 }),
+          e.version === 'traduccion' && t('cuaderno.enLaTraduccion'),
+          fecha(e.fecha),
+        ];
   const meta = lugar.filter(Boolean).join(' · ');
   if (e.tipo === 'nota') return [`**✎ ${t('club.notaSuelta')}:** ${sinMarcas(e.texto)}`, `<sub>${meta}</sub>`].join('\n\n');
   return [cita(e.texto), `<sub>${meta}</sub>`, e.nota && `**✎ ${t('club.miNota')}:** ${sinMarcas(e.nota)}`].filter(Boolean).join('\n\n');
@@ -59,9 +64,12 @@ function armar(libro, { entradas, kindle }) {
   const sinCapitulo = entradas.filter((e) => e.capitulo == null);
   let titulo = null;
   for (const e of conCapitulo) {
-    const encabezado = e.titulo || t('cuaderno.seccion', { n: e.capitulo + 1 });
-    if (encabezado !== titulo) partes.push(`## ${sinMarcas(encabezado)}`);
-    titulo = encabezado;
+    // 1.14: los del PDF, con la sección de su índice (o «Del PDF»), después de los del EPUB.
+    const pdf = e.formato === 'PDF';
+    const encabezado = pdf ? e.titulo || t('cuaderno.delPdf') : e.titulo || t('cuaderno.seccion', { n: e.capitulo + 1 });
+    const clave = `${pdf ? 'pdf' : 'epub'}|${encabezado}`;
+    if (clave !== titulo) partes.push(`## ${sinMarcas(encabezado)}`);
+    titulo = clave;
     partes.push(bloque(e));
   }
   if (sinCapitulo.length) {

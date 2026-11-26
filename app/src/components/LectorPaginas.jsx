@@ -10,14 +10,25 @@
 //
 // Manga: de derecha a izquierda. Se prende solo si el archivo lo dice o el libro tiene la etiqueta «Manga», y el botón
 // de la barra lo cambia para ese libro. En manga también se dan vuelta las flechas, los costados y la barra de abajo.
+//
+// 1.14, solo en PDF: encima de cada página va su capa de texto invisible (lib/pdf.js), para seleccionar como en un
+// navegador. Arrastrar sobre texto selecciona; fuera del texto, mueve la página acercada. El doble clic sobre una
+// palabra la selecciona; fuera del texto, acerca y aleja. Lo seleccionado abre la misma barrita del EPUB: subrayar,
+// nota, «Definir», «Explicar», buscar (SubrayadosPdf.jsx). La traducción va en un panel al costado. Un PDF escaneado
+// (fotos de las páginas, sin texto) se sigue leyendo, y un cartel avisa una vez que ahí no se puede subrayar.
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { COLORES_BARRA, altoAjustado, armarPliegos, aspectoDe, entranDos, estimacion, pliegoDe, resorte, resorteRapido, ritmoParaEstimar, t, tieneEtiquetaManga, useAjustesLectura } from '../lib/index.js';
 import { abrirComicEnLector, abrirPdf } from '../lib/pdf.js';
-import { IconoAnterior, IconoDosPaginas, IconoEnfoque, IconoIndice, IconoManga, IconoMedida, IconoSiguiente, IconoUnaPagina } from './Iconos.jsx';
+import { sinTextoUtil } from '../lib/textoPdf.js';
+import { IconoAnterior, IconoCerrar, IconoDosPaginas, IconoEnfoque, IconoIndice, IconoManga, IconoMedida, IconoSiguiente, IconoSubrayar, IconoTraducir, IconoUnaPagina } from './Iconos.jsx';
 import { PanelLectura } from './LecturaAMedida.jsx';
-import { BotonBarra, IrAPagina } from './Lector.jsx';
+import { BotonBarra, ClaveGemini, IrAPagina } from './Lector.jsx';
 import { AvisoSesion, BotonSesion, useSesionLectura } from './SesionLectura.jsx';
+import { BarraSubrayado, NotaSubrayado, PanelSubrayados } from './SubrayadosLector.jsx';
+import { PanelTraduccionPdf, useSubrayadosPdf } from './SubrayadosPdf.jsx';
+import { TarjetaExplicacion, useExplicar } from './Explicar.jsx';
+import { TarjetaDefinicion, useDefinir } from './Definir.jsx';
 
 const COSTADO = 56; // px a cada lado para las flechas: la página nunca queda debajo de ellas
 const MARGEN_VERTICAL = 12;
@@ -28,6 +39,21 @@ const ARRASTRE_MINIMO = 4; // px: moverse menos que esto sigue siendo un clic
 const DOBLE_CLIC = 280; // ms que espera un clic para saber si viene otro
 const encerrar = (v, min, max) => Math.min(max, Math.max(min, v));
 const PISTA = 'broots-lector-pista-pellizco';
+const PISTA_PDF = 'broots-lector-pista-texto-pdf';
+const PAGINAS_A_REVISAR = 8; // para saber si un PDF es escaneado
+const preferencia = (clave, defecto) => {
+  try {
+    const v = localStorage.getItem(clave);
+    return v == null ? defecto : JSON.parse(v);
+  } catch {
+    return defecto;
+  }
+};
+const recordar = (clave, valor) => {
+  try {
+    localStorage.setItem(clave, JSON.stringify(valor));
+  } catch {}
+};
 
 /** Las páginas ya dibujadas, para no volver a dibujarlas. Se sueltan las que quedaron lejos (cada lienzo ocupa memoria). */
 function crearHojas(fuente) {
@@ -67,10 +93,33 @@ function crearHojas(fuente) {
   };
 }
 
+/** 1.14: las capas de texto de un PDF, armadas una vez por página (como las hojas, se sueltan las lejanas). */
+function crearCapas(fuente) {
+  const cache = new Map(); // página -> { promesa, valor }
+  return {
+    pedir(n) {
+      if (!cache.has(n)) {
+        const entrada = { valor: null, promesa: null };
+        entrada.promesa = fuente.capa(n).then((valor) => (entrada.valor = valor));
+        entrada.promesa.catch(() => cache.get(n) === entrada && cache.delete(n));
+        cache.set(n, entrada);
+      }
+      return cache.get(n).promesa;
+    },
+    lista: (n) => cache.get(n)?.valor ?? null,
+    listas: () => [...cache].filter(([, e]) => e.valor).map(([n, e]) => [n, e.valor]).sort((a, b) => a[0] - b[0]),
+    soltarLejos(cerca) {
+      for (const n of cache.keys()) if (!cerca.has(n)) cache.delete(n);
+    },
+  };
+}
+
 /** Una página: mientras se dibuja, un papel en blanco del mismo tamaño (así nada salta). */
-function Hoja({ hojas, n, ancho, alto, pixeles, alMedir }) {
+function Hoja({ hojas, capas, n, ancho, alto, pixeles, alMedir, alCapa }) {
   const caja = useRef(null);
+  const ranura = useRef(null);
   const [fallo, setFallo] = useState(false);
+  const [capa, setCapa] = useState(null);
   const pedido = Math.round(ancho * pixeles);
   useEffect(() => {
     let vivo = true;
@@ -91,9 +140,31 @@ function Hoja({ hojas, n, ancho, alto, pixeles, alMedir }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hojas, n, pedido]);
+  // 1.14: la capa de texto del PDF, encima del dibujo. Se arma una vez por página y acompaña el zoom sola.
+  useEffect(() => {
+    if (!capas) return;
+    let vivo = true;
+    capas
+      .pedir(n)
+      .then((c) => {
+        if (!vivo || !c?.el || !ranura.current) return;
+        ranura.current.replaceChildren(c.el);
+        setCapa(c);
+        alCapa?.(n);
+      })
+      .catch(() => {});
+    return () => {
+      vivo = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [capas, n]);
+  useLayoutEffect(() => {
+    if (capa) capa.el.style.transform = `scale(${ancho / capa.base.ancho}, ${alto / capa.base.alto}) ${capa.base.giro}`;
+  }, [capa, ancho, alto]);
   return (
     <div className="relative shrink-0" style={{ width: ancho, height: alto }}>
       <div ref={caja} data-hoja={n} className="size-full bg-superficie-2 shadow-[0_2px_14px_-6px_rgb(var(--sombra)/0.45)] [&>*]:block [&>*]:size-full" />
+      {capas && <div ref={ranura} data-ranura-texto={n} className="absolute inset-0 overflow-hidden" />}
       {fallo && <p className="absolute inset-0 grid place-items-center p-4 text-center text-[0.76rem] text-tinta-tenue">{t('paginas.paginaRota')}</p>}
     </div>
   );
@@ -120,8 +191,19 @@ export function LectorPaginas({ libro, formato, onCerrar, colEstado, soloLectura
   const [pista, setPista] = useState(false);
   const sesion = useSesionLectura({ libro, abierto: Boolean(doc), colEstado, soloLectura, onEditarRapido });
   const { alPasarPagina, actividad } = sesion;
+  // 1.14: el texto del PDF
+  const [fuente, setFuente] = useState(null); // el PDF abierto (lib/pdf.js), para pedirle el texto de una página
+  const [capas, setCapas] = useState(null);
+  const [etiquetas, setEtiquetas] = useState(null); // números de página impresos, si el PDF los trae
+  const [sinTexto, setSinTexto] = useState(null); // 'escaneado' | 'roto' | null
+  const [cartelSinTexto, setCartelSinTexto] = useState(false);
+  const [aviso, setAviso] = useState(null); // { tipo, texto, accion }: copiado, borrado con «Deshacer», errores
+  const [traducir, setTraducir] = useState(() => preferencia(`broots-traducir-pdf-${libro.uuid}`, false));
+  const [tieneClave, setTieneClave] = useState(false);
+  const [claveAbierta, setClaveAbierta] = useState(false);
 
   const marco = useRef(null);
+  const zona = useRef(null); // el marco y el panel de traducción: ahí se ubican la barrita y las tarjetas
   const lienzo = useRef(null);
   // Lo que se mueve con el mouse no pasa por React: se escribe directo en el transform.
   const vista = useRef({ zoom: 1, x: 0, y: 0 }).current;
@@ -182,16 +264,38 @@ export function LectorPaginas({ libro, formato, onCerrar, colEstado, soloLectura
       setPagina(encerrar(p?.hoja ?? 0, 0, fuente.total - 1));
       setTamanos([...medidas]); // una copia: en un PDF enorme, la medición sigue sobre el original
       setHojas(crearHojas(fuente));
+      if (d.tipo === 'pdf') {
+        setFuente(fuente);
+        setCapas(crearCapas(fuente));
+      }
       setDoc({ tipo: d.tipo, total: fuente.total, indice });
+      // La pista de la primera vez: en un PDF, primero la de seleccionar texto (1.14); después, la del pellizco.
       try {
-        if (!localStorage.getItem(PISTA)) {
-          localStorage.setItem(PISTA, '1');
-          setPista(true);
-          setTimeout(() => setPista(false), 7000);
+        const cual = d.tipo === 'pdf' && !localStorage.getItem(PISTA_PDF) ? PISTA_PDF : !localStorage.getItem(PISTA) ? PISTA : null;
+        if (cual) {
+          localStorage.setItem(cual, '1');
+          setPista(cual === PISTA_PDF ? 'pdf' : 'paginas');
+          setTimeout(() => setPista(false), 9000);
         }
       } catch {}
-      // En segundo plano: el índice del PDF.
-      if (d.tipo === 'pdf') fuente.indice().then((lista) => vivo && setDoc((a) => a && { ...a, indice: lista })).catch(() => {});
+      // En segundo plano: el índice del PDF, sus números de página y si tiene texto para seleccionar.
+      if (d.tipo === 'pdf') {
+        const pdfAbierto = fuente;
+        pdfAbierto.indice().then((lista) => vivo && setDoc((a) => a && { ...a, indice: lista })).catch(() => {});
+        pdfAbierto.etiquetas().then((e) => vivo && Array.isArray(e) && setEtiquetas(e));
+        const revisar = Array.from({ length: Math.min(PAGINAS_A_REVISAR, pdfAbierto.total) }, (_, i) => pdfAbierto.modelo(i).catch(() => null));
+        Promise.all(revisar).then((modelos) => {
+          if (!vivo) return;
+          const motivo = sinTextoUtil(modelos.filter(Boolean));
+          setSinTexto(motivo);
+          // El cartel, una vez por libro (después queda la marca en la barra: el botón de subrayar explica por qué no hay).
+          const visto = `broots-pdf-sin-texto-${libro.uuid}`;
+          if (motivo && !preferencia(visto, false)) {
+            recordar(visto, true);
+            setCartelSinTexto(true);
+          }
+        });
+      }
     })();
     return () => {
       vivo = false;
@@ -231,6 +335,47 @@ export function LectorPaginas({ libro, formato, onCerrar, colEstado, soloLectura
   const primeraVisible = pliego.length ? pliego[0] + 1 : 0;
   const progreso = total ? ultimaVisible / total : 0;
   const pixeles = (window.devicePixelRatio || 1) * Math.min(zoomNitido, ZOOM_NITIDO_MAXIMO);
+
+  // ---------- 1.14: subrayar, explicar, definir y traducir (solo PDF) ----------
+
+  // Cartelitos (copiado, borrado con «Deshacer», errores): se van solos a los 6 segundos.
+  const avisar = useCallback((texto, tipo = 'subrayado', accion = null) => {
+    const clave = Date.now();
+    setAviso({ tipo, texto, accion, clave });
+    setTimeout(() => setAviso((a) => (a?.clave === clave ? null : a)), 6000);
+  }, []);
+  const etiquetaDe = (n) => etiquetas?.[n] || String(n + 1);
+  const tituloDe = (n) => {
+    let actual = null;
+    for (const e of doc?.indice ?? []) if (e.pagina <= n) actual = e.titulo;
+    return actual;
+  };
+  const pedirModelo = useCallback((n) => (fuente ? fuente.modelo(n) : Promise.reject(new Error('sin PDF'))), [fuente]);
+  const conTexto = doc?.tipo === 'pdf' && !sinTexto;
+  const sub = useSubrayadosPdf({ libro, capas, pedirModelo, paginas: pliego, zona, tituloDe, etiquetaDe, abierto: Boolean(capas), avisar });
+  const explicar = useExplicar({ libro, sub, avisar });
+  const definir = useDefinir({ sub, explicar, avisar, r: null, idiomaLibro: libro.languages?.[0] });
+
+  useEffect(() => {
+    window.lector.estadoTraduccion().then((e) => setTieneClave(e.tieneClave)).catch(() => {});
+  }, []);
+  const claveTraducir = `broots-traducir-pdf-${libro.uuid}`;
+  const cambiarTraducir = () => {
+    if (!traducir && !tieneClave) return setClaveAbierta(true);
+    recordar(claveTraducir, !traducir);
+    setTraducir(!traducir);
+  };
+  const claveLista = async () => {
+    setClaveAbierta(false);
+    const e = await window.lector.estadoTraduccion();
+    setTieneClave(e.tieneClave);
+    setAviso(null);
+    if (e.tieneClave && !traducir) {
+      recordar(claveTraducir, true);
+      setTraducir(true);
+    }
+  };
+  const traduccionAbierta = conTexto && traducir && tieneClave;
 
   /** Lo que ocupa un pliego ajustado a la ventana. */
   const medidaDe = (paginas) => {
@@ -344,12 +489,16 @@ export function LectorPaginas({ libro, formato, onCerrar, colEstado, soloLectura
     const cerca = new Set();
     for (const d of [0, 1, -1, 2, -2]) (pliegos[iPliego + d] ?? []).forEach((n) => cerca.add(n));
     hojas.soltarLejos(cerca);
+    capas?.soltarLejos(cerca);
     const espera = setTimeout(async () => {
       for (const d of [1, -1, 2]) {
         const paginas = pliegos[iPliego + d];
         if (!paginas) continue;
         const { anchos } = medidaDe(paginas);
-        for (let k = 0; k < paginas.length && vivo; k++) await hojas.pedir(paginas[k], Math.round(anchos[k] * pixeles)).catch(() => {});
+        for (let k = 0; k < paginas.length && vivo; k++) {
+          await hojas.pedir(paginas[k], Math.round(anchos[k] * pixeles)).catch(() => {});
+          if (vivo && d === 1) await capas?.pedir(paginas[k]).catch(() => {}); // la capa de texto de la que sigue, también
+        }
       }
     }, 150);
     return () => {
@@ -357,14 +506,33 @@ export function LectorPaginas({ libro, formato, onCerrar, colEstado, soloLectura
       clearTimeout(espera);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hojas, clavePliego, lugar, pixeles, pliegos]);
+  }, [hojas, capas, clavePliego, lugar, pixeles, pliegos]);
+
+  // Al cambiar de página, la barrita y las tarjetas se van (como en el EPUB).
+  useEffect(() => {
+    sub.cerrarBarra();
+    explicar.cerrar();
+    definir.cerrar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clavePliego]);
+
+  /** Desde la lista de subrayados: a su página, y un anillo un momento para encontrarlo. */
+  const irASubrayado = (e) => {
+    if (e.formato !== 'PDF') return;
+    sub.setPanelAbierto(false);
+    irAPagina(e.parrafo + 1);
+    setTimeout(() => sub.destacar(e.id), 450);
+  };
 
   // ---------- Mouse y teclado ----------
 
   const alApretar = (e) => {
     if (e.button !== 0) return;
-    e.preventDefault(); // que arrastrar no «levante» la página ni seleccione nada
-    r.arrastre = { x: e.clientX, y: e.clientY, ox: vista.x, oy: vista.y, seMovio: false };
+    // 1.14: sobre el texto de un PDF, arrastrar selecciona (como en un navegador). Fuera del texto, mueve la página.
+    const enTexto = Boolean(conTexto && e.target.closest?.('.capa-texto > span'));
+    if (enTexto) for (const [, c] of capas?.listas() ?? []) c.el.classList.add('seleccionando');
+    else e.preventDefault(); // que arrastrar no «levante» la página ni seleccione nada
+    r.arrastre = { x: e.clientX, y: e.clientY, ox: vista.x, oy: vista.y, seMovio: false, enTexto };
   };
   const alClic = (e) => {
     const { clientX, clientY } = e;
@@ -387,12 +555,23 @@ export function LectorPaginas({ libro, formato, onCerrar, colEstado, soloLectura
   const manos = useRef({});
   manos.current = {
     izquierda, derecha, siguiente, anterior, alClic, contener, aplicarVista, ponerZoom, limites,
+    /** Se soltó el mouse después de apretarlo sobre el texto del PDF. */
+    alSoltarTexto(e, a) {
+      for (const [, c] of capas?.listas() ?? []) c.el.classList.remove('seleccionando');
+      // Quedó algo seleccionado (arrastrando o con doble clic sobre una palabra): la barrita, sin pasar de página ni acercar.
+      if (sub.alSoltar() || (!a.seMovio && sub.alTocar(e))) {
+        clearTimeout(r.clicPendiente);
+        r.ultimoClic = 0;
+        return;
+      }
+      if (!a.seMovio) alClic(e);
+    },
     alRodar(e) {
       if (e.ctrlKey) {
         e.preventDefault(); // que no intente hacer zoom de la ventana
         return ponerZoom(vista.zoom * Math.exp(encerrar(-e.deltaY, -30, 30) * 0.01), e.clientX, e.clientY);
       }
-      if (panelMedida || indiceAbierto) return;
+      if (panelMedida || indiceAbierto || sub.barra || sub.nota || sub.panelAbierto || explicar.tarjeta || definir.tarjeta) return;
       const vertical = Math.abs(e.deltaY) > Math.abs(e.deltaX);
       const delta = vertical ? e.deltaY : e.deltaX;
       if (vista.zoom > 1) {
@@ -416,7 +595,11 @@ export function LectorPaginas({ libro, formato, onCerrar, colEstado, soloLectura
       if (e.target.closest?.('input, textarea')) return;
       actividad();
       if (e.key === 'Escape') {
-        if (panelMedida) setPanelMedida(false);
+        if (claveAbierta) setClaveAbierta(false);
+        else if (explicar.tarjeta) explicar.cerrar();
+        else if (definir.tarjeta) definir.cerrar();
+        else if (sub.cerrarAlgo()) return; // la nota, la barrita o la lista de subrayados
+        else if (panelMedida) setPanelMedida(false);
         else if (indiceAbierto) setIndiceAbierto(false);
         else if (sesion.panelAbierto) sesion.setPanelAbierto(false);
         else if (enfoque) setEnfoque(false);
@@ -455,7 +638,7 @@ export function LectorPaginas({ libro, formato, onCerrar, colEstado, soloLectura
       const dx = e.clientX - a.x;
       const dy = e.clientY - a.y;
       if (Math.hypot(dx, dy) > ARRASTRE_MINIMO) a.seMovio = true;
-      if (!a.seMovio || vista.zoom <= 1) return;
+      if (!a.seMovio || vista.zoom <= 1 || a.enTexto) return;
       vista.x = a.ox + dx;
       vista.y = a.oy + dy;
       manos.current.contener();
@@ -464,7 +647,8 @@ export function LectorPaginas({ libro, formato, onCerrar, colEstado, soloLectura
     const alSoltar = (e) => {
       const a = r.arrastre;
       r.arrastre = null;
-      if (a && !a.seMovio) manos.current.alClic(e);
+      if (a?.enTexto) manos.current.alSoltarTexto(e, a);
+      else if (a && !a.seMovio) manos.current.alClic(e);
     };
     const alPresionar = (e) => manos.current.alPresionar(e);
     window.addEventListener('mousemove', alMover);
@@ -556,6 +740,7 @@ export function LectorPaginas({ libro, formato, onCerrar, colEstado, soloLectura
       data-enfoque={enfoque ? 'si' : 'no'}
       data-rtl={rtl ? 'si' : 'no'}
       data-dos={dos ? 'si' : 'no'}
+      data-sin-texto={sinTexto ?? undefined}
       data-tema-lector={ajustes.tema === 'auto' ? undefined : ajustes.tema}
     >
       <header
@@ -570,6 +755,16 @@ export function LectorPaginas({ libro, formato, onCerrar, colEstado, soloLectura
           <p className="truncate font-serif text-[0.86rem] font-semibold">{libro.title}</p>
           {entradaActual && <p className="truncate text-[0.68rem] text-tinta-tenue">{entradaActual.titulo}</p>}
         </div>
+        {doc?.tipo === 'pdf' && (
+          <>
+            <BotonBarra activo={sub.panelAbierto} onClick={() => sub.setPanelAbierto((v) => !v)} title={sinTexto ? t(`pdf.${sinTexto}`) : t('subrayados.lector.boton')} data-boton-subrayados>
+              <IconoSubrayar className="size-4" />
+            </BotonBarra>
+            <BotonBarra activo={traduccionAbierta} onClick={cambiarTraducir} disabled={Boolean(sinTexto)} title={sinTexto ? t(`pdf.${sinTexto}`) : traduccionAbierta ? t('pdf.cerrarTraduccion') : t('pdf.abrirTraduccion')} data-boton-traducir>
+              <IconoTraducir className="size-4" /> {t('lector.traducir')}
+            </BotonBarra>
+          </>
+        )}
         <BotonBarra activo={rtl} onClick={() => setRtl((v) => !v)} disabled={!doc} title={t(rtl ? 'paginas.mangaPrendido' : 'paginas.mangaApagado')} data-boton-manga>
           <IconoManga className="size-4" /> {t('paginas.manga')}
         </BotonBarra>
@@ -585,121 +780,219 @@ export function LectorPaginas({ libro, formato, onCerrar, colEstado, soloLectura
         </BotonBarra>
       </header>
 
-      <div ref={marco} className="relative min-h-0 flex-1 overflow-hidden" data-marco-paginas>
-        {/* La capa que recibe los clics y el arrastre; los paneles y las flechas van por encima. */}
-        <div className={`absolute inset-0 ${zoomNitido > 1 ? 'cursor-grab active:cursor-grabbing' : ''}`} onMouseDown={alApretar}>
-          <div ref={lienzo} data-lienzo className="absolute inset-0 will-change-transform">
-            <AnimatePresence initial={false}>
-              {hojas && lugar && pliego.length > 0 && (
-                <motion.div
-                  key={clavePliego}
-                  data-pliego={clavePliego}
-                  initial={{ opacity: 0, transform: `translateX(${haciaDonde * 36}px)` }}
-                  animate={{ opacity: 1, transform: 'translateX(0px)' }}
-                  exit={{ opacity: 0, transition: { duration: 0.12 } }}
-                  transition={resorteRapido}
-                  className="absolute inset-0 flex items-center justify-center"
-                >
-                  {ordenVisual.map((n) => (
-                    <Hoja key={n} hojas={hojas} n={n} alto={medidaActual.alto} ancho={medidaActual.anchos[pliego.indexOf(n)]} pixeles={pixeles} alMedir={alMedir} />
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-
-        {/* Costados: pasan de página; en manga, el de la izquierda es el que avanza */}
-        <button type="button" onClick={izquierda} title={t(rtl ? 'paginas.siguienteManga' : 'lector.anterior')} className="group absolute inset-y-0 left-0 z-[5] grid w-14 place-items-center" data-costado="izquierda">
-          <span className={flecha}>
-            <IconoAnterior className="size-6" />
-          </span>
-        </button>
-        <button type="button" onClick={derecha} title={t(rtl ? 'paginas.anteriorManga' : 'lector.siguiente')} className="group absolute inset-y-0 right-0 z-[5] grid w-14 place-items-center" data-costado="derecha">
-          <span className={flecha}>
-            <IconoSiguiente className="size-6" />
-          </span>
-        </button>
-
-        {!doc && !error && <p className="absolute inset-0 grid place-items-center text-sm text-tinta-tenue">{t('lector.abriendo')}</p>}
-        {error && (
-          <div className="absolute inset-0 z-[6] grid place-items-center bg-superficie p-8" data-error-paginas>
-            <div className="max-w-sm text-center">
-              <p className="text-[0.9rem]">{error}</p>
-              <button type="button" onClick={onCerrar} className="mt-4 text-[0.8rem] font-medium text-acento hover:underline">
-                {t('lector.volver')}
-              </button>
+      <div ref={zona} className="relative flex min-h-0 flex-1" data-zona-paginas>
+        <div ref={marco} className="relative min-h-0 min-w-0 flex-1 overflow-hidden" data-marco-paginas>
+          {/* La capa que recibe los clics y el arrastre; los paneles y las flechas van por encima. */}
+          <div className={`absolute inset-0 ${zoomNitido > 1 ? 'cursor-grab active:cursor-grabbing' : ''}`} onMouseDown={alApretar}>
+            <div ref={lienzo} data-lienzo className="absolute inset-0 will-change-transform">
+              <AnimatePresence initial={false}>
+                {hojas && lugar && pliego.length > 0 && (
+                  <motion.div
+                    key={clavePliego}
+                    data-pliego={clavePliego}
+                    initial={{ opacity: 0, transform: `translateX(${haciaDonde * 36}px)` }}
+                    animate={{ opacity: 1, transform: 'translateX(0px)' }}
+                    exit={{ opacity: 0, transition: { duration: 0.12 } }}
+                    transition={resorteRapido}
+                    className="absolute inset-0 flex items-center justify-center"
+                  >
+                    {ordenVisual.map((n) => (
+                      <Hoja
+                        key={n}
+                        hojas={hojas}
+                        capas={sinTexto ? null : capas}
+                        n={n}
+                        alto={medidaActual.alto}
+                        ancho={medidaActual.anchos[pliego.indexOf(n)]}
+                        pixeles={pixeles}
+                        alMedir={alMedir}
+                        alCapa={sub.alCapa}
+                      />
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
+
+          {/* Costados: pasan de página; en manga, el de la izquierda es el que avanza */}
+          <button type="button" onClick={izquierda} title={t(rtl ? 'paginas.siguienteManga' : 'lector.anterior')} className="group absolute inset-y-0 left-0 z-[5] grid w-14 place-items-center" data-costado="izquierda">
+            <span className={flecha}>
+              <IconoAnterior className="size-6" />
+            </span>
+          </button>
+          <button type="button" onClick={derecha} title={t(rtl ? 'paginas.anteriorManga' : 'lector.siguiente')} className="group absolute inset-y-0 right-0 z-[5] grid w-14 place-items-center" data-costado="derecha">
+            <span className={flecha}>
+              <IconoSiguiente className="size-6" />
+            </span>
+          </button>
+
+          {!doc && !error && <p className="absolute inset-0 grid place-items-center text-sm text-tinta-tenue">{t('lector.abriendo')}</p>}
+          {error && (
+            <div className="absolute inset-0 z-[6] grid place-items-center bg-superficie p-8" data-error-paginas>
+              <div className="max-w-sm text-center">
+                <p className="text-[0.9rem]">{error}</p>
+                <button type="button" onClick={onCerrar} className="mt-4 text-[0.8rem] font-medium text-acento hover:underline">
+                  {t('lector.volver')}
+                </button>
+              </div>
+            </div>
+          )}
+
+          <AnimatePresence>
+            {pista && !(pista === 'pdf' && sinTexto) && (
+              <motion.div
+                key="pista"
+                data-aviso-lector="pista"
+                data-pista={pista}
+                initial={{ opacity: 0, transform: 'translate(-50%, -8px)' }}
+                animate={{ opacity: 1, transform: 'translate(-50%, 0px)' }}
+                exit={{ opacity: 0, transform: 'translate(-50%, -6px)' }}
+                transition={resorteRapido}
+                className="squircle pointer-events-none absolute top-2 left-1/2 z-[26] max-w-[80%] rounded-full bg-superficie-2 px-3.5 py-1.5 text-[0.74rem] shadow-[0_6px_18px_-8px_rgb(var(--sombra)/0.5),inset_0_0_0_1px_var(--borde)]"
+              >
+                {t(pista === 'pdf' ? 'pdf.pista' : 'paginas.pista')}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Índice */}
+          <AnimatePresence>
+            {indiceAbierto && doc && (
+              <>
+                <motion.div key="velo" className="absolute inset-0 z-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIndiceAbierto(false)} />
+                <motion.nav
+                  key="indice"
+                  data-indice-paginas
+                  initial={{ opacity: 0, transform: 'translateX(-24px)' }}
+                  animate={{ opacity: 1, transform: 'translateX(0px)' }}
+                  exit={{ opacity: 0, transform: 'translateX(-16px)', transition: { duration: 0.14 } }}
+                  transition={resorte}
+                  className="squircle absolute top-2 bottom-3 left-3 z-10 w-80 overflow-y-auto rounded-[18px] bg-superficie p-2 shadow-flotante"
+                >
+                  {doc.indice.map((e, k) => (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => {
+                        setIndiceAbierto(false);
+                        irAPagina(e.pagina + 1);
+                      }}
+                      style={{ paddingLeft: `${10 + e.nivel * 14}px` }}
+                      className={`block w-full rounded-[10px] py-1.5 pr-2.5 text-left text-[0.8rem] transition-colors ${e === entradaActual ? 'bg-seleccion font-medium' : 'hover:bg-superficie-2'}`}
+                    >
+                      <span className="line-clamp-2">{e.titulo}</span>
+                    </button>
+                  ))}
+                </motion.nav>
+              </>
+            )}
+          </AnimatePresence>
+
+          <PanelLectura abierto={panelMedida} onCerrar={() => setPanelMedida(false)} ajustes={ajustes} onCambiar={cambiarAjustes} soloTema />
+          <AvisoSesion sesion={sesion} onCerrarLibro={onCerrar} enfoque={enfoque} />
+
+          {/* El zoom mientras se pellizca el trackpad */}
+          <AnimatePresence>
+            {cartelZoom != null && (
+              <motion.div
+                key="zoom"
+                data-zoom-al-pellizcar
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="pointer-events-none absolute top-3 left-1/2 z-40 -translate-x-1/2 rounded-full bg-superficie-2 px-3 py-1 text-[0.76rem] tabular-nums shadow-[inset_0_0_0_1px_var(--borde)]"
+              >
+                {t('paginas.zoomActual', { n: cartelZoom })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* 1.14: la traducción del PDF, al costado (las letras de un PDF son un dibujo: no se pueden reemplazar) */}
+        {doc?.tipo === 'pdf' && (
+          <PanelTraduccionPdf
+            libro={libro}
+            abierto={traduccionAbierta}
+            paginas={pliego}
+            siguientes={pliegos[iPliego + 1] ?? []}
+            pedirModelo={pedirModelo}
+            etiquetaDe={etiquetaDe}
+            onCerrar={cambiarTraducir}
+            alSeleccionar={sub.alSoltarLectura}
+            alError={(res) => avisar(res?.sinClave ? t('lector.faltaClave') : res?.mensaje || t('pdf.noPudeTraducir'), res?.sinClave ? 'sinClave' : 'error')}
+          />
         )}
 
+        {/* Los cartelitos: copiado, borrado con «Deshacer», errores de la traducción */}
         <AnimatePresence>
-          {pista && (
+          {aviso && (
             <motion.div
-              key="pista"
-              data-aviso-lector="pista"
+              key={aviso.tipo}
               initial={{ opacity: 0, transform: 'translate(-50%, -8px)' }}
               animate={{ opacity: 1, transform: 'translate(-50%, 0px)' }}
               exit={{ opacity: 0, transform: 'translate(-50%, -6px)' }}
               transition={resorteRapido}
-              className="squircle pointer-events-none absolute top-2 left-1/2 z-[26] max-w-[80%] rounded-full bg-superficie-2 px-3.5 py-1.5 text-[0.74rem] shadow-[0_6px_18px_-8px_rgb(var(--sombra)/0.5),inset_0_0_0_1px_var(--borde)]"
+              data-aviso-lector={aviso.tipo}
+              className="squircle absolute top-2 left-1/2 z-[26] flex max-w-[80%] items-center gap-2 rounded-full bg-superficie-2 px-3.5 py-1.5 text-[0.74rem] shadow-[0_6px_18px_-8px_rgb(var(--sombra)/0.5),inset_0_0_0_1px_var(--borde)]"
             >
-              {t('paginas.pista')}
+              <span className={`truncate ${aviso.tipo === 'error' || aviso.tipo === 'errorSubrayado' ? 'text-[#bc4749]' : ''}`}>{aviso.texto}</span>
+              {aviso.accion && (
+                <button
+                  type="button"
+                  data-accion-aviso
+                  onClick={() => {
+                    setAviso(null);
+                    aviso.accion.alTocar();
+                  }}
+                  className="shrink-0 font-medium text-acento hover:underline"
+                >
+                  {aviso.accion.texto}
+                </button>
+              )}
+              {aviso.tipo === 'sinClave' && (
+                <button type="button" onClick={() => setClaveAbierta(true)} className="shrink-0 font-medium text-acento hover:underline">
+                  {t('lector.configurar')}
+                </button>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Índice */}
+        {/* Un PDF escaneado (o con el texto ilegible): se avisa una vez, claro, y se sigue leyendo */}
         <AnimatePresence>
-          {indiceAbierto && doc && (
-            <>
-              <motion.div key="velo" className="absolute inset-0 z-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIndiceAbierto(false)} />
-              <motion.nav
-                key="indice"
-                data-indice-paginas
-                initial={{ opacity: 0, transform: 'translateX(-24px)' }}
-                animate={{ opacity: 1, transform: 'translateX(0px)' }}
-                exit={{ opacity: 0, transform: 'translateX(-16px)', transition: { duration: 0.14 } }}
-                transition={resorte}
-                className="squircle absolute top-2 bottom-3 left-3 z-10 w-80 overflow-y-auto rounded-[18px] bg-superficie p-2 shadow-flotante"
-              >
-                {doc.indice.map((e, k) => (
-                  <button
-                    key={k}
-                    type="button"
-                    onClick={() => {
-                      setIndiceAbierto(false);
-                      irAPagina(e.pagina + 1);
-                    }}
-                    style={{ paddingLeft: `${10 + e.nivel * 14}px` }}
-                    className={`block w-full rounded-[10px] py-1.5 pr-2.5 text-left text-[0.8rem] transition-colors ${e === entradaActual ? 'bg-seleccion font-medium' : 'hover:bg-superficie-2'}`}
-                  >
-                    <span className="line-clamp-2">{e.titulo}</span>
-                  </button>
-                ))}
-              </motion.nav>
-            </>
-          )}
-        </AnimatePresence>
-
-        <PanelLectura abierto={panelMedida} onCerrar={() => setPanelMedida(false)} ajustes={ajustes} onCambiar={cambiarAjustes} soloTema />
-        <AvisoSesion sesion={sesion} onCerrarLibro={onCerrar} enfoque={enfoque} />
-
-        {/* El zoom mientras se pellizca el trackpad */}
-        <AnimatePresence>
-          {cartelZoom != null && (
+          {cartelSinTexto && sinTexto && (
             <motion.div
-              key="zoom"
-              data-zoom-al-pellizcar
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="pointer-events-none absolute top-3 left-1/2 z-40 -translate-x-1/2 rounded-full bg-superficie-2 px-3 py-1 text-[0.76rem] tabular-nums shadow-[inset_0_0_0_1px_var(--borde)]"
+              key="sin-texto"
+              data-aviso-sin-texto={sinTexto}
+              initial={{ opacity: 0, transform: 'translate(-50%, -8px)' }}
+              animate={{ opacity: 1, transform: 'translate(-50%, 0px)' }}
+              exit={{ opacity: 0, transform: 'translate(-50%, -6px)', transition: { duration: 0.12 } }}
+              transition={resorte}
+              className="squircle absolute top-3 left-1/2 z-[27] flex w-[min(32rem,90%)] items-start gap-3 rounded-[16px] bg-superficie p-3.5 text-[0.8rem] leading-relaxed shadow-flotante"
             >
-              {t('paginas.zoomActual', { n: cartelZoom })}
+              <p className="min-w-0 flex-1">{t(`pdf.${sinTexto}`)}</p>
+              <button type="button" onClick={() => setCartelSinTexto(false)} className="grid size-6 shrink-0 place-items-center rounded-full bg-superficie-2 text-tinta-suave hover:text-tinta" title={t('lector.cerrar')} data-cerrar-sin-texto>
+                <IconoCerrar className="size-3" />
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Subrayados: la lista de la derecha y, al seleccionar o tocar uno, la barrita y la nota (igual que en el EPUB) */}
+        {doc?.tipo === 'pdf' && (
+          <>
+            <PanelSubrayados sub={sub} libroId={libro.id} formato="PDF" onIr={irASubrayado} alResultado={(texto, error) => avisar(texto, error ? 'errorSubrayado' : 'subrayado')} />
+            {(sub.barra || sub.nota || explicar.tarjeta || definir.tarjeta) && (
+              <div data-velo-subrayado className="absolute inset-0 z-[25]" onClick={() => (sub.nota ? sub.guardarNota() : explicar.tarjeta ? explicar.cerrar() : definir.tarjeta ? definir.cerrar() : sub.cerrarBarra())} />
+            )}
+            <BarraSubrayado sub={sub} onExplicar={explicar.abrir} onDefinir={definir.abrir} />
+            <NotaSubrayado sub={sub} />
+            <TarjetaExplicacion explicar={explicar} onConfigurar={() => setClaveAbierta(true)} />
+            <TarjetaDefinicion definir={definir} />
+            <AnimatePresence>{claveAbierta && <ClaveGemini key="clave" tieneClave={tieneClave} onListo={claveLista} onCerrar={() => setClaveAbierta(false)} />}</AnimatePresence>
+          </>
+        )}
       </div>
 
       <footer className={`flex h-10 shrink-0 items-center gap-4 px-6 text-[0.7rem] text-tinta-tenue ${flotante('abajo')}`}>

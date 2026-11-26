@@ -88,9 +88,12 @@ export function tramosDeAncla(textos, a) {
   return partes;
 }
 
-/** Mismo orden que en anotaciones.cjs: por capítulo y lugar; al final, los del Kindle sin capítulo. */
+/** Mismo orden que en anotaciones.cjs: por capítulo y lugar (los del PDF, por página, después); al final, los del Kindle sin capítulo. */
 export function ordenar(entradas) {
-  const conCapitulo = entradas.filter((e) => e.capitulo != null).sort((a, b) => a.capitulo - b.capitulo || (a.orden ?? 0) - (b.orden ?? 0) || String(a.fecha).localeCompare(String(b.fecha)));
+  const esPdf = (e) => (e.formato === 'PDF' ? 1 : 0);
+  const conCapitulo = entradas
+    .filter((e) => e.capitulo != null)
+    .sort((a, b) => esPdf(a) - esPdf(b) || a.capitulo - b.capitulo || (a.orden ?? 0) - (b.orden ?? 0) || String(a.fecha).localeCompare(String(b.fecha)));
   return [...conCapitulo, ...entradas.filter((e) => e.capitulo == null)];
 }
 

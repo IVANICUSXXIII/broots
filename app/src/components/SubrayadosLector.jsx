@@ -423,7 +423,9 @@ export function BarraSubrayado({ sub, onExplicar, onDefinir, onEscuchar }) {
   };
   const servicioMusica = SERVICIOS_MUSICA.find((m) => m.id === musica);
   const entrada = barra?.id ? sub.entradas.find((e) => e.id === barra.id) : null;
-  const seleccionado = barra?.modo === 'nuevo' ? barra.ancla?.texto : entrada?.texto;
+  // 1.14: 'lectura' es lo seleccionado en la traducción de un PDF: se copia, define, explica o busca, pero no se subraya.
+  const seleccionado = barra?.modo === 'nuevo' ? barra.ancla?.texto : barra?.modo === 'lectura' ? barra.texto : entrada?.texto;
+  const subrayable = barra && barra.modo !== 'kindle' && barra.modo !== 'lectura';
   const seExplica = barra && explicable(seleccionado); // 1.9
   const seDefine = barra && definible(seleccionado); // 1.12: una palabra o una expresión corta
   return (
@@ -455,7 +457,7 @@ export function BarraSubrayado({ sub, onExplicar, onDefinir, onEscuchar }) {
             </>
           ) : (
           <>
-          {barra.modo === 'kindle' ? (
+          {barra.modo === 'lectura' ? null : barra.modo === 'kindle' ? (
             <span className="px-2 text-tinta-tenue">{t('subrayados.lector.delKindle')}</span>
           ) : (
             COLORES.map((color) => (
@@ -475,8 +477,8 @@ export function BarraSubrayado({ sub, onExplicar, onDefinir, onEscuchar }) {
               </motion.button>
             ))
           )}
-          <span className="mx-1 h-4 w-px bg-borde" />
-          {barra.modo !== 'kindle' && (
+          {barra.modo !== 'lectura' && <span className="mx-1 h-4 w-px bg-borde" />}
+          {subrayable && (
             <BotonBarrita data-accion="nota" onClick={sub.abrirNota}>
               <IconoEditar className="size-3.5" /> {entrada?.nota ? t('subrayados.lector.verNota') : t('subrayados.lector.nota')}
             </BotonBarrita>
@@ -608,12 +610,15 @@ export function AccionesMd({ libroId, md, alResultado, className = '' }) {
 
 // ---------- La lista de la derecha ----------
 
-/** Agrupa por capítulo (los del Kindle que no se ubicaron, al final): [{ titulo, entradas }]. */
+/** Agrupa por capítulo (los del Kindle que no se ubicaron, al final): [{ titulo, entradas }]. Los del PDF (1.14), aparte. */
 export function porCapitulo(entradas) {
   const grupos = [];
   for (const e of entradas) {
-    const titulo = e.capitulo == null ? t('subrayados.delKindleSinCapitulo') : e.titulo || t('subrayados.seccion', { n: e.capitulo + 1 });
-    if (grupos.at(-1)?.titulo !== titulo) grupos.push({ titulo, entradas: [] });
+    const pdf = e.formato === 'PDF';
+    const titulo =
+      e.capitulo == null ? t('subrayados.delKindleSinCapitulo') : pdf ? e.titulo || t('subrayados.delPdf') : e.titulo || t('subrayados.seccion', { n: e.capitulo + 1 });
+    const clave = `${pdf ? 'pdf' : 'epub'}|${titulo}`;
+    if (grupos.at(-1)?.clave !== clave) grupos.push({ clave, titulo, entradas: [] });
     grupos.at(-1).entradas.push(e);
   }
   return grupos;
@@ -624,11 +629,24 @@ export function lugarDe(e) {
   const partes =
     e.origen === 'kindle'
       ? ['Kindle', e.pagina && t('detalle.pagina', { n: e.pagina[0] }), e.ubicacion && t('detalle.posicion', { n: e.ubicacion[0] }), e.fecha && fechaCorta(e.fecha)]
-      : ['Broots', e.version === 'traduccion' && t('subrayados.enLaTraduccion'), fechaCorta(e.fecha)];
+      : e.formato === 'PDF'
+        ? ['Broots', t('subrayados.paginaPdf', { n: e.etiquetaPagina || (e.parrafo ?? 0) + 1 }), fechaCorta(e.fecha)]
+        : ['Broots', e.version === 'traduccion' && t('subrayados.enLaTraduccion'), fechaCorta(e.fecha)];
   return partes.filter(Boolean).join(' · ');
 }
 
-export function PanelSubrayados({ sub, libroId, onIr, alResultado }) {
+/**
+ * Se puede ir a un subrayado si está en el formato que se está leyendo: los del PDF, en el PDF; los demás, en el EPUB.
+ * Devuelve null si se puede, o por qué no.
+ */
+function porQueNoSePuede(e, formato) {
+  const delPdf = e.formato === 'PDF';
+  if (formato === 'PDF' && !delPdf) return e.origen === 'kindle' ? t('subrayados.delKindleEnPdf') : t('subrayados.enElEpub');
+  if (formato !== 'PDF' && delPdf) return t('subrayados.enElPdf');
+  return e.href ? null : t('subrayados.noEncontrado');
+}
+
+export function PanelSubrayados({ sub, libroId, onIr, alResultado, formato = 'EPUB' }) {
   const grupos = porCapitulo(sub.entradas);
   return (
     <AnimatePresence>
@@ -654,7 +672,7 @@ export function PanelSubrayados({ sub, libroId, onIr, alResultado }) {
             <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">
               {!sub.entradas.length && <p className="px-2.5 py-3 text-[0.78rem] leading-relaxed text-tinta-tenue">{t('subrayados.lector.vacio')}</p>}
               {grupos.map((g, k) => (
-                <div key={`${g.titulo}-${k}`} className="mt-2">
+                <div key={`${g.clave}-${k}`} className="mt-2">
                   <p className="truncate px-2.5 py-1 text-[0.66rem] font-semibold tracking-wide text-tinta-tenue">{g.titulo}</p>
                   {g.entradas.map((e) => (
                     <button
@@ -662,9 +680,10 @@ export function PanelSubrayados({ sub, libroId, onIr, alResultado }) {
                       key={e.id}
                       data-item-subrayado={e.id}
                       data-origen={e.origen}
-                      disabled={!e.href}
+                      data-formato={e.formato === 'PDF' ? 'pdf' : undefined}
+                      disabled={Boolean(porQueNoSePuede(e, formato))}
                       onClick={() => onIr(e)}
-                      title={e.href ? t('subrayados.lector.irAlSubrayado') : t('subrayados.noEncontrado')}
+                      title={porQueNoSePuede(e, formato) ?? t('subrayados.lector.irAlSubrayado')}
                       className="block w-full rounded-[10px] px-2.5 py-2 text-left transition-colors enabled:hover:bg-superficie-2"
                     >
                       <span className="block border-l-[3px] pl-2.5" style={{ borderColor: colorDeLinea(e) }}>

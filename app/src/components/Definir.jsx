@@ -60,9 +60,14 @@ export function useDefinir({ sub, explicar, avisar, r, idiomaLibro }) {
   const abrir = () => {
     const datos = sub.paraExplicar();
     if (!datos) return;
-    const traducido = r.traducir && r.traducidos.has(datos.indice) && !r.viendoOriginal.has(datos.indice);
-    // Los párrafos de alrededor, como vienen en el libro (r.originales guarda su HTML): para cuando este es muy corto.
-    const vecinos = r.originales.slice(Math.max(0, (datos.indice ?? 0) - 10), (datos.indice ?? 0) + 10).join(' ').replace(/<[^>]+>/g, ' ');
+    // 1.14: el PDF dice él mismo qué rodea a lo elegido y si venía de la traducción (sub.contextoDiccionario).
+    const { traducido, vecinos } = sub.contextoDiccionario
+      ? sub.contextoDiccionario(datos)
+      : {
+          traducido: r.traducir && r.traducidos.has(datos.indice) && !r.viendoOriginal.has(datos.indice),
+          // Los párrafos de alrededor, como vienen en el libro (r.originales guarda su HTML): para cuando este es muy corto.
+          vecinos: r.originales.slice(Math.max(0, (datos.indice ?? 0) - 10), (datos.indice ?? 0) + 10).join(' ').replace(/<[^>]+>/g, ' '),
+        };
     const idioma = elegirDiccionario({ parrafo: datos.parrafo, vecinos, traducido, idiomaLibro, idiomaBroots: idiomaActual() });
     sub.cerrarBarra();
     consultar({ ...datos, idioma });
@@ -193,7 +198,7 @@ export function TarjetaDefinicion({ definir }) {
                 <AccionTarjeta data-definir-explicar onClick={definir.pasarAExplicar} title={t('explicar.botonExplica')}>
                   <IconoExplicar className="size-3.5" /> {t('explicar.boton')}
                 </AccionTarjeta>
-                {x.modo !== 'kindle' && (
+                {x.modo !== 'kindle' && x.modo !== 'lectura' && (
                   <AccionTarjeta data-definir-guardar onClick={definir.guardarComoNota} title={t('explicar.guardarExplica')}>
                     <IconoEditar className="size-3.5" /> {t('explicar.guardarComoNota')}
                   </AccionTarjeta>

@@ -121,7 +121,7 @@ export default {
     if (!hoja) return;
     comprobar('la página tiene texto dibujado (con las tipografías de pdf.js)', tinta(hoja) > 200, tinta(hoja));
     comprobar('dice cuántas páginas tiene', /de 12/.test(pie()), pie());
-    comprobar('no ofrece traducir ni subrayar: quedan para otra etapa', !raiz().querySelector('[data-tour="traducir"], [data-boton-subrayados]'));
+    comprobar('ofrece subrayar y traducir (1.14; se prueba en pdf-texto)', raiz().querySelector('[data-boton-subrayados]') && raiz().querySelector('[data-boton-traducir]'));
     comprobar('en una ventana ancha, la tapa va sola', pliego() === '0' && raiz().dataset.dos === 'si', pliego());
 
     // ---------- De a dos, y la página ancha sola ----------

@@ -968,7 +968,12 @@
         "buscarExplica": "Search for this on Google, YouTube or your music app",
         "buscarEn": "Search on",
         "volver": "Back"
-      }
+      },
+      "delPdf": "From the PDF",
+      "paginaPdf": "PDF · p. {n}",
+      "enElPdf": "You highlighted this in the PDF: open the PDF to see it in place",
+      "enElEpub": "You highlighted this in the EPUB: open the EPUB to see it in place",
+      "delKindleEnPdf": "It’s from your Kindle: I can’t place it in the PDF (I can in the EPUB)"
     },
     "lectura": {
       "titulo": "Reading your way",
@@ -1154,6 +1159,17 @@
       "sigoSinInternet": "Switching to the offline voice.",
       "noPude": "I couldn’t download the voice. Please try again.",
       "noPudeSonar": "I couldn’t play the audio. Please try again; if it keeps happening, let us know."
+    },
+    "pdf": {
+      "traduccion": "Translation",
+      "pagina": "Page {n}",
+      "paginaImagen": "This page is an image: there’s no text to translate.",
+      "abrirTraduccion": "Show the translation alongside (with Gemini)",
+      "cerrarTraduccion": "Close the translation",
+      "noPudeTraducir": "I couldn’t translate this page. Try again in a bit.",
+      "escaneado": "This PDF is scanned: every page is a photo. You can read it, but you can’t highlight, translate or look up words.",
+      "roto": "The text in this PDF is in a format Broots can’t read (it comes out as symbols). You can read it, but you can’t highlight, translate or look up words.",
+      "pista": "New: in PDFs you can now select text to highlight it, add a note, define it or get it explained. To move a zoomed-in page, drag from a margin."
     }
   },
   "electron": {
@@ -1387,7 +1403,9 @@
         "rosa": "Pink"
       },
       "tuyo": "From here down it’s all yours: write whatever you like, Broots won’t touch it.",
-      "antes": "before"
+      "antes": "before",
+      "delPdf": "From the PDF",
+      "paginaPdf": "PDF · p. {n}"
     },
     "voz": {
       "noPude": "I couldn’t download the voice. Please try again.",

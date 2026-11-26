@@ -968,7 +968,12 @@
         "buscarExplica": "Buscar isto no Google, no YouTube ou na sua música",
         "buscarEn": "Buscar no",
         "volver": "Voltar"
-      }
+      },
+      "delPdf": "Do PDF",
+      "paginaPdf": "PDF · p. {n}",
+      "enElPdf": "Você destacou isso no PDF: abra o PDF para ver no lugar",
+      "enElEpub": "Você destacou isso no EPUB: abra o EPUB para ver no lugar",
+      "delKindleEnPdf": "É do Kindle: no PDF não consigo encontrar (no EPUB, sim)"
     },
     "lectura": {
       "titulo": "Leitura do seu jeito",
@@ -1154,6 +1159,17 @@
       "sigoSinInternet": "Sigo com a voz sem internet.",
       "noPude": "Não consegui baixar a voz. Tente de novo.",
       "noPudeSonar": "Não consegui tocar o áudio. Tente de novo; se continuar, avise a gente."
+    },
+    "pdf": {
+      "traduccion": "Tradução",
+      "pagina": "Página {n}",
+      "paginaImagen": "Esta página é uma imagem: não tem texto para traduzir.",
+      "abrirTraduccion": "Ver a tradução ao lado (com o Gemini)",
+      "cerrarTraduccion": "Fechar a tradução",
+      "noPudeTraducir": "Não consegui traduzir esta página. Tente de novo daqui a pouco.",
+      "escaneado": "Este PDF é escaneado: cada página é uma foto. Dá para ler, mas não para destacar, traduzir nem ver o significado das palavras.",
+      "roto": "O texto deste PDF está num formato que o Broots não consegue ler (aparece como símbolos). Dá para ler, mas não para destacar, traduzir nem ver o significado das palavras.",
+      "pista": "Novidade: nos PDFs agora dá para selecionar texto para destacar, anotar, ver o significado ou pedir uma explicação. Para mover a página ampliada, arraste a partir de uma margem."
     }
   },
   "electron": {
@@ -1387,7 +1403,9 @@
         "rosa": "Rosa"
       },
       "tuyo": "Daqui para baixo é seu: escreva o que quiser, o Broots não mexe.",
-      "antes": "antes"
+      "antes": "antes",
+      "delPdf": "Do PDF",
+      "paginaPdf": "PDF · p. {n}"
     },
     "voz": {
       "noPude": "Não consegui baixar a voz. Tente de novo.",

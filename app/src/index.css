@@ -496,3 +496,77 @@ textarea,
 .texto-libro .subrayado-otro[data-color-otro='celeste'] { text-decoration-color: var(--linea-celeste); }
 .texto-libro .subrayado-otro[data-color-otro='rosa'] { text-decoration-color: var(--linea-rosa); }
 .texto-libro .subrayado-otro[data-color-otro='kindle'] { text-decoration-color: var(--linea-kindle); }
+
+/*
+  1.14: la capa de texto del PDF (la arma TextLayer de pdf.js, lib/pdf.js). Letras invisibles justo encima de las
+  dibujadas: se ven las del dibujo y se seleccionan estas. Mide la página en puntos y crece con transform.
+  Los subrayados son <mark> semitransparentes (el papel del PDF siempre es claro, sin importar el tema del lector).
+*/
+.capa-texto {
+  --total-scale-factor: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: clip;
+  line-height: 1;
+  text-align: initial;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  --min-font-size: 1;
+  --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
+  --min-font-size-inv: calc(1 / var(--min-font-size));
+}
+.capa-texto :is(span, br) {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+  user-select: text;
+}
+.capa-texto > :not(.fin-de-capa) {
+  z-index: 1;
+  --font-height: 0;
+  font-size: calc(var(--text-scale-factor) * var(--font-height));
+  --scale-x: 1;
+  --rotate: 0deg;
+  transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
+}
+.capa-texto ::selection {
+  background: rgb(40 110 200 / 0.28);
+  color: transparent;
+}
+.capa-texto br::selection {
+  background: transparent;
+}
+.capa-texto .fin-de-capa {
+  position: absolute;
+  inset: 100% 0 0;
+  z-index: 0;
+  cursor: default;
+  user-select: none;
+}
+.capa-texto.seleccionando .fin-de-capa {
+  top: 0;
+}
+.capa-texto mark[data-subrayado] {
+  position: static;
+  color: transparent;
+  background-color: rgb(240 200 70 / 0.45);
+  border-radius: 1px;
+  cursor: pointer;
+}
+.capa-texto mark[data-subrayado].verde { background-color: rgb(140 185 80 / 0.42); }
+.capa-texto mark[data-subrayado].celeste { background-color: rgb(100 165 210 / 0.38); }
+.capa-texto mark[data-subrayado].rosa { background-color: rgb(225 120 145 / 0.38); }
+.capa-texto mark[data-subrayado].con-nota {
+  text-decoration: underline dotted rgb(60 60 60 / 0.7);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+.capa-texto mark[data-subrayado].destacado {
+  box-shadow: 0 0 0 1.5px var(--acento);
+}

@@ -968,7 +968,12 @@
         "buscarExplica": "Buscar esto en Google, YouTube o tu música",
         "buscarEn": "Buscar en",
         "volver": "Volver"
-      }
+      },
+      "delPdf": "Del PDF",
+      "paginaPdf": "PDF · p. {n}",
+      "enElPdf": "Lo subrayaste en el PDF: abrí el PDF para verlo en su lugar",
+      "enElEpub": "Lo subrayaste en el EPUB: abrí el EPUB para verlo en su lugar",
+      "delKindleEnPdf": "Es del Kindle: en el PDF no lo ubico (en el EPUB, sí)"
     },
     "lectura": {
       "titulo": "Lectura a medida",
@@ -1154,6 +1159,17 @@
       "sigoSinInternet": "Sigo con la voz sin internet.",
       "noPude": "No pude bajar la voz. Probá de nuevo.",
       "noPudeSonar": "No pude hacer sonar el audio. Probá de nuevo; si sigue, avisanos."
+    },
+    "pdf": {
+      "traduccion": "Traducción",
+      "pagina": "Página {n}",
+      "paginaImagen": "Esta página es una imagen: no tiene texto para traducir.",
+      "abrirTraduccion": "Ver la traducción al costado (con Gemini)",
+      "cerrarTraduccion": "Cerrar la traducción",
+      "noPudeTraducir": "No pude traducir esta página. Probá de nuevo en un rato.",
+      "escaneado": "Este PDF es escaneado: cada página es una foto. Lo podés leer, pero no subrayar, traducir ni definir palabras.",
+      "roto": "El texto de este PDF viene en un formato que Broots no puede leer (sale como símbolos). Lo podés leer, pero no subrayar, traducir ni definir palabras.",
+      "pista": "Novedad: en los PDF ya podés seleccionar texto para subrayarlo, anotarlo, definirlo o pedir que te lo expliquen. Para mover la página acercada, arrastrá desde un margen."
     }
   },
   "electron": {
@@ -1387,7 +1403,9 @@
         "rosa": "Rosa"
       },
       "tuyo": "De acá para abajo es tuyo: escribí lo que quieras, que Broots no lo toca.",
-      "antes": "antes"
+      "antes": "antes",
+      "delPdf": "Del PDF",
+      "paginaPdf": "PDF · p. {n}"
     },
     "voz": {
       "noPude": "No pude bajar la voz. Probá de nuevo.",

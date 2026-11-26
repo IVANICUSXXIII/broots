@@ -8,6 +8,9 @@
 // está en varios (otra PC le cambió el color o lo borró), gana el cambio más nuevo. Borrar deja una marca
 // («borrado», con el texto adentro) para que las otras PC también lo borren y para poder deshacerlo.
 //
+// 1.14: los subrayados de un PDF van en el mismo archivo, con formato 'PDF' y la página en vez del capítulo y el
+// párrafo (ver limpiar y src/lib/textoPdf.js).
+//
 // Cómo se ancla un subrayado (para que se vea igual con otra letra, otro tamaño de ventana o la traducción): el
 // capítulo (href, la ruta dentro del EPUB), el párrafo y el lugar dentro de su texto donde empieza y donde
 // termina, y en qué versión estaba el párrafo al subrayar ('original' o 'traduccion'). También se guardan el
@@ -113,14 +116,20 @@ const texto = (v, max) => String(v ?? '').slice(0, max);
 const entero = (v) => (Number.isInteger(v) && v >= 0 ? v : 0);
 const esFecha = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v);
 
-/** Lo que llega de la interfaz, revisado campo por campo (nada de lo que no se conoce se guarda). */
+/**
+ * Lo que llega de la interfaz, revisado campo por campo (nada de lo que no se conoce se guarda).
+ * 1.14, los del PDF: formato 'PDF', href 'PDF' (así una versión anterior de Broots nunca los busca en un EPUB), y
+ * «capítulo» y «párrafo» son la página (desde 0); etiquetaPagina es el número impreso en el libro («45», «xii»).
+ */
 function limpiar(registro, previo) {
   const r = registro ?? {};
-  const version = r.version === 'traduccion' ? 'traduccion' : 'original';
+  const pdf = r.formato === 'PDF';
+  const version = !pdf && r.version === 'traduccion' ? 'traduccion' : 'original';
   const parrafo = entero(r.parrafo);
   return {
     id: /^[\w-]{6,64}$/.test(r.id ?? '') ? r.id : crypto.randomUUID(),
-    href: texto(r.href, 500),
+    ...(pdf ? { formato: 'PDF', etiquetaPagina: texto(r.etiquetaPagina, 20) } : {}),
+    href: pdf ? 'PDF' : texto(r.href, 500),
     capitulo: entero(r.capitulo),
     tituloCapitulo: texto(r.tituloCapitulo, 300),
     parrafo,
@@ -321,8 +330,10 @@ async function listaDelLibro({ datos, uuid, kindle = [], epub = null, cache, ubi
       titulo: u?.titulo ?? null,
     };
   });
+  // Los del PDF (1.14) van después de los del EPUB, por página: sus «capítulos» son páginas y no se mezclan.
+  const esPdf = (e) => (e.formato === 'PDF' ? 1 : 0);
   const conCapitulo = [...propios, ...delKindle.filter((e) => e.capitulo != null)].sort(
-    (a, b) => a.capitulo - b.capitulo || (a.orden ?? 0) - (b.orden ?? 0) || porCreacion({ creado: a.fecha }, { creado: b.fecha }),
+    (a, b) => esPdf(a) - esPdf(b) || a.capitulo - b.capitulo || (a.orden ?? 0) - (b.orden ?? 0) || porCreacion({ creado: a.fecha }, { creado: b.fecha }),
   );
   const sinCapitulo = delKindle.filter((e) => e.capitulo == null).sort((a, b) => porUbicacion(a, b) || (a.fecha ?? '').localeCompare(b.fecha ?? ''));
   return { entradas: [...conCapitulo, ...sinCapitulo], kindle: estado };

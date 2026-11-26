@@ -1,4 +1,27 @@
 {
+  "1.14.0": {
+    "es": [
+      "Los PDF ya no son solo para mirar: seleccioná texto con el mouse, como en una página web, y aparece la misma barrita del EPUB para subrayar, anotar, copiar, «Definir», «Explicar» o buscar.",
+      "Tus subrayados del PDF van a la misma lista y al mismo .md del libro, con la página impresa («PDF · p. 45»). Se quedan en su lugar aunque acerques la página o veas dos juntas, y uno puede seguir en la página de al lado.",
+      "«Traducir», en un PDF, abre un panel al costado con la página traducida párrafo por párrafo (las letras de un PDF son un dibujo: no se pueden reemplazar). Lo traducido queda guardado y la página siguiente se adelanta.",
+      "Para mover una página acercada, arrastrá desde un margen: sobre el texto, arrastrar ahora selecciona. El doble clic sobre una palabra la selecciona; fuera del texto, acerca y aleja como siempre.",
+      "Los PDF escaneados (fotos de páginas) se siguen leyendo igual; la primera vez, un cartel te avisa que ahí no hay texto para subrayar, traducir ni definir."
+    ],
+    "en": [
+      "PDFs aren’t just for looking anymore: select text with the mouse, like on a web page, and the same little bar from the EPUB shows up to highlight, add a note, copy, “Define”, “Explain” or search.",
+      "Your PDF highlights go to the same list and the same .md for the book, with the printed page (“PDF · p. 45”). They stay put when you zoom in or view two pages, and one can carry over to the next page.",
+      "In a PDF, “Translate” opens a panel alongside with the page translated paragraph by paragraph (the letters in a PDF are a drawing: they can’t be swapped out). Translations are saved, and the next page gets a head start.",
+      "To move a zoomed-in page, drag from a margin: dragging over the text now selects it. Double-clicking a word selects it; away from the text, it zooms in and out as always.",
+      "Scanned PDFs (photos of pages) read just like before; the first time, a note lets you know there’s no text there to highlight, translate or define."
+    ],
+    "pt": [
+      "Os PDFs não são mais só para olhar: selecione texto com o mouse, como numa página da web, e aparece a mesma barrinha do EPUB para destacar, anotar, copiar, “Definir”, “Explicar” ou buscar.",
+      "Seus destaques do PDF vão para a mesma lista e o mesmo .md do livro, com a página impressa (“PDF · p. 45”). Ficam no lugar mesmo com zoom ou com duas páginas lado a lado, e um destaque pode continuar na página seguinte.",
+      "Num PDF, “Traduzir” abre um painel ao lado com a página traduzida parágrafo por parágrafo (as letras de um PDF são um desenho: não dá para trocá-las). O que foi traduzido fica guardado e a próxima página já vem adiantada.",
+      "Para mover uma página ampliada, arraste a partir de uma margem: sobre o texto, arrastar agora seleciona. Dois cliques numa palavra a selecionam; fora do texto, aproximam e afastam como sempre.",
+      "PDFs escaneados (fotos de páginas) continuam sendo lidos normalmente; na primeira vez, um aviso conta que ali não há texto para destacar, traduzir nem definir."
+    ]
+  },
   "1.13.0": {
     "es": [
       "Llegó «Escuchar»: Broots te lee el libro en voz alta. Tocá el parlante de arriba (o la L) y empieza por lo que ves: resalta el párrafo que suena, pasa de página solo y sigue con el capítulo siguiente. Ideal para cocinar, cebar mate o descansar la vista.",

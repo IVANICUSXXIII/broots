@@ -151,11 +151,39 @@ function rc4(clave, datos) {
   return salida;
 }
 
+/** 1.14: el contenido de una página con párrafos: cada párrafo es una lista de líneas, con sangría en la primera. */
+function contenidoConTexto(parrafos) {
+  const escapar = (linea) => linea.replace(/[\\()]/g, (c) => `\\${c}`);
+  const partes = ['BT /F1 12 Tf 0 0 0 rg'];
+  let y = 760;
+  for (const lineas of parrafos) {
+    lineas.forEach((linea, k) => {
+      partes.push(`1 0 0 1 ${k === 0 ? 96 : 72} ${y} Tm (${escapar(linea)}) Tj`);
+      y -= 15;
+    });
+    y -= 12; // el aire entre párrafos
+  }
+  partes.push('ET');
+  return Buffer.from(partes.join('\n'), 'latin1');
+}
+
+/** 1.14: una página «escaneada»: solo una imagen (gris, 2 × 2 píxeles estirados), sin una letra. */
+function contenidoEscaneado() {
+  return Buffer.concat([
+    Buffer.from('q 420 0 0 560 88 140 cm BI /W 2 /H 2 /CS /G /BPC 8 ID ', 'latin1'),
+    Buffer.from([0x30, 0x90, 0xc0, 0x60]),
+    Buffer.from(' EI Q', 'latin1'),
+  ]);
+}
+
 /**
  * Un PDF de texto con la tipografía Helvetica sin incrustar (hace que pdf.js pida sus tipografías estándar).
  * proteccion: 'contrasena' | 'drm' | 'soloPermisos' (se abre sin pedir nada, pero «no copiar» e «no imprimir»).
+ * 1.14: texto(n) da los párrafos de la página n (listas de líneas, en latin1); escaneado: páginas sin texto, solo una
+ * imagen; primeraEtiqueta: los números de página impresos empiezan en ese número (/PageLabels); giradas: páginas con
+ * /Rotate 90 (guardadas «de costado»).
  */
-export function pdf({ paginas = 10, anchas = [], indice = [], proteccion = null } = {}) {
+export function pdf({ paginas = 10, anchas = [], indice = [], proteccion = null, texto = null, escaneado = false, primeraEtiqueta = null, giradas = [] } = {}) {
   const objetos = []; // [número, texto o { dict, datos }]
   const paginasPrimera = 5;
   const idPagina = (n) => paginasPrimera + n * 2;
@@ -181,14 +209,20 @@ export function pdf({ paginas = 10, anchas = [], indice = [], proteccion = null 
     return rc4(md5(claveArchivo, sufijo).subarray(0, 10), datos);
   };
 
-  objetos.push([1, `<< /Type /Catalog /Pages 2 0 R${indice.length ? ' /Outlines 3 0 R' : ''} >>`]);
+  const etiquetas = primeraEtiqueta ? ` /PageLabels << /Nums [0 << /S /D /St ${primeraEtiqueta} >>] >>` : '';
+  objetos.push([1, `<< /Type /Catalog /Pages 2 0 R${indice.length ? ' /Outlines 3 0 R' : ''}${etiquetas} >>`]);
   objetos.push([2, `<< /Type /Pages /Count ${paginas} /Kids [${Array.from({ length: paginas }, (_, n) => `${idPagina(n)} 0 R`).join(' ')}] >>`]);
   if (indice.length) objetos.push([3, `<< /Type /Outlines /Count ${indice.length} /First ${primerMarcador} 0 R /Last ${primerMarcador + indice.length - 1} 0 R >>`]);
-  objetos.push([4, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>']);
+  objetos.push([4, `<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica${texto ? ' /Encoding /WinAnsiEncoding' : ''} >>`]);
   for (let n = 0; n < paginas; n++) {
     const caja = anchas.includes(n) ? '0 0 842 595' : '0 0 595 842';
-    objetos.push([idPagina(n), `<< /Type /Page /Parent 2 0 R /MediaBox [${caja}] /Contents ${idContenido(n)} 0 R /Resources << /Font << /F1 4 0 R >> >> >>`]);
-    const contenido = Buffer.from(`0.2 0.4 0.3 rg 40 40 200 12 re f BT /F1 48 Tf 0 0 0 rg 72 400 Td (Pagina ${n + 1}) Tj ET`, 'latin1');
+    const giro = giradas.includes(n) ? ' /Rotate 90' : '';
+    objetos.push([idPagina(n), `<< /Type /Page /Parent 2 0 R /MediaBox [${caja}]${giro} /Contents ${idContenido(n)} 0 R /Resources << /Font << /F1 4 0 R >> >> >>`]);
+    const contenido = escaneado
+      ? contenidoEscaneado()
+      : texto
+        ? contenidoConTexto(texto(n))
+        : Buffer.from(`0.2 0.4 0.3 rg 40 40 200 12 re f BT /F1 48 Tf 0 0 0 rg 72 400 Td (Pagina ${n + 1}) Tj ET`, 'latin1');
     objetos.push([idContenido(n), { dict: `<< /Length ${contenido.length} >>`, datos: cifrar(idContenido(n), contenido) }]);
   }
   indice.forEach((e, k) => {
