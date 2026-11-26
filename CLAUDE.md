@@ -125,7 +125,7 @@ El corredor arma la biblioteca de prueba copiando la base real (solo lectura) y 
 
 Un escenario puede sumar claves al `config.json` de prueba con `config: () => ({ … })` (el corredor lo escribe con `JSON.stringify` y siempre fija `libraryPath` a la biblioteca de prueba) y mandarle datos a su prueba con `datos: () => ({ … })`. `pruebas/libros-de-prueba.mjs` arma a mano PDF (también con DRM o contraseña), CBZ y CBR (RAR 4 y 5, sin compresión; sin WinRAR no se pueden armar comprimidos).
 
-Las capturas del README (`docs/capturas/`, tema claro y oscuro) se sacan con `node pruebas/capturas.mjs [pantalla]`. No usan la biblioteca real ni la de prueba (que copia títulos reales): arman una con clásicos de dominio público (`pruebas/capturas/libros.mjs`, portadas y EPUB hechos ahí) en `%PUBLIC%\Biblioteca`, porque la ruta se ve en la ventana y en `%TEMP%` mostraría el usuario de la PC. Hace falta Calibre instalado.
+Las capturas del README (`docs/capturas/`, tema claro y oscuro) se sacan con `node pruebas/capturas.mjs [pantalla]`. No usan la biblioteca real ni la de prueba (que copia títulos reales): arman una con clásicos de dominio público (`pruebas/capturas/libros.mjs`, portadas y EPUB hechos ahí; el PDF de la captura `pdf` lo imprime Electron en `capturas/portadas.cjs`, con capa de texto de verdad) en `%PUBLIC%\Biblioteca`, porque la ruta se ve en la ventana y en `%TEMP%` mostraría el usuario de la PC. Hace falta Calibre instalado.
 
 ## Versiones e instalador
 

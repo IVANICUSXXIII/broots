@@ -1,19 +1,28 @@
 # Broots
 
 **Tu biblioteca de libros electrónicos, compatible con Calibre.** Una app para Windows para ordenar, buscar,
-editar y leer tus e-books, mandarlos a tu Kindle, guardar tus subrayados y compartir libros con tu familia.
+editar y leer tus e-books (EPUB, PDF y cómics), subrayarlos, traducirlos, escucharlos en voz alta, mandarlos a tu
+Kindle y compartirlos con tu familia.
 
 Broots es gratis y es software libre. **[Bajar la última versión](https://github.com/IVANICUSXXIII/broots/releases/latest)**.
 
-> **English.** An e-book manager for Windows that works with your Calibre library. Free software (GPL-3.0 or
-> later), in English, Spanish and Brazilian Portuguese. [Download the latest version](https://github.com/IVANICUSXXIII/broots/releases/latest);
-> it updates itself from 1.6.0 on. The installer isn’t digitally signed yet ([code signing policy](#code-signing-policy)): if Windows says “Windows protected
-> your PC”, click “More info” and then “Run anyway”.
+> **English.** An e-book manager for Windows that works right on top of your Calibre library. Browse your shelf,
+> edit everything, and read EPUB, PDF and comics with highlights and notes, translation as you read, an offline
+> dictionary and read-aloud voices. Send books to your Kindle and share them with your family. Free software
+> (GPL-3.0 or later), in English, Spanish and Brazilian Portuguese, and it updates itself.
+> [Download the latest version](https://github.com/IVANICUSXXIII/broots/releases/latest).
+> The installer isn’t digitally signed yet ([why](#code-signing-policy)), so Windows will say “Windows protected
+> your PC”: click “More info” and then “Run anyway”. It’s built by GitHub Actions from the code in this repository,
+> and each release lists its SHA-256.
 >
-> **Português.** Um gerenciador de e-books para Windows que funciona com a sua biblioteca do Calibre. Software
-> livre (GPL-3.0 ou posterior), em português do Brasil, inglês e espanhol. [Baixe a versão mais recente](https://github.com/IVANICUSXXIII/broots/releases/latest);
-> a partir da 1.6.0 ele se atualiza sozinho. O instalador ainda não tem assinatura digital: se o Windows disser
-> “O Windows protegeu o computador”, clique em “Mais informações” e depois em “Executar assim mesmo”.
+> **Português.** Um gerenciador de e-books para Windows que funciona direto na sua biblioteca do Calibre. Estante
+> de capas, edição completa e leitura de EPUB, PDF e quadrinhos com destaques e notas, tradução enquanto você lê,
+> dicionário sem internet e leitura em voz alta. Envie livros para o Kindle e compartilhe com a família. Software
+> livre (GPL-3.0 ou posterior), em português do Brasil, inglês e espanhol, e se atualiza sozinho.
+> [Baixe a versão mais recente](https://github.com/IVANICUSXXIII/broots/releases/latest).
+> O instalador ainda não tem assinatura digital, então o Windows vai dizer “O Windows protegeu o computador”:
+> clique em “Mais informações” e depois em “Executar assim mesmo”. Ele é gerado pelo GitHub Actions a partir do
+> código deste repositório, e cada versão mostra o seu SHA-256.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/capturas/estanteria-oscuro.png">
@@ -42,35 +51,57 @@ la biblioteca (`metadata.db`).
 
 ## Qué podés hacer
 
-- **Tu estantería:** tus libros en grilla o en lista, con portadas grandes, filtros por autor, etiqueta o
-  serie, y el buscador con las mismas búsquedas que Calibre (`tags:novela`, `rating:>3`…). Las etiquetas con
-  jerarquía de Calibre («Sagas.Harry Potter») se ven en árbol, y también las bibliotecas virtuales que armaste.
+**Tu biblioteca**
+
+- **Tu estantería:** tus libros en grilla o en lista, con portadas grandes, filtros por autor, etiqueta,
+  serie, estado de lectura o idioma, y el buscador con las mismas búsquedas que Calibre (`tags:novela`,
+  `rating:>3`…). Las etiquetas con jerarquía de Calibre («Sagas.Harry Potter») se ven en árbol, y también las
+  bibliotecas virtuales que armaste. Doble clic en una portada y ya estás leyendo.
 - **Editar:** todos los datos de un libro (título, autores, serie, etiquetas, fechas, editorial, tus columnas
   propias), la portada y los formatos. «Buscar datos» trae datos y portadas de Google Books y Open Library, o
   de la página de un libro que pegues.
-- **Agregar y convertir:** arrastrá archivos a la ventana para sumarlos. Si un libro no tiene EPUB o PDF,
-  Broots lo convierte con las herramientas de Calibre.
+- **Agregar y convertir:** arrastrá archivos a la ventana para sumarlos. Si un archivo no trae datos, Broots
+  saca del nombre el título, el autor y la serie. Si un libro no tiene EPUB o PDF, lo convierte con las
+  herramientas de Calibre.
 - **Libros repetidos:** Broots encuentra los libros que tenés dos veces y te deja elegir cuál conservar,
   sin perder formatos ni subrayados.
+
+**Leer**
+
+- **Lector de EPUB, a tu medida:** tema (claro, sepia, oscuro o negro), cinco fuentes (entre ellas Atkinson,
+  muy legible, y OpenDyslexic), tamaño, interlineado y márgenes. Pellizcá el trackpad para agrandar la letra y
+  tocá una imagen para verla en grande.
+- **PDF y cómics:** PDF y cómics (CBZ y CBR) de a una o dos páginas, con zoom y manga de derecha a izquierda.
+  En los PDF también podés seleccionar texto, subrayar, anotar, definir, explicar y traducir. No abre archivos
+  con DRM ni con contraseña.
+- **Traducir:** con una clave gratuita de Gemini (tuya), Broots traduce el libro mientras leés: en un EPUB,
+  párrafo por párrafo en el lugar (tocás uno y ves el original); en un PDF, en un panel al costado.
+- **Explicar:** seleccioná una palabra, un nombre o una frase y Gemini te cuenta qué quiere decir ahí, sin
+  spoilers.
+- **Definir:** seleccioná una palabra y mirá qué significa, al instante y sin internet. Hay diccionario de
+  español, inglés y portugués, armados con Wiktionary; cada uno se baja la primera vez que lo pedís. Entiende
+  las palabras conjugadas: «corrió» te lleva a «correr».
+- **Escuchar:** Broots te lee el libro en voz alta, resaltando el párrafo que suena y pasando de página solo.
+  Sin internet, con voces que se bajan la primera vez (Daniela, con acento argentino, para español; Kristin
+  para inglés y Faber para portugués), o con la voz de Gemini. Si el párrafo está traducido, lee la traducción.
+  Por ahora, en EPUB.
+- **Subrayados y notas:** subrayá en cuatro colores y anotá lo que se te ocurra, en EPUB y en PDF. Tus
+  subrayados del Kindle aparecen en la misma lista, y cada libro tiene su archivo Markdown para Obsidian o
+  Notion, que se actualiza solo.
+- **Hábito de lectura:** Broots anota tus sesiones de lectura (con meta opcional y descanso para la vista) y
+  te muestra tu racha, tu ritmo, el mapa de calor del año y cuánto te falta para terminar cada libro. Estados
+  En pausa y Abandonado, relecturas y un modo enfoque que deja solo el texto.
+
+**Y además**
+
 - **Kindle:** mandá libros a tu Kindle por mail, desde tu cuenta de Gmail, e importá tus subrayados (el
   archivo `My Clippings.txt`). Si un libro está en el Kindle pero no en tu biblioteca, lo podés sumar.
 - **Club de lectura:** llevá un libro con tus subrayados y notas a Claude, Gemini o NotebookLM, para charlar
   sobre él con una inteligencia artificial.
-- **PDF y cómics:** leé PDF y cómics (CBZ y CBR) dentro de Broots, de a una o dos páginas, con zoom y manga de derecha a
-  izquierda. Tu página queda guardada y la lectura cuenta en «Mi lectura». No abre archivos con DRM ni con contraseña.
-- **Lector:** leé tus EPUB dentro de Broots, a tu medida: tema (claro, sepia, oscuro o negro), fuente,
-  tamaño, interlineado y márgenes. Con una clave gratuita de Gemini, traduce el libro mientras leés, y
-  «Explicar» te aclara una frase en su contexto.
-- **Definir:** seleccioná una palabra y mirá qué significa, al instante y sin internet. Hay diccionario de
-  español, inglés y portugués, armados con Wiktionary; cada uno se baja la primera vez que lo pedís.
-- **Subrayados y notas:** subrayá en cuatro colores y anotá lo que se te ocurra. Tus subrayados del Kindle
-  aparecen en la misma lista, y cada libro tiene su archivo Markdown para Obsidian o Notion.
-- **Hábito de lectura:** Broots anota tus sesiones de lectura (con meta opcional y descanso para la vista) y
-  te muestra tu racha, tu ritmo, el mapa de calor del año y cuánto te falta para terminar cada libro. Estados
-  En pausa y Abandonado, relecturas y un modo enfoque que deja solo el texto.
 - **Familia:** compartí libros con la gente de tu casa. Broots arma en tu Google Drive una copia solo con
   los libros de cada uno, que ellos abren en modo solo lectura.
-- **Ayuda:** un manual completo dentro de la app (tecla F1), con buscador.
+- **En tu idioma:** español, inglés y portugués de Brasil, con tema claro y oscuro.
+- **Ayuda:** un tour de bienvenida y un manual completo dentro de la app (tecla F1), con buscador.
 
 ## Cómo se ve
 
@@ -100,6 +131,14 @@ estés en un avión.
   <img src="docs/capturas/definir-claro.png" alt="El lector de Broots con el comienzo de Don Quijote y la definición de «hidalgo» en una tarjeta">
 </picture>
 
+**Un PDF, subrayado y traducido.** *The Adventures of Sherlock Holmes* en PDF: seleccionás el texto como en una
+página web, lo subrayás, y la traducción va en un panel al costado.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/capturas/pdf-oscuro.png">
+  <img src="docs/capturas/pdf-claro.png" alt="El lector de PDF de Broots con el comienzo de A Scandal in Bohemia, una frase subrayada en amarillo y la traducción al español en un panel al costado">
+</picture>
+
 **Configuración.** Ordenada por secciones, como en macOS.
 
 <picture>
@@ -114,8 +153,12 @@ para crear tu biblioteca y sumá algunos libros.
 
 1. Bajá el instalador más reciente («Instalar-Broots-X.Y.Z.exe») de la
    [página de versiones de Broots](https://github.com/IVANICUSXXIII/broots/releases/latest) en GitHub.
-2. Abrilo. Como el instalador todavía no tiene firma digital, puede aparecer el aviso «Windows protegió su
-   PC»: tocá «Más información» y después «Ejecutar de todas formas».
+2. Abrilo. Como el instalador todavía no tiene firma digital, Windows muestra el aviso «Windows protegió su
+   PC»: tocá «Más información» y después «Ejecutar de todas formas». El aviso no quiere decir que Broots tenga
+   un virus: Windows lo muestra con cualquier programa nuevo que no tenga firma (un certificado que cuesta plata
+   o que una fundación da gratis a los proyectos con usuarios; Broots lo va a pedir de nuevo más adelante). Si
+   querés comprobar que el archivo es el original, cada versión muestra su huella SHA-256 y una constancia de que
+   lo armó GitHub a partir del código de este repositorio.
 3. Broots busca solo la biblioteca de Calibre de tu PC. Si no la encuentra, te pide que elijas la carpeta
    (la que tiene el archivo `metadata.db`). Puede estar en Google Drive.
 
@@ -131,6 +174,9 @@ mandan a ningún lado por su cuenta. Esto es lo único que sale de tu PC, y solo
 | Qué | Hacia dónde | Cuándo |
 |---|---|---|
 | El texto de los párrafos que traducís | Gemini (Google) | Solo si cargaste tu clave y activaste la traducción en el lector. |
+| Lo que seleccionás para «Explicar», con el párrafo que lo rodea | Gemini (Google) | Cuando tocás «Explicar». |
+| El texto que escuchás con la voz de Gemini | Gemini (Google) | Solo si elegiste esa voz en «Escuchar». Las voces sin internet leen en tu PC. |
+| La descarga de un diccionario o de una voz | GitHub (diccionarios) y Hugging Face (voces) | La primera vez que usás «Definir» o «Escuchar» en un idioma. No viaja nada tuyo. |
 | El libro que enviás al Kindle | Gmail (Google) → Amazon | Cuando tocás «Enviar al Kindle». |
 | Título, autor e ISBN del libro que buscás | Google Books y Open Library | Cuando tocás «Buscar datos» al editar un libro. |
 | Lo mismo, también a Amazon | Amazon | Solo si lo prendés en Configuración → Privacidad (viene apagado). |
@@ -159,7 +205,11 @@ Broots es software libre, con licencia [GNU GPL versión 3](LICENSE) o posterior
 y cambiarlo. Si publicás una versión cambiada, también tiene que ser libre y con su código abierto.
 
 Lee PDF con [pdf.js](https://github.com/mozilla/pdf.js) (Apache 2.0) y cómics RAR con [libarchive](https://github.com/libarchive/libarchive)
-(BSD), a través de [libarchive-wasm](https://github.com/ofk/libarchive-wasm) (MIT). Sus avisos están en
+(BSD), a través de [libarchive-wasm](https://github.com/ofk/libarchive-wasm) (MIT), y lee en voz alta con
+[sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) (Apache 2.0) y [espeak-ng](https://github.com/espeak-ng/espeak-ng)
+(GPL 3). Los diccionarios son un resumen de [Wiktionary](https://www.wiktionary.org/) (CC BY-SA 4.0) y viven en
+[su propio repositorio](https://github.com/IVANICUSXXIII/broots-diccionarios); las voces sin internet son las del
+proyecto [Piper](https://huggingface.co/rhasspy/piper-voices), cada una con su licencia. Todos los avisos están en
 [`app/licencias-de-terceros.txt`](app/licencias-de-terceros.txt).
 
 Broots usa las herramientas de [Calibre](https://calibre-ebook.com/), de Kovid Goyal y su comunidad (también
@@ -190,7 +240,8 @@ Free code signing provided by [SignPath.io](https://about.signpath.io/), certifi
   personal data: the check for new versions of Broots on GitHub (when Broots opens and every six hours; it can be
   turned off in Settings → Updates) and, only when Calibre is not installed, the download of Calibre’s official
   tools from GitHub and calibre-ebook.com and a weekly check for new versions of them. Everything else happens only
-  when the user uses that feature: translating text with Gemini (Google), with the user’s own key; sending a book
+  when the user uses that feature: translating, explaining or reading aloud text with Gemini (Google), with the
+  user’s own key; downloading a dictionary (from GitHub) or an offline voice (from Hugging Face); sending a book
   to a Kindle through the user’s Gmail account; and looking up a book’s title, author and ISBN on Google Books and
   Open Library (and Amazon, only if the user turns it on). Broots has no servers of its own and no telemetry. Details, in Spanish, in
   [Privacidad](#privacidad).

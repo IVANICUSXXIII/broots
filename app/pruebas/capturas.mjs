@@ -1,14 +1,15 @@
 // Capturas de pantalla para el README (docs/capturas), en tema claro y oscuro.
 //
 //   node pruebas/capturas.mjs                 arma la biblioteca y saca todas las capturas
-//   node pruebas/capturas.mjs lector          solo esa pantalla (estanteria, editar, lector, definir, configuracion)
+//   node pruebas/capturas.mjs lector          solo esa pantalla (estanteria, editar, lector, definir, pdf, configuracion)
 //   --sin-compilar                            no vuelve a compilar la interfaz
 //
 // Seguridad: no usa la biblioteca real para nada (ni la lee). Arma en %TEMP% una biblioteca nueva con
 // clásicos de dominio público (pruebas/capturas/libros.mjs): portadas dibujadas acá, EPUB armados acá y
 // cargados con las herramientas oficiales de Calibre. Broots corre con BROOTS_DATOS, como en las pruebas.
 // El lector muestra Pride and Prejudice traducido: la traducción es nuestra y va a la caché de la
-// biblioteca de prueba, así no hace falta Gemini (BROOTS_TRADUCCION_FALSA solo da por cargada la clave).
+// biblioteca de prueba, así no hace falta Gemini (BROOTS_TRADUCCION_FALSA solo da por cargada la clave). Lo mismo el
+// PDF de The Adventures of Sherlock Holmes (impreso en portadas.cjs): un subrayado y el panel de traducción al costado.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -17,7 +18,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { DatabaseSync } from 'node:sqlite';
 import { strToU8, zipSync } from 'fflate';
-import { LIBROS, CAPITULO } from './capturas/libros.mjs';
+import { LIBROS, CAPITULO, CUENTO } from './capturas/libros.mjs';
 
 const require = createRequire(import.meta.url);
 const electron = require('electron');
@@ -38,7 +39,7 @@ function borrarBiblioteca() {
 const DATOS = path.join(BASE, 'datos');
 const TRABAJO = path.join(BASE, 'trabajo');
 const VENTANA = '1440x900';
-const PANTALLAS = ['estanteria', 'editar', 'lector', 'definir', 'configuracion'];
+const PANTALLAS = ['estanteria', 'editar', 'lector', 'definir', 'pdf', 'configuracion'];
 
 const pedidas = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 for (const p of pedidas) if (!PANTALLAS.includes(p)) throw new Error(`No existe la pantalla «${p}» (${PANTALLAS.join(', ')}).`);
@@ -109,9 +110,10 @@ function armarBiblioteca() {
   fs.writeFileSync(MARCA, 'Biblioteca de las capturas de Broots (pruebas/capturas.mjs): se puede borrar.');
 
   console.log('Dibujando las portadas…');
-  fs.writeFileSync(path.join(TRABAJO, 'libros.json'), JSON.stringify(LIBROS));
+  fs.writeFileSync(path.join(TRABAJO, 'libros.json'), JSON.stringify(LIBROS.map((l) => (l.pdf ? { ...l, cuento: CUENTO } : l))));
   const r = spawnSync(electron, [path.join(import.meta.dirname, 'capturas', 'portadas.cjs'), path.join(TRABAJO, 'libros.json'), TRABAJO], { encoding: 'utf8' });
   if (!fs.existsSync(path.join(TRABAJO, `${LIBROS.length - 1}.jpg`))) throw new Error(`No se dibujaron las portadas:\n${r.stderr}`);
+  if (!fs.existsSync(path.join(TRABAJO, `${LIBROS.findIndex((l) => l.pdf)}.pdf`))) throw new Error(`No se imprimió el PDF del cuento:\n${r.stderr}`);
 
   console.log('Cargando los libros con calibredb…');
   // Columnas propias como las de una biblioteca de verdad: Broots muestra el estado de lectura y «Mi valoración».
@@ -120,8 +122,8 @@ function armarBiblioteca() {
   // Al revés, así el primero de la lista queda como el último agregado (arriba de todo en la estantería).
   for (const [i, libro] of [...LIBROS.entries()].reverse()) {
     const portada = path.join(TRABAJO, `${i}.jpg`);
-    const archivo = path.join(TRABAJO, `${i}.epub`);
-    fs.writeFileSync(archivo, armarEpub(libro, portada));
+    const archivo = path.join(TRABAJO, libro.pdf ? `${i}.pdf` : `${i}.epub`);
+    if (!libro.pdf) fs.writeFileSync(archivo, armarEpub(libro, portada));
     const serie = libro.serie ? ['--series', libro.serie, '--series-index', String(libro.indice)] : [];
     const salida = calibredb('add', '--title', libro.titulo, '--authors', libro.autores.join(' & '), '--tags', libro.etiquetas.join(','),
       '--languages', libro.idioma, '--cover', portada, ...serie, archivo);
@@ -140,7 +142,7 @@ function idsDeLaBiblioteca() {
   const filas = db.prepare('SELECT id, title, uuid FROM books').all();
   db.close();
   const buscar = (titulo) => filas.find((f) => f.title === titulo);
-  return { total: filas.length, quijote: buscar('Don Quijote de la Mancha'), lector: buscar(LIBROS.find((l) => l.lector).titulo) };
+  return { total: filas.length, quijote: buscar('Don Quijote de la Mancha'), lector: buscar(LIBROS.find((l) => l.lector).titulo), pdf: buscar(LIBROS.find((l) => l.pdf).titulo) };
 }
 
 // ---------- Broots ----------
@@ -170,6 +172,25 @@ const AYUDAS = `
     await hasta(() => !/de (~|…)/.test(lector.querySelector('footer').innerText), 60000); // terminó de contar las páginas
     await hasta(() => !texto.querySelector('.pendiente'), 20000);
     return texto;
+  };
+  // El lector de páginas, en una página sola y sin las pistas de la primera vez (seleccionar texto, pellizcar).
+  const abrirPdf = async (id) => {
+    localStorage.setItem('broots-lector-pista-texto-pdf', '1');
+    localStorage.setItem('broots-lector-pista-pellizco', '1');
+    boton(await abrirLibro(id), 'Leer').click();
+    const raiz = await hasta(() => document.querySelector('[data-lector-paginas]'), 15000);
+    await hasta(() => raiz.dataset.dos && document.querySelector('[data-capa-texto="0"] span'), 30000);
+    if (raiz.dataset.dos === 'si') raiz.querySelector('[data-boton-doble]').click();
+    await hasta(() => raiz.dataset.dos === 'no', 5000);
+    await esperar(800);
+    return raiz;
+  };
+  const traducirPdf = async (raiz) => {
+    // El lector recuerda el panel abierto de la vez anterior: tocar el botón ahí lo cerraría.
+    if (!document.querySelector('[data-panel-traduccion]')) raiz.querySelector('[data-boton-traducir]').click();
+    const parrafos = () => [...document.querySelectorAll('[data-pagina-traducida="0"] [data-parrafo-traducido]')];
+    await hasta(() => parrafos().length && parrafos().every((p) => p.dataset.parrafoTraducido === 'si'), 30000);
+    return parrafos().map((p) => p.textContent);
   };
 `;
 
@@ -207,6 +228,46 @@ const PASOS = {
     p.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
     (await hasta(() => lector.querySelector('[data-barra-subrayado]'), 5000)).querySelector('[data-accion="definir"]').click();
     await hasta(() => lector.querySelector('[data-tarjeta-definir="listo"]'), 15000);
+    await esperar(1500);`,
+  // El PDF del cuento con un subrayado y la traducción al costado (la nuestra, guardada antes en la caché).
+  pdf: `
+    const raiz = await abrirPdf(IDS.pdf.id);
+    const capa = document.querySelector('[data-capa-texto="0"]');
+    // Un lugar del texto de la capa, sin contar espacios (las líneas van pegadas y el corte de línea cae donde caiga).
+    const punto = (texto, alFinal) => {
+      const plano = capa.textContent;
+      const sin = (x) => x.replace(/\\s+/g, '');
+      const lugares = [];
+      for (let i = 0; i < plano.length; i++) if (!/\\s/.test(plano[i])) lugares.push(i);
+      const k = sin(plano).indexOf(sin(texto));
+      if (k < 0) throw new Error('no encontré en el PDF: ' + texto);
+      let lugar = alFinal ? lugares[k + sin(texto).length - 1] + 1 : lugares[k];
+      const recorrido = document.createTreeWalker(capa, NodeFilter.SHOW_TEXT);
+      for (let n = recorrido.nextNode(); n; n = recorrido.nextNode()) {
+        if (lugar <= n.data.length) return [n, lugar];
+        lugar -= n.data.length;
+      }
+    };
+    const raton = (tipo, el) => {
+      const caja = el.getBoundingClientRect();
+      el.dispatchEvent(new MouseEvent(tipo, { bubbles: true, cancelable: true, button: 0, clientX: caja.left + caja.width / 2, clientY: caja.top + caja.height / 2 }));
+    };
+    const [desde, hastaTexto] = ${JSON.stringify(CUENTO.subrayado)};
+    const [nodoA, a] = punto(desde, false);
+    const [nodoB, b] = punto(hastaTexto, true);
+    raton('mousedown', nodoA.parentElement);
+    const rango = document.createRange();
+    rango.setStart(nodoA, a);
+    rango.setEnd(nodoB, b);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(rango);
+    raton('mouseup', nodoB.parentElement);
+    (await hasta(() => document.querySelector('[data-barra-subrayado="nuevo"]'), 5000)).querySelector('[data-color="amarillo"]').click();
+    await hasta(() => capa.querySelector('mark[data-subrayado]'), 5000);
+    window.getSelection().removeAllRanges();
+    const traducidos = await traducirPdf(raiz);
+    const falta = traducidos.find((p) => p.startsWith('ES· '));
+    if (falta) throw new Error('falta nuestra traducción de: ' + falta.slice(0, 80));
     await esperar(1500);`,
   configuracion: `
     boton(document.querySelector('header'), 'Configuración').click();
@@ -286,6 +347,33 @@ async function prepararTraduccion(ids) {
   console.log(`Traducción lista: ${originales.length} párrafos.`);
 }
 
+/** Lo mismo para el PDF: los párrafos de su primera página, como los arma el lector, con nuestra traducción. */
+async function prepararTraduccionPdf(ids) {
+  const originales = await correrBroots({
+    ids, tema: 'light', captura: path.join(TRABAJO, 'previa-pdf.png'),
+    cuerpo: `resultado = (await traducirPdf(await abrirPdf(IDS.pdf.id))).map((p) => p.replace(/^ES· /, ''));`,
+  });
+  // Sin espacios ni marcas: el lector puede juntar en un párrafo los dos renglones del título.
+  const plano = (html) => html.replace(/<[^>]+>/g, '').replace(/\s+/g, '');
+  const pares = CUENTO.primeraPagina;
+  const cache = {};
+  let siguiente = 0;
+  for (const original of originales) {
+    const partes = [];
+    let resto = plano(original);
+    while (resto && siguiente < pares.length && resto.startsWith(plano(pares[siguiente][0]))) {
+      resto = resto.slice(plano(pares[siguiente][0]).length);
+      partes.push(pares[siguiente++][1]);
+    }
+    if (resto || !partes.length) throw new Error(`No tengo traducción para el párrafo del PDF: ${original.slice(0, 80)}`);
+    cache[crypto.createHash('sha1').update(original).digest('base64url').slice(0, 20)] = partes.join(' ').replace(/<[^>]+>/g, '');
+  }
+  const carpeta = path.join(BIBLIOTECA, '.broots', 'traducciones');
+  fs.mkdirSync(carpeta, { recursive: true });
+  fs.writeFileSync(path.join(carpeta, `${ids.pdf.uuid}.json`), JSON.stringify(cache));
+  console.log(`Traducción del PDF lista: ${originales.length} párrafos.`);
+}
+
 // ---------- Correr ----------
 
 if (!process.argv.includes('--sin-compilar')) {
@@ -297,6 +385,7 @@ if (!process.argv.includes('--sin-compilar')) {
 armarBiblioteca();
 const ids = idsDeLaBiblioteca();
 await prepararTraduccion(ids);
+if (!pedidas.length || pedidas.includes('pdf')) await prepararTraduccionPdf(ids);
 fs.mkdirSync(SALIDA, { recursive: true });
 for (const pantalla of pedidas.length ? pedidas : PANTALLAS) {
   for (const tema of ['light', 'dark']) {

@@ -1,6 +1,7 @@
 // Dibuja las portadas de la biblioteca de las capturas (lo corre capturas.mjs con Electron):
 //   electron portadas.cjs <libros.json> <carpeta de salida>
-// Cada portada es una página HTML de 600×900 con Literata e Inter, guardada como JPG.
+// Cada portada es una página HTML de 600×900 con Literata e Inter, guardada como JPG. El libro que trae `cuento` sale
+// además como PDF de verdad (impreso por Chromium, con las letras incrustadas y su capa de texto), para el lector de páginas.
 const fs = require('node:fs');
 const path = require('node:path');
 const { app, BrowserWindow } = require('electron');
@@ -38,6 +39,28 @@ function pagina(libro) {
   }</body></html>`;
 }
 
+/** El PDF del cuento: tamaño de libro de bolsillo, el título bajado como en un comienzo de capítulo. */
+function paginasDelCuento(libro) {
+  const c = libro.cuento;
+  const [aventura, titulo, ...primeros] = c.primeraPagina.map(([en]) => en);
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><style>
+    @font-face { font-family: Literata; src: url('${url(path.join(fuentes, 'literata/files/literata-latin-wght-normal.woff2'))}'); font-weight: 200 900; }
+    @font-face { font-family: Literata; font-style: italic; src: url('${url(path.join(fuentes, 'literata/files/literata-latin-wght-italic.woff2'))}'); font-weight: 200 900; }
+    @page { size: 5.5in 8.5in; margin: 0.72in 0.7in 0.8in; }
+    html, body { margin: 0; }
+    body { font-family: Literata, serif; font-size: 10.5pt; line-height: 1.5; color: #1d1b17; }
+    .aventura { margin: 0.55in 0 0; text-align: center; font-size: 9.5pt; font-weight: 500; }
+    h1 { margin: 10pt 0 26pt; text-align: center; font-size: 15pt; font-weight: 600; letter-spacing: .08em; }
+    p { margin: 0; text-align: justify; text-indent: 1.4em; }
+    p.primero { text-indent: 0; }
+    .salto { break-after: page; }
+  </style></head><body>
+    <div class="aventura">${aventura}</div><h1>${titulo}</h1>
+    ${primeros.map((p, k) => `<p class="${k === 0 ? 'primero' : ''}${k === primeros.length - 1 ? ' salto' : ''}">${p}</p>`).join('')}
+    ${c.resto.map((p) => `<p>${p}</p>`).join('')}
+  </body></html>`;
+}
+
 app.whenReady().then(async () => {
   const libros = JSON.parse(fs.readFileSync(entrada, 'utf8'));
   const ventana = new BrowserWindow({ width: 600, height: 900, useContentSize: true, show: false, paintWhenInitiallyHidden: true });
@@ -48,6 +71,13 @@ app.whenReady().then(async () => {
     await ventana.webContents.executeJavaScript('document.fonts.ready.then(() => new Promise((r) => setTimeout(r, 150)))');
     const imagen = await ventana.webContents.capturePage(undefined, { stayHidden: true });
     fs.writeFileSync(path.join(salida, `${i}.jpg`), imagen.resize({ width: 600, height: 900 }).toJPEG(92));
+  }
+  for (const [i, libro] of libros.entries()) {
+    if (!libro.cuento) continue;
+    fs.writeFileSync(html, paginasDelCuento(libro));
+    await ventana.loadFile(html);
+    await ventana.webContents.executeJavaScript('document.fonts.ready.then(() => true)');
+    fs.writeFileSync(path.join(salida, `${i}.pdf`), await ventana.webContents.printToPDF({ preferCSSPageSize: true, printBackground: true }));
   }
   fs.rmSync(html);
   app.quit();

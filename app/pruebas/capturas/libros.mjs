@@ -67,7 +67,7 @@ export const LIBROS = [
   {
     titulo: 'The Adventures of Sherlock Holmes', estado: 'Leyendo', autores: ['Arthur Conan Doyle'], idioma: 'eng', fecha: '1892-10-14',
     editorial: 'George Newnes', etiquetas: ['Policial', 'Cuentos', 'Clásicos'], serie: 'Sherlock Holmes', indice: 3, estrellas: 5,
-    fondo: '#4a5a2f', tinta: '#f3f0dc', estilo: 'centro',
+    fondo: '#4a5a2f', tinta: '#f3f0dc', estilo: 'centro', pdf: true,
     descripcion: 'Doce casos, empezando por Irene Adler: para Holmes, siempre «la mujer».',
     inicio: ['To Sherlock Holmes she is always <em>the</em> woman.'],
   },
@@ -220,5 +220,23 @@ export const CAPITULO = {
       '—Puedes estar segura, querida, de que cuando sean veinte los visitaré a todos.'],
     ['Mr. Bennet was so odd a mixture of quick parts, sarcastic humour, reserve, and caprice, that the experience of three-and-twenty years had been insufficient to make his wife understand his character. <em>Her</em> mind was less difficult to develop. She was a woman of mean understanding, little information, and uncertain temper. When she was discontented, she fancied herself nervous. The business of her life was to get her daughters married; its solace was visiting and news.',
       'El señor Bennet era una mezcla tan rara de ingenio, humor sarcástico, reserva y capricho, que veintitrés años no le habían alcanzado a su esposa para entender su carácter. La mente de <em>ella</em> era menos difícil de descifrar: era una mujer de pocas luces, escasa instrucción y humor variable. Cuando estaba descontenta, se creía nerviosa. El propósito de su vida era casar a sus hijas; su consuelo, las visitas y las novedades.'],
+  ],
+};
+
+// The Adventures of Sherlock Holmes va como PDF (sin EPUB), para la captura del lector de páginas: el comienzo de
+// «A Scandal in Bohemia» (dominio público), impreso por Electron con Literata (portadas.cjs), con nuestra traducción para
+// el panel del costado. La primera página es la del título y el primer párrafo; el resto sigue en la segunda.
+export const CUENTO = {
+  primeraPagina: [
+    ['ADVENTURE I.', 'AVENTURA I.'],
+    ['A SCANDAL IN BOHEMIA', 'ESCÁNDALO EN BOHEMIA'],
+    ['To Sherlock Holmes she is always <em>the</em> woman. I have seldom heard him mention her under any other name. In his eyes she eclipses and predominates the whole of her sex. It was not that he felt any emotion akin to love for Irene Adler. All emotions, and that one particularly, were abhorrent to his cold, precise but admirably balanced mind. He was, I take it, the most perfect reasoning and observing machine that the world has seen, but as a lover he would have placed himself in a false position. He never spoke of the softer passions, save with a gibe and a sneer. They were admirable things for the observer—excellent for drawing the veil from men’s motives and actions. But for the trained reasoner to admit such intrusions into his own delicate and finely adjusted temperament was to introduce a distracting factor which might throw a doubt upon all his mental results. Grit in a sensitive instrument, or a crack in one of his own high-power lenses, would not be more disturbing than a strong emotion in a nature such as his. And yet there was but one woman to him, and that woman was the late Irene Adler, of dubious and questionable memory.',
+      'Para Sherlock Holmes, ella es siempre <em>la</em> mujer. Pocas veces lo oí nombrarla de otra manera. A sus ojos, ella eclipsa y domina a todo su sexo. No es que sintiera por Irene Adler nada parecido al amor. Todas las emociones, y esa en particular, le repugnaban a su mente fría, precisa y admirablemente equilibrada. Era, a mi juicio, la máquina de razonar y de observar más perfecta que haya conocido el mundo; pero como enamorado se habría puesto en un lugar falso. Nunca hablaba de las pasiones más tiernas si no era con una burla o una mueca de desdén. Para el observador eran cosas admirables, excelentes para correr el velo de los motivos y los actos de los hombres. Pero que un razonador entrenado dejara entrar esas intromisiones en su temperamento delicado y finamente ajustado era sumar un factor de distracción capaz de poner en duda todos sus resultados mentales. Un grano de arena en un instrumento sensible, o una rajadura en una de sus potentes lentes, no lo perturbarían tanto como una emoción fuerte en una naturaleza como la suya. Y sin embargo, para él hubo una sola mujer, y esa mujer fue la difunta Irene Adler, de dudoso y cuestionable recuerdo.'],
+  ],
+  // El subrayado de la captura.
+  subrayado: ['He was, I take it,', 'that the world has seen,'],
+  resto: [
+    'I had seen little of Holmes lately. My marriage had drifted us away from each other. My own complete happiness, and the home-centred interests which rise up around the man who first finds himself master of his own establishment, were sufficient to absorb all my attention, while Holmes, who loathed every form of society with his whole Bohemian soul, remained in our lodgings in Baker Street, buried among his old books, and alternating from week to week between cocaine and ambition, the drowsiness of the drug, and the fierce energy of his own keen nature.',
+    'One night—it was on the twentieth of March, 1888—I was returning from a journey to a patient (for I had now returned to civil practice), when my way led me through Baker Street. As I passed the well-remembered door, I was seized with a keen desire to see Holmes again, and to know how he was employing his extraordinary powers. His rooms were brilliantly lit, and, even as I looked up, I saw his tall, spare figure pass twice in a dark silhouette against the blind.',
   ],
 };

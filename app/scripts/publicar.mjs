@@ -162,7 +162,22 @@ for (let intento = 0; !corrida && intento < 20; intento++) {
 if (!corrida) frenar(`Le pedí a Actions que arme el instalador, pero no encuentro la corrida. Mirala en https://github.com/${REPOSITORIO}/actions.`);
 const enlace = `https://github.com/${REPOSITORIO}/actions/runs/${corrida}`;
 console.log(`\nGitHub Actions está armando el instalador (tarda unos minutos): ${enlace}`);
-if (spawnSync('gh', ['run', 'watch', String(corrida), '--repo', REPOSITORIO, '--exit-status', '--interval', '15'], { stdio: 'inherit' }).status !== 0) {
+// Recién pedida, la corrida tarda unos segundos en aparecer en la API: un «404 Not Found» ahí no es una falla. Pasó al
+// publicar la 1.14.0: gh run watch se rindió con el 404 y el script avisó que Actions había fallado, pero el instalador
+// salió bien. Por eso se espera a que aparezca, y la palabra final la tiene la conclusión de la corrida, no gh run watch
+// (que también puede cortarse por un error de red).
+const estadoDeLaCorrida = () => {
+  const r = gh('run', 'view', String(corrida), '--repo', REPOSITORIO, '--json', 'status,conclusion');
+  return r.status === 0 ? JSON.parse(r.stdout) : null;
+};
+for (let intento = 0; !estadoDeLaCorrida() && intento < 20; intento++) esperar(3000);
+spawnSync('gh', ['run', 'watch', String(corrida), '--repo', REPOSITORIO, '--exit-status', '--interval', '15'], { stdio: 'inherit' });
+let final = estadoDeLaCorrida();
+for (let intento = 0; final?.status !== 'completed' && intento < 90; intento++) {
+  esperar(10000); // gh run watch se cortó antes de tiempo: se sigue mirando (hasta 15 minutos)
+  final = estadoDeLaCorrida() ?? final;
+}
+if (final?.conclusion !== 'success') {
   frenar(`Actions no pudo terminar (ver ${enlace}). Ninguna copia instalada ve una versión a medias. ` +
     (publicarVersion ? 'Si fue un problema de GitHub, volvé a correr npm run publicar; si hay que cambiar el código, subí la versión.' : ''));
 }
